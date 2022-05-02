@@ -8,6 +8,5 @@ public:
 	Parser();
 	virtual ~Parser();
 
-
 };
 
