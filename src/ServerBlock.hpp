@@ -12,21 +12,19 @@
  * Parsing blocks inside configuration file
  */
 
-class AConfigBlock {
+class ServerBlock {
 public:
-	AConfigBlock();
-	AConfigBlock(const AConfigBlock &obj);
-	virtual ~AConfigBlock();
+	ServerBlock();
 
-	AConfigBlock &operator=(const AConfigBlock &obj);
+	ServerBlock(const ServerBlock &obj);
+
+	virtual ~ServerBlock();
+
+	ServerBlock &operator=(const ServerBlock &obj);
 
 protected:
 	std::string _root;
 	int _clientMaxBodySize;
-
-
-
-
 };
 
 
