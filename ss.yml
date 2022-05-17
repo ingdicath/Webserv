@@ -22,7 +22,7 @@ as: #asdf
   }
 
   location ~ \.php$ {
-  include fastcgi_params;
+  includefastcgi_params; #example
   fastcgi_intercept_errors on;
   # By all means use a different server for the fcgi processes if you need to
   fastcgi_pass   127.0.0.1:YOURFCGIPORTHERE;
@@ -31,4 +31,4 @@ as: #asdf
   location ~ /\.ht {
   deny  all;
   }
-}
+} # hola

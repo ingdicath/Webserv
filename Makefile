@@ -16,7 +16,7 @@ IFLAGS := -I$(INC_DIR)
 FLAGS += $(IFLAGS)
 
 # Sources and objects
-SRC := main.cpp
+SRC := main.cpp ConfigChecker.cpp
 SRC_PATH:= $(addprefix $(SRC_DIR), $(SRC))
 OBJ := $(SRC_PATH:$(SRC_DIR)%.cpp=$(OBJ_DIR)%.o)
 
