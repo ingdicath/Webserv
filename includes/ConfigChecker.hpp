@@ -33,7 +33,7 @@ private:
 
 	static void _checkJunkData(const std::string &line);
 
-	void _checkLocation(const std::string& line);
+	static void _checkLocation(const std::string& line);
 
 
 };

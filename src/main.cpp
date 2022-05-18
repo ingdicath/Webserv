@@ -12,7 +12,8 @@ int main(int argc, char **argv) {
 	switch (argc) {
 		case 1:
 			configFile = DEFAULT_CONFIG_FILE;
-			std::cout << argv[0] << " " <<DEFAULT_CONFIG_FILE << " - I'm calling the default config file!" << std::endl; // test, delete
+			std::cout << argv[0] << " " << DEFAULT_CONFIG_FILE << " - I'm calling the default config file!"
+					  << std::endl; // test, delete
 			break;
 		case 2:
 			configFile = argv[1];
