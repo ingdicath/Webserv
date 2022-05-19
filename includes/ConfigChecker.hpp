@@ -6,12 +6,18 @@
 
 #include <string>
 
+
 class ConfigChecker {
 public:
 
-	ConfigChecker(std::string filePath);
+	enum eHTTPMethods {
+		GET, POST, DELETE
+	};
 
-	~ConfigChecker();
+	ConfigChecker(const std::string &filePath);
+//	ConfigChecker(ConfigChecker const &obj);
+//	ConfigChecker &operator=(ConfigChecker const &obj);
+	virtual ~ConfigChecker();
 
 	const std::string &getFilePath() const;
 
@@ -19,13 +25,13 @@ public:
 
 	void _readFile();
 
+
 private:
 	std::string _filePath;
 	std::string _fileData;
 
 
-
-	void _excludeCommentsEmptyLines();
+	void _deleteCommentsEmptyLines();
 
 	void _checkCurlyBraces();
 
@@ -33,7 +39,13 @@ private:
 
 	static void _checkJunkData(const std::string &line);
 
-	static void _checkLocation(const std::string& line);
+	static void _checkLocationIntro(const std::string &line);
+
+	static bool isCorrectServerBlockIntro(const std::string &line);
+
+	static void _checkAllowedMethods(const std::string &line);
+
+	void _checkLocationBlock(std::string line, std::istringstream stream);
 
 
 };

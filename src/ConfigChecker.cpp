@@ -8,56 +8,15 @@
 #include <vector>
 #include <algorithm> //find_first_of
 #include "ConfigChecker.hpp"
+#include "utils.hpp"
 
-ConfigChecker::ConfigChecker(std::string filePath) : _filePath(filePath) {}
+ConfigChecker::ConfigChecker(const std::string &filePath) : _filePath(filePath) {}
 
 ConfigChecker::~ConfigChecker() {}
 
-/**
- * PUT IN ANOTHER FILE
- */
-
-void removeWhiteSpaces(std::string str) {
-	str.erase(std::remove_if(str.begin(), str.end(), ::isspace), str.end());
+bool isEmptyFile(std::ifstream &inputFile) {
+	return inputFile.peek() == std::ifstream::traits_type::eof();
 }
-
-/**
- * Put in another file option 1 for split
- */
-std::vector<std::string> splitString2(std::string str, char splitter) {
-	std::vector<std::string> res;
-	std::string current;
-	for (size_t i = 0; i < str.size(); i++) {
-		if (str[i] == splitter) {
-			if (!current.empty()) {
-				res.push_back(current);
-				current.clear();
-			}
-			continue;
-		}
-		current += str[i];
-	}
-	if (!current.empty())
-		res.push_back(current);
-	return res;
-}
-
-// https://stackoverflow.com/questions/10058606/splitting-a-string-by-a-character
-
-/**
- * Put in another file option 2 for split
- */
-std::vector<std::string> splitString(const std::string &str, char splitter) {
-	std::vector<std::string> res;
-	std::stringstream line(str);
-	std::string segment;
-
-	while (std::getline(line, segment, splitter)) {
-		res.push_back(segment);
-	}
-	return res;
-}
-
 
 // You need to convert to a c-string if you are not using c++11 or later.
 void ConfigChecker::_readFile() {
@@ -66,7 +25,10 @@ void ConfigChecker::_readFile() {
 
 	file.open(_filePath.c_str());
 	if (!file.is_open()) {
-		throw std::runtime_error("Configuration file failed to open.");
+		throw std::runtime_error("Config error: Configuration file failed to open.");
+	}
+	if (isEmptyFile(file)) {
+		throw std::runtime_error("Config error: Empty file.");
 	}
 	while (std::getline(file, line)) {
 		_fileData.append(line + "\n");
@@ -74,7 +36,7 @@ void ConfigChecker::_readFile() {
 	file.close();
 }
 
-void ConfigChecker::_excludeCommentsEmptyLines() {
+void ConfigChecker::_deleteCommentsEmptyLines() {
 	std::istringstream inputStream(_fileData);
 	std::string line;
 	std::string temp;
@@ -87,7 +49,7 @@ void ConfigChecker::_excludeCommentsEmptyLines() {
 			line.erase(hastagPosition, std::string::npos);
 		}
 		temp = line;
-		removeWhiteSpaces(temp); //implement, namespace utils??
+		utils::removeWhiteSpaces(temp); //implement, namespace utils??
 		if (!line.empty() && !temp.empty()) {
 			_fileData.append(line + "\n");
 		}
@@ -116,23 +78,58 @@ void ConfigChecker::_checkCurlyBraces() {
 
 void ConfigChecker::_checkSemiColon(const std::string &line) {
 	size_t size;
-	std::string temp = line;
-	removeWhiteSpaces(temp);
-	size_t firstPos = temp.find_first_of(';');
-	size = temp.size();
+	utils::removeWhiteSpaces(line);
+//	size_t firstPos = line.find_first_of(';'); //decide which is better: find_first_of or find
+	size_t firstPos = line.find(';');
+	size = line.size();
 	if (firstPos != (size - 1)) { //chequear si se puede hace de otra forma
-		//https://stackoverflow.com/questions/348833/how-to-know-the-exact-line-of-code-where-an-exception-has-been-caused
 		throw std::runtime_error("Config error: invalid semicolon at line " + std::to_string(__LINE__));
 	}
 }
 
+bool ConfigChecker::isCorrectServerBlockIntro(const std::string &line) {
+	utils::removeWhiteSpaces(line);
+	if (line != "server {") {
+		throw std::runtime_error("Config error: invalid format in server block");
+	}
+	return true;
+}
+
+// chequear si esta funcion es necesaria, la idea es para que sirva despues o antes del server block
 void ConfigChecker::_checkJunkData(const std::string &line) {
-	const std::string& temp = line;
-	removeWhiteSpaces(temp);
-	if (!temp.empty()) {
-		throw std::runtime_error("Config error: not allowed data in file");
+	utils::removeWhiteSpaces(line);
+	if (!line.empty()) {
+		throw std::runtime_error("Config error: not allowed data outside server blocks");
 	}
 }
+
+/**
+ * case 3 elements: "location␣/path␣{" is valid, has 2 spaces.
+ * case 2 elements: "location␣/path{" is valid, has 1 spaces.
+ */
+void ConfigChecker::_checkLocationIntro(const std::string &line) {
+	std::vector<std::string> splitLocation = utils::splitString(line, ' ');
+	size_t size = splitLocation.size();
+	switch (size) {
+		case 2:
+			if (splitLocation[0] != "location" ||
+				splitLocation[1] == "{" ||
+				splitLocation[1].find('{') != splitLocation[1].length() - 1) {
+				throw std::runtime_error("Config error: invalid format in location block");
+			}
+			break;
+		case 3:
+			if (splitLocation[0] != "location" ||
+				splitLocation[1].find('/') != 0 || //checks if / is in the first position
+				splitLocation[2] != "{") {
+				throw std::runtime_error("Config error: invalid format in location block");
+			}
+			break;
+		default:
+			throw std::runtime_error("Config error: invalid format in location block");
+	}
+}
+
 
 const std::string &ConfigChecker::getFilePath() const {
 	return _filePath;
@@ -142,34 +139,25 @@ const std::string &ConfigChecker::getFileData() const {
 	return _fileData;
 }
 
-/**
- * case 3 elements: "location␣/path␣{" is valid, has 2 spaces.
- * case 2 elements: "location␣/path{" is valid, has 1 spaces.
- */
-void ConfigChecker::_checkLocation(const std::string &line) {
-	std::vector<std::string> splitLocation;
-	size_t size;
-
-	splitLocation = splitString(line, ' ');
-	size = splitLocation.size();
-	switch (size) {
-		case 2:
-			if (splitLocation[0] != "location" || splitLocation[1] != "{") { //faltaria validar el arg[1],o en otro lado??
-				throw std::runtime_error("Config error: invalid format in location block");
-			}
-			break;
-		case 3:
-			if (splitLocation[0] != "location" || splitLocation[2] != "{") {
-				throw std::runtime_error("Config error: invalid format in location block");
-			}
-			break;
-		default:
-			throw std::runtime_error("Config error: invalid format in location block");
-
-
+void ConfigChecker::_checkAllowedMethods(const std::string &line) { //complete this method
+	std::vector<std::string> splitAllowedMethods = utils::splitString(line, ' ');
+	if (splitAllowedMethods[0] != "allowed_methods") {
+		throw std::runtime_error("Config error: invalid directive " + std::to_string(__LINE__));
 	}
+}
+
+void ConfigChecker::_checkLocationBlock(std::string line, std::istringstream stream) {
+	_checkLocationIntro(line);
+//	while (std::getline(stream, line)) {
+//		if (line.find("allowed_methods"))
+//
+//	}
 
 }
+
+
+
+
 
 
 
