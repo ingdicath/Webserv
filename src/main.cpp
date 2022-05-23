@@ -3,8 +3,11 @@
 //
 
 #include <iostream>
+#include <fstream>
 #include "ConfigChecker.hpp"
 #include "settings.hpp"
+#include "utils.hpp"
+
 
 int main(int argc, char **argv) {
 	std::string configFile;
@@ -26,14 +29,29 @@ int main(int argc, char **argv) {
 	try {
 		// WebServer webServer; //contains methods to run webserv
 		ConfigChecker conf(configFile);
-		conf._readFile();
+		conf.checkEntireConfig();
+//		conf._readFile();
+//		conf._excludeCommentsEmptyLines();
+//		conf._checkCurlyBraces();
 
 //		webServer.check(configFile); // validate config file
 //		webServer.initialize(parser.getServerConfig()); // if is valid setup webserver with config files parameters
 //		webServer.run(); //start webserv
-		std::cout << " Inside try!" << std::endl; // test, delete
 	} catch (std::exception &e) {
 		std::cerr << e.what() << std::endl;
 	}
 	return EXIT_SUCCESS;
 }
+
+
+
+/*
+int main(){
+	std::string myStr = "hola    soy  el frailejon ernersto perez";
+	utils::removeWhiteSpaces(myStr);
+	utils::splitString(myStr, ' ');
+	return 0;
+
+}
+ */
+

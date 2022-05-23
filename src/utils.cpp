@@ -4,11 +4,12 @@
 
 #include <string>
 #include <vector>
+#include <iostream> //delete
 #include "utils.hpp"
-
 
 void utils::removeWhiteSpaces(std::string str) {
 	str.erase(std::remove_if(str.begin(), str.end(), ::isspace), str.end());
+//	std::cout << "res: " << str << std::endl; //delete, testing purposes
 }
 
 /**
@@ -54,7 +55,23 @@ std::vector<std::string> utils::splitString(const std::string &str, char splitte
 
 	while (std::getline(line, segment, splitter)) {
 		res.push_back(segment);
+		std::cout << segment << std::endl; //delete, testing purposes
 	}
 	return res;
 }
 
+//check
+
+void utils::trim(std::string &str, std::string chars){
+	std::size_t start = str.find_first_not_of(chars);
+	if (start == std::string::npos){
+		start = 0;
+	}
+	std::size_t end = str.find_last_not_of(chars);
+	if (end == std::string::npos){
+		str = ";";
+		return;
+	}
+	std::size_t len = end - start + 1;
+	str = str.substr(start, len);
+}

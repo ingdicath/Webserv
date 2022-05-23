@@ -12,9 +12,10 @@
 
 namespace utils {
 
-	static void removeWhiteSpaces(std::string str);
+	void removeWhiteSpaces(std::string str);
 
-	static std::vector<std::string> splitString(const std::string &str, char splitter);
+	std::vector<std::string> splitString(const std::string &str, char splitter);
 
-};
+	void trim(std::string &str, std::string chars);
 
+}

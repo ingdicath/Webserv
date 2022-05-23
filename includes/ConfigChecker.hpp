@@ -7,6 +7,7 @@
 #include <string>
 
 
+
 class ConfigChecker {
 public:
 
@@ -14,26 +15,27 @@ public:
 		GET, POST, DELETE
 	};
 
+	enum eDirectives{
+
+	};
+
 	ConfigChecker(const std::string &filePath);
-//	ConfigChecker(ConfigChecker const &obj);
-//	ConfigChecker &operator=(ConfigChecker const &obj);
+
+	ConfigChecker(ConfigChecker const &obj);
+	ConfigChecker &operator=(ConfigChecker const &obj);
 	virtual ~ConfigChecker();
 
 	const std::string &getFilePath() const;
 
 	const std::string &getFileData() const;
 
-	void _readFile();
+	void _readFile(); // after convert to private method
 
-
-private:
-	std::string _filePath;
-	std::string _fileData;
-
-
-	void _deleteCommentsEmptyLines();
+	void _excludeCommentsEmptyLines();
 
 	void _checkCurlyBraces();
+
+	static void _checkClosingCurlyBraceLine(const std::string &line);
 
 	static void _checkSemiColon(const std::string &line);
 
@@ -41,11 +43,20 @@ private:
 
 	static void _checkLocationIntro(const std::string &line);
 
-	static bool isCorrectServerBlockIntro(const std::string &line);
+	static bool _isCorrectServerBlockIntro(const std::string &line);
 
 	static void _checkAllowedMethods(const std::string &line);
 
-	void _checkLocationBlock(std::string line, std::istringstream stream);
+	void _checkLocationBlock(std::string line, std::istringstream &stream);
+
+	void _checkServerBlocks();
+
+	void checkEntireConfig();
+
+private:
+	std::string _filePath;
+	std::string _fileData;
+
 
 
 };
