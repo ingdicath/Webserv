@@ -56,7 +56,4 @@ public:
 private:
 	std::string _filePath;
 	std::string _fileData;
-
-
-
 };

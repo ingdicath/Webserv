@@ -4,7 +4,9 @@
 
 #include <string>
 #include <vector>
+#include <fstream> //delete
 #include <iostream> //delete
+#include <ConfigChecker.hpp> //delete
 #include "utils.hpp"
 
 void utils::removeWhiteSpaces(std::string str) {
@@ -60,18 +62,21 @@ std::vector<std::string> utils::splitString(const std::string &str, char splitte
 	return res;
 }
 
-//check
+//check if this function is needed
 
-void utils::trim(std::string &str, std::string chars){
+void utils::trim(std::string &str, std::string chars) {
 	std::size_t start = str.find_first_not_of(chars);
-	if (start == std::string::npos){
+	if (start == std::string::npos) {
 		start = 0;
 	}
 	std::size_t end = str.find_last_not_of(chars);
-	if (end == std::string::npos){
+	if (end == std::string::npos) {
 		str = ";";
 		return;
 	}
 	std::size_t len = end - start + 1;
 	str = str.substr(start, len);
 }
+
+// check this function
+
