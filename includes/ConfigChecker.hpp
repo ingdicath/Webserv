@@ -45,7 +45,7 @@ public:
 
 	static bool _isCorrectServerBlockIntro(const std::string &line);
 
-	static void _checkAllowedMethods(const std::string &line);
+	static void _checkacceptedMethods(const std::string &line);
 
 	void _checkLocationBlock(std::string line, std::istringstream &stream);
 
