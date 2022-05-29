@@ -140,7 +140,7 @@ const std::string &ConfigChecker::getFileData() const {
 	return _fileData;
 }
 
-void ConfigChecker::_checkAllowedMethods(const std::string &line) { //complete this method
+void ConfigChecker::_checkacceptedMethods(const std::string &line) { //complete this method
 	std::vector<std::string> splitAllowedMethods = utils::splitString(line, ' ');
 	if (splitAllowedMethods[0] != "allowed_methods") {
 		throw std::runtime_error("Config error: invalid directive " + splitAllowedMethods[0]);
@@ -160,7 +160,7 @@ void ConfigChecker::_checkLocationBlock(std::string line, std::istringstream &st
 	_checkLocationIntro(line);
 	while (std::getline(stream, line)) {
 		if (line.find("allowed_methods") != std::string::npos) {
-			_checkAllowedMethods(line);
+			_checkacceptedMethods(line);
 		} else if (line.find('}') != std::string::npos) {
 			std::cout << "hey location " << __LINE__ << std::endl; // delete, testing purposes
 			_checkClosingCurlyBraceLine(line);

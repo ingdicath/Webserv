@@ -15,10 +15,10 @@ public:
 private:
 
 	/** server **/
-	int _id;
+//	int _id;
 	std::set<std::string> _listen;
 	std::vector<std::string> _server_name;
-	std::vector<LocationBlock> _locations;
+//	std::vector<LocationBlock> _locations;
 	std::vector<std::string> _cgi; // in case we decide accept other formats than .py, could be php?
 
 //	/** location */
@@ -26,7 +26,7 @@ private:
 //	std::size_t _client_max_body_size;
 //	std::vector<std::string> _index;
 //	std::string _root;
-//	bool _accepted_methods[3];
+//	bool _accepted_methods[3]; // list of constants
 //	bool _autoindex;
 //	std::map<std::string, std::string> _cgi; // podria ser tambien un vector??
 //	std::string _upload;

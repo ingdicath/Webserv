@@ -6,7 +6,6 @@
 #include <fstream>
 #include <vector>
 #include <stack>
-#include "ConfigChecker.hpp"
 #include "settings.hpp"
 #include "utils.hpp"
 
@@ -54,9 +53,7 @@ bool isEmptyFile(std::ifstream &inputFile) {
 	return inputFile.peek() == std::ifstream::traits_type::eof();
 }
 
-void openFile(const std::string &filePath) {
-	std::ifstream file;
-
+void openFile(std::ifstream &file, const std::string &filePath) {
 	file.open(filePath.c_str(), std::ifstream::in);
 	if (!file.is_open()) {
 		throw std::runtime_error("Config error: Configuration file failed to open.");
@@ -64,7 +61,7 @@ void openFile(const std::string &filePath) {
 	if (isEmptyFile(file)) {
 		throw std::runtime_error("Config error: Empty file.");
 	}
-	file.close();
+//	file.close(); // dont forget to close
 }
 
 int main(int argc, char **argv) {
@@ -84,7 +81,6 @@ int main(int argc, char **argv) {
 			return EXIT_FAILURE;
 	}
 	try {
-		openFile(configFile); // testing if a file could be opened
 
 		// listado de comandos validos
 		std::vector<std::string> validCommands;
@@ -102,8 +98,8 @@ int main(int argc, char **argv) {
 		validCommands.push_back("return");
 
 		std::ifstream file;
+		openFile(file,configFile);
 		std::string line;
-		file.open(configFile);
 
 		char c;
 		std::string command;
@@ -118,8 +114,9 @@ int main(int argc, char **argv) {
 			switch (c) {
 				case '{':
 					std::cout << "curly: " << command << std::endl;
+					directives.push(command); // fix
+
 					command = "";
-					directives.push(command);
 					curlyBraces.push(c);
 					// function to validate insert command and curly brace in the stack
 					test = "§"; // only testing

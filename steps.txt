@@ -1,0 +1,40 @@
+
+
+0. have a vector of empty servers
+
+1. add new server (p) (with emmpty list of locations)
+2. push server to stack1 and curly to stack2
+3. push every valid command to stack2
+until close curly
+4. if location check if server is in stack1 head else error
+5. push to stack1 location
+6. add location to vector inside current server
+7. push curly with path to stack2
+8. when curly close
+8.1 pop stack2 until open curly
+8.2 save every command to current object in top of stack1 (server, location)
+8.3 validate each command values
+8.4 in case location, in open curly extract path
+8.5 pop stack1
+
+
+
+
+
+Vector<Server>
+
+Server{
+	String a
+	String b
+	String c
+	Vector<Location>
+}
+
+
+Location{
+	String a
+	String b
+	String c
+}
+
+
