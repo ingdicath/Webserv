@@ -15,7 +15,6 @@ public:
 private:
 
 	/** server **/
-//	int _id;
 	std::set<std::string> _listen;
 	std::vector<std::string> _server_name;
 //	std::vector<LocationBlock> _locations;

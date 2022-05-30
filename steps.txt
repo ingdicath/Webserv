@@ -1,7 +1,6 @@
 
 
 0. have a vector of empty servers
-
 1. add new server (p) (with emmpty list of locations)
 2. push server to stack1 and curly to stack2
 3. push every valid command to stack2

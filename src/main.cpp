@@ -9,42 +9,6 @@
 #include "settings.hpp"
 #include "utils.hpp"
 
-
-//int main(int argc, char **argv) {
-//	std::string configFile;
-//
-//	switch (argc) {
-//		case 1:
-//			configFile = DEFAULT_CONFIG_FILE;
-//			std::cout << argv[0] << " " << DEFAULT_CONFIG_FILE << " - I'm calling the default config file!"
-//					  << std::endl; // test, delete
-//			break;
-//		case 2:
-//			configFile = argv[1];
-//			break;
-//		default:
-//			std::cerr << RED "Invalid number of arguments." << std::endl;
-//			std::cerr << "Usage: ./webserv [configuration file]" RESET << std::endl;
-//			return EXIT_FAILURE;
-//	}
-//	try {
-//		// WebServer webServer; //contains methods to run webserv
-//		ConfigChecker conf(configFile);
-//		conf.checkEntireConfig();
-////		conf._readFile();
-////		conf._excludeCommentsEmptyLines();
-////		conf._checkCurlyBraces();
-//
-////		webServer.check(configFile); // validate config file
-////		webServer.initialize(parser.getServerConfig()); // if is valid setup webserver with config files parameters
-////		webServer.run(); //start webserv
-//	} catch (std::exception &e) {
-//		std::cerr << e.what() << std::endl;
-//	}
-//	return EXIT_SUCCESS;
-//}
-
-
 bool in_array(const std::string &value, const std::vector<std::string> &array) {
 	return std::find(array.begin(), array.end(), value) != array.end();
 }
@@ -64,6 +28,7 @@ void openFile(std::ifstream &file, const std::string &filePath) {
 //	file.close(); // dont forget to close
 }
 
+
 int main(int argc, char **argv) {
 	std::string configFile;
 
@@ -82,7 +47,7 @@ int main(int argc, char **argv) {
 	}
 	try {
 
-		// listado de comandos validos
+		// valid command list
 		std::vector<std::string> validCommands;
 		validCommands.push_back("listen");
 		validCommands.push_back("location");
@@ -98,16 +63,15 @@ int main(int argc, char **argv) {
 		validCommands.push_back("return");
 
 		std::ifstream file;
-		openFile(file,configFile);
+		openFile(file, configFile);
 		std::string line;
 
-		char c;
 		std::string command;
+		char c;
 		bool comment = false;
 		std::string test;
 		std::stack<char> curlyBraces;
 		std::stack<std::string> directives;
-
 
 		// loop getting single characters
 		while (file.get(c)) {
@@ -115,7 +79,6 @@ int main(int argc, char **argv) {
 				case '{':
 					std::cout << "curly: " << command << std::endl;
 					directives.push(command); // fix
-
 					command = "";
 					curlyBraces.push(c);
 					// function to validate insert command and curly brace in the stack
@@ -146,7 +109,7 @@ int main(int argc, char **argv) {
 					}
 					break;
 				case '}':
-					// disparador
+					// disparador or trigger
 					if (curlyBraces.empty() && c == '}') {
 						throw std::runtime_error("Config error: unbalanced curly braces.");
 					}
