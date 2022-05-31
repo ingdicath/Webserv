@@ -142,7 +142,7 @@ const std::string &ConfigChecker::getFileData() const {
 
 void ConfigChecker::_checkacceptedMethods(const std::string &line) { //complete this method
 	std::vector<std::string> splitAllowedMethods = utils::splitString(line, ' ');
-	if (splitAllowedMethods[0] != "allowed_methods") {
+	if (splitAllowedMethods[0] != "accepted_methods") {
 		throw std::runtime_error("Config error: invalid directive " + splitAllowedMethods[0]);
 	}
 }
@@ -159,7 +159,7 @@ void ConfigChecker::_checkClosingCurlyBraceLine(const std::string &line) {
 void ConfigChecker::_checkLocationBlock(std::string line, std::istringstream &stream) {
 	_checkLocationIntro(line);
 	while (std::getline(stream, line)) {
-		if (line.find("allowed_methods") != std::string::npos) {
+		if (line.find("accepted_methods") != std::string::npos) {
 			_checkacceptedMethods(line);
 		} else if (line.find('}') != std::string::npos) {
 			std::cout << "hey location " << __LINE__ << std::endl; // delete, testing purposes
@@ -191,8 +191,8 @@ void ConfigChecker::_checkServerBlocks() {
 		else if (line.find('{') != std::string::npos && isPresentServer == true) {
 			_checkClosingCurlyBraceLine(line);
 			isPresentServer = false;
-		} else if (line.find("allowed_methods") != std::string::npos && isPresentServer == true) {
-			throw std::runtime_error("Config error: directive is not allowed: allowed_methods.");
+		} else if (line.find("accepted_methods") != std::string::npos && isPresentServer == true) {
+			throw std::runtime_error("Config error: directive is not allowed: accepted_methods.");
 		} else {
 			std::cout << "_checkServerBlocks " << __LINE__ << std::endl; // delete, testing purposes
 			_checkSemiColon(line);

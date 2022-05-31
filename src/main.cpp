@@ -56,7 +56,7 @@ int main(int argc, char **argv) {
 		validCommands.push_back("client_max_body_size");
 		validCommands.push_back("index");
 		validCommands.push_back("root");
-		validCommands.push_back("allowed_methods");
+		validCommands.push_back("accepted_methods");
 		validCommands.push_back("autoindex");
 		validCommands.push_back("cgi");
 		validCommands.push_back("upload");

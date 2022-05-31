@@ -31,5 +31,10 @@
 #define BOLDCYAN    "\033[1m\033[36m"
 #define BOLDWHITE   "\033[1m\033[37m"
 
-/** Default values **/
+/** Default server values **/
 #define DEFAULT_CLIENT_MAX_BODY_SIZE 10000000 // 10MB
+#define DEFAULT_LISTEN 80
+#define DEFAULT_SERVER_NAME ""
+#define DEFAULT_ERROR_PAGE 404
+#define OFF 0
+#define ON 1

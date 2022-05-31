@@ -8,26 +8,30 @@
 #include <string>
 #include <map>
 #include <set>
+#include "Location.hpp"
 
 class Server {
 public:
+	Server();
+
+	virtual ~Server();
+
+	Server(Server const &obj);
+
+	Server &operator=(Server const &obj);
+
+	void setListen(const std::string& str);
+
+
 
 private:
 
 	/** server **/
 	std::set<std::string> _listen;
 	std::vector<std::string> _server_name;
-//	std::vector<LocationBlock> _locations;
-	std::vector<std::string> _cgi; // in case we decide accept other formats than .py, could be php?
+	std::map<std::size_t, std::string> _error_page;
+	std::size_t _client_max_body_size;
+	std::vector<Location> _locations;
 
-//	/** location */
-//	std::map<std::size_t, std::string> _error_page;
-//	std::size_t _client_max_body_size;
-//	std::vector<std::string> _index;
-//	std::string _root;
-//	bool _accepted_methods[3]; // list of constants
-//	bool _autoindex;
-//	std::map<std::string, std::string> _cgi; // podria ser tambien un vector??
-//	std::string _upload;
-//	std::string _redirection; //podria ser un pair std::pair<int, std::string>
+	void _validatePort(std::string);
 };
