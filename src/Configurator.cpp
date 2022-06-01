@@ -10,6 +10,7 @@ Configurator::Configurator() {}
 
 Configurator::~Configurator() {}
 
+// check if structures, Must be return in a new line??
 Configurator::eDirectives Configurator::resolveDirective(const std::string &input) {
 //
 //	std::string dirArray[] = {"listen", "location", "server_name",

@@ -6,6 +6,7 @@
 #include <fstream>
 #include <vector>
 #include <stack>
+#include "Server.hpp"
 #include "settings.hpp"
 #include "utils.hpp"
 
@@ -27,7 +28,6 @@ void openFile(std::ifstream &file, const std::string &filePath) {
 	}
 //	file.close(); // dont forget to close
 }
-
 
 int main(int argc, char **argv) {
 	std::string configFile;
@@ -138,4 +138,24 @@ int main(int argc, char **argv) {
 }
 
 
-// error: extraneous closing brace ('}')
+
+/*
+
+ // test atoi vs stringstream
+#include <typeinfo>
+
+int main(){
+	std::string str = "456899798798798798798798798798798";
+	if (!utils::isPositiveNumber(str)){
+		std::cerr << "no valid number" << std::endl;
+	}
+	size_t res = utils::stringToNum(str);
+	std::cout << "res is: " << res << std::endl;
+	std::cout << typeid(res).name() << std::endl;
+
+	size_t num = std::atoi(str.c_str());
+	std::cout << "res 2 is: " << num << std::endl;
+	std::cout << typeid(num).name() << std::endl;
+	return 0;
+}
+*/

@@ -4,9 +4,7 @@
 
 #include <string>
 #include <vector>
-#include <fstream> //delete
 #include <iostream> //delete
-#include <ConfigChecker.hpp> //delete
 #include "utils.hpp"
 
 void utils::removeWhiteSpaces(std::string str) {
@@ -14,42 +12,7 @@ void utils::removeWhiteSpaces(std::string str) {
 //	std::cout << "res: " << str << std::endl; //delete, testing purposes
 }
 
-/**
- * Put in another file option 1 for split
- */
-std::vector<std::string> splitString2(std::string str, char splitter) {
-	std::vector<std::string> res;
-	std::string current;
-	for (size_t i = 0; i < str.size(); i++) {
-		if (str[i] == splitter) {
-			if (!current.empty()) {
-				res.push_back(current);
-				current.clear();
-			}
-			continue;
-		}
-		current += str[i];
-	}
-	if (!current.empty())
-		res.push_back(current);
-	return res;
-}
-
-/**
- * Put in another file
- */
-
-//void deleteLastChar(const std::string &line, char toSearch) {
-//	size_t pos = line.find_last_of(toSearch);
-//	if (pos != std::string::npos) {
-//		line.erase(pos, pos + 1);
-//	}
-//}
-
 // https://stackoverflow.com/questions/10058606/splitting-a-string-by-a-character
-/**
- * Put in another file option 2 for split
- */
 std::vector<std::string> utils::splitString(const std::string &str, char splitter) {
 	std::vector<std::string> res;
 	std::stringstream line(str);
@@ -61,6 +24,22 @@ std::vector<std::string> utils::splitString(const std::string &str, char splitte
 	}
 	return res;
 }
+
+bool utils::isPositiveNumber(const std::string &str) {
+	std::string::const_iterator it = str.begin();
+	while (it != str.end() && std::isdigit(*it)) {
+		it++;
+	}
+	return !str.empty() && it == str.end();
+}
+
+size_t utils::stringToNum(const std::string &input) {
+	size_t res;
+	std::stringstream ss(input);
+	ss >> res;
+	return res;
+}
+
 
 //check if this function is needed
 
@@ -77,6 +56,3 @@ void utils::trim(std::string &str, std::string chars) {
 	std::size_t len = end - start + 1;
 	str = str.substr(start, len);
 }
-
-// check this function
-

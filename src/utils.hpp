@@ -18,4 +18,8 @@ namespace utils {
 
 	void trim(std::string &str, std::string chars);
 
+	bool isPositiveNumber(const std::string &str);
+
+	size_t stringToNum(const std::string &input);
+
 }
