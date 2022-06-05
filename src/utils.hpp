@@ -16,10 +16,14 @@ namespace utils {
 
 	std::vector<std::string> splitString(const std::string &str, char splitter);
 
-	void trim(std::string &str, std::string chars);
-
 	bool isPositiveNumber(const std::string &str);
 
 	size_t stringToNum(const std::string &input);
+
+	std::string &rtrim(std::string &str);
+
+	std::string &ltrim(std::string &str);
+
+	std::string &trim(std::string &str);
 
 }

@@ -4,12 +4,10 @@
 
 #include <string>
 #include <vector>
-#include <iostream> //delete
 #include "utils.hpp"
 
 void utils::removeWhiteSpaces(std::string str) {
 	str.erase(std::remove_if(str.begin(), str.end(), ::isspace), str.end());
-//	std::cout << "res: " << str << std::endl; //delete, testing purposes
 }
 
 // https://stackoverflow.com/questions/10058606/splitting-a-string-by-a-character
@@ -20,7 +18,6 @@ std::vector<std::string> utils::splitString(const std::string &str, char splitte
 
 	while (std::getline(line, segment, splitter)) {
 		res.push_back(segment);
-		std::cout << segment << std::endl; //delete, testing purposes
 	}
 	return res;
 }
@@ -40,19 +37,19 @@ size_t utils::stringToNum(const std::string &input) {
 	return res;
 }
 
+// trim from end of string (right)
+std::string &utils::rtrim(std::string &str) {
+	str.erase(str.find_last_not_of(WHITESPACES) + 1);
+	return str;
+}
 
-//check if this function is needed
+// trim from beginning of string (left)
+std::string &utils::ltrim(std::string &str) {
+	str.erase(0, str.find_first_not_of(WHITESPACES));
+	return str;
+}
 
-void utils::trim(std::string &str, std::string chars) {
-	std::size_t start = str.find_first_not_of(chars);
-	if (start == std::string::npos) {
-		start = 0;
-	}
-	std::size_t end = str.find_last_not_of(chars);
-	if (end == std::string::npos) {
-		str = ";";
-		return;
-	}
-	std::size_t len = end - start + 1;
-	str = str.substr(start, len);
+// trim from both ends of string (right then left)
+std::string &utils::trim(std::string &str) {
+	return ltrim(rtrim(str));
 }

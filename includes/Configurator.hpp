@@ -13,6 +13,8 @@ public:
 
 	virtual ~Configurator();
 
+	static std::pair<std::string, std::string> splitDirective(std::string &input); // become private later
+
 private:
 	enum eDirectives {
 		LISTEN,
@@ -31,9 +33,12 @@ private:
 	};
 
 	static eDirectives resolveDirective(const std::string &input);
+
+
+
 	void setServerDirectives(const std::string &rawInput, Server *server);
 	static void setLocationDirectives(const std::string &input);
 
-	static std::pair<std::string, std::string> splitDirective(const std::string &rawInput);
+
 };
 

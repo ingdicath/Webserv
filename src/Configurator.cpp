@@ -7,12 +7,22 @@
 #include "Configurator.hpp"
 #include "Server.hpp"
 #include "settings.hpp"
+#include "utils.hpp"
 
 Configurator::Configurator() {}
 
 Configurator::~Configurator() {}
 
-// check if structures, Must be return in a new line??
+
+std::pair<std::string, std::string> Configurator::splitDirective(std::string &input) {
+	std::string cleanInput = utils::trim(input);
+	size_t splitPos = cleanInput.find_first_of(WHITESPACES);
+	std::string directive = cleanInput.substr(0, splitPos);
+	std::string directiveValue = cleanInput.substr(splitPos, cleanInput.size());
+	return std::pair<std::string, std::string>(utils::trim(directive), utils::trim(directiveValue));
+}
+
+// Translate strings to enums to allow work with switch case
 Configurator::eDirectives Configurator::resolveDirective(const std::string &input) {
 	if (input == "listen") return LISTEN;
 	if (input == "server_name") return SERVER_NAME;
@@ -29,12 +39,6 @@ Configurator::eDirectives Configurator::resolveDirective(const std::string &inpu
 	return INVALID;
 }
 
-//std::pair<std::string, std::string> Configurator::splitDirective(const std::string &rawInput) {
-//
-//	std::string directive = rawInput.substr(0, rawInput.find(' '));
-//	std::string value = rawInput.substr(rawInput.find(' '), rawInput.size());
-//	return std::pair<std::string, std::string>(trim(directive), trim(value));
-//}
 //
 //void Configurator::setServerDirectives(const std::string &rawInput, Server *server) {
 //
@@ -80,27 +84,3 @@ Configurator::eDirectives Configurator::resolveDirective(const std::string &inpu
 //			throw std::runtime_error("Config error: unknown directive in location block" + directive, std::string &value);
 //	}
 //}
-
-//const char *ws = " \t\n\r\f\v";
-//const std::string ws = " \n\t\r\f\v";
-
-//// trim from end of string (right)
-//std::string &rtrim(std::string &s) {
-//	std::string ws = " \n\t\r\f\v";
-//	s.erase(s.find_last_not_of(ws) + 1);
-//	return s;
-//}
-//
-//// trim from beginning of string (left)
-//std::string &ltrim(std::string &s) {
-//	std::string ws = " \n\t\r\f\v";
-//	s.erase(0, s.find_first_not_of(ws));
-//	return s;
-//}
-//
-//// trim from both ends of string (right then left)
-//std::string &trim(std::string &s) {
-//	return ltrim(rtrim(s));
-//}
-
-
