@@ -21,6 +21,7 @@ public:
 	Server &operator=(Server const &obj);
 
 	void setListen(const std::string& str);
+//	void setListenFromInput(const std::string& str);
 	void setPort(const std::string& str);
 
 
@@ -33,6 +34,7 @@ private:
 	std::map<std::size_t, std::string> _error_page;
 	std::size_t _client_max_body_size;
 	std::vector<Location> _locations;
+
 
 	static void _checkPortRange(const std::string &port);
 };

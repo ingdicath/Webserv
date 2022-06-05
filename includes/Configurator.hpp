@@ -5,6 +5,7 @@
 #pragma once
 
 #include <string>
+#include "Server.hpp"
 
 class Configurator {
 public:
@@ -30,7 +31,9 @@ private:
 	};
 
 	static eDirectives resolveDirective(const std::string &input);
-	static void setServerDirectives(const std::string &input);
+	void setServerDirectives(const std::string &rawInput, Server *server);
 	static void setLocationDirectives(const std::string &input);
+
+	static std::pair<std::string, std::string> splitDirective(const std::string &rawInput);
 };
 

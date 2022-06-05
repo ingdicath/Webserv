@@ -8,7 +8,7 @@
 #include <sstream>
 #include <vector>
 
-#define WHITESPACES " \v\t\n"
+#define WHITESPACES " \n\t\r\f\v"
 
 namespace utils {
 

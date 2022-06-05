@@ -34,10 +34,16 @@ void Server::_checkPortRange(const std::string& port) {
 		throw std::runtime_error("Config error: port must contain digits only " + port);
 	}
 	portNumber = utils::stringToNum(port);
-	if (portNumber > MAX_PORT_NUMBER){
+	if (portNumber > MAX_PORT_NUMBER){  //check numbers 0
 		throw std::runtime_error("Config error: port number greater than 65535." + port);
 	}
 }
+//
+//void Server::setListenFromInput(const std::string &str) {
+//
+//
+//
+//}
 
 
 
