@@ -139,20 +139,24 @@ int main(int argc, char **argv) {
 
 int main(){
 	try{
-		std::string str = "-1";
+//		std::string str = "45452r8";
+		std::string str1 = "255.255.255.255.";
 //		if (!utils::isPositiveNumber(str)){
 //			std::cerr << "no valid number" << std::endl;
 //		}
-		size_t res = utils::stringToPositiveNum(str);
-		std::cout << "res is: " << res << std::endl;
-		std::cout << typeid(res).name() << std::endl;
-
-		size_t num = std::atoi(str.c_str());
-		std::cout << "res 2 is: " << num << std::endl;
-		std::cout << typeid(num).name() << std::endl;
-		size_t num1 = std::stoi(str);
-
-		std::cout << typeid(num1).name() << 	num1 << std::endl;
+//		size_t res = utils::stringToPositiveNum(str);
+//		Configurator::_checkPortRange(str);
+		bool res = Configurator::isValidIpAddress(str1);
+		std::cout << std::boolalpha << "answer is: " <<  res << std::endl;
+//		std::cout << "res is: " << res << std::endl;
+//		std::cout << typeid(res).name() << std::endl;
+//
+//		size_t num = std::atoi(str.c_str());
+//		std::cout << "res 2 is: " << num << std::endl;
+//		std::cout << typeid(num).name() << std::endl;
+//		size_t num1 = std::stoi(str);
+//
+//		std::cout << typeid(num1).name() << 	num1 << std::endl;
 	} catch (std::exception &e){
 		std::cerr << YELLOW << e.what() << RESET << std::endl;
 	}
@@ -175,7 +179,7 @@ int main() {
 		std::string str4 = "localhost:8000";
 
 		std::cout << std::boolalpha << utils::validateIpAddress(str) << std::endl; // testing, delete
-		if (utils::validateIpAddress(str)){
+		if (utils::isValidIpAddress(str)){
 			std::cout << "mal" << std::endl;
 		}
 //		Configurator::_checkPortRange(str2);

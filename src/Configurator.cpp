@@ -63,18 +63,32 @@ Configurator::eDirectives Configurator::resolveDirective(const std::string &inpu
 //	return true;
 //}
 
-//void Configurator::_checkPortRange(const std::string &port) { // change the name
-//	size_t portNumber;
-//	if (!utils::isPositiveNumber(port)) {
-//		throw std::runtime_error("Config error: port must contain digits only - Check this --> '" + port + "'");
-//	}
-//	portNumber = utils::stringToPositiveNum(port);
-//	if (portNumber < MIN_PORT_NUMBER || portNumber > MAX_PORT_NUMBER) {
-//		throw std::runtime_error("Config error: port number greater than 65535 - Check this --> '" + port + "'");
-//	}
-//}
+void Configurator::_checkPortRange(const std::string &port) { // change the name
+	size_t portNumber = utils::stringToPositiveNum(port);
+	if (portNumber < MIN_PORT_NUMBER || portNumber > MAX_PORT_NUMBER) {
+		throw std::runtime_error("Config error: invalid port value - Check this --> '" + port + "'");
+	}
+}
 
-
+bool Configurator::isValidIpAddress(const std::string &ipAddress) {
+	size_t numDots = std::count(ipAddress.begin(), ipAddress.end(), '.');
+	if (numDots > 3) {
+		return false;
+	}
+	std::vector<std::string> vec;
+	vec = utils::splitString(ipAddress, '.');
+	if (vec.size() != 4) {
+		return false;
+	}
+	size_t num = 0;
+	for (size_t i = 0; i < vec.size(); i++) {
+		num = utils::stringToPositiveNum(vec.at(i));
+		if (num > 255) {
+			return false;
+		}
+	}
+	return true;
+}
 
 //bool isValidIpv4(const std::string& ip){
 //	size_t index = 0;
@@ -93,6 +107,7 @@ Configurator::eDirectives Configurator::resolveDirective(const std::string &inpu
 //		Server::
 //	}
 //}
+
 
 
 
