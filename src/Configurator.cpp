@@ -70,17 +70,17 @@ void Configurator::_checkPortRange(const std::string &port) { // change the name
 	}
 }
 
-bool Configurator::isValidIpAddress(const std::string &ipAddress) {
+// Valid ipv4 address 127.127.127.127
+bool Configurator::isValidIpv4Address(const std::string &ipAddress) {
+	if (ipAddress == "localhost") {
+		return true;
+	}
 	size_t numDots = std::count(ipAddress.begin(), ipAddress.end(), '.');
-	if (numDots > 3) {
+	std::vector<std::string> vec = utils::splitString(ipAddress, '.');
+	if (numDots > 3 || vec.size() != 4) {
 		return false;
 	}
-	std::vector<std::string> vec;
-	vec = utils::splitString(ipAddress, '.');
-	if (vec.size() != 4) {
-		return false;
-	}
-	size_t num = 0;
+	size_t num;
 	for (size_t i = 0; i < vec.size(); i++) {
 		num = utils::stringToPositiveNum(vec.at(i));
 		if (num > 255) {
@@ -89,6 +89,27 @@ bool Configurator::isValidIpAddress(const std::string &ipAddress) {
 	}
 	return true;
 }
+
+//where do i assign correct values for ip and port??
+bool Configurator::isValidIpPort(const std::string &listenValue) {
+//	std::string ip;
+//	std::string port;
+	size_t numColon = std::count(listenValue.begin(), listenValue.end(), ':');
+	size_t posColon = listenValue.find_last_of(':');
+
+	if (numColon > 1 || posColon == (listenValue.size() - 1)) {
+		return false;
+	} else if (numColon == 1) {
+		std::vector<std::string> vec = utils::splitString(listenValue, ':');
+		bool validIpv4 = Configurator::isValidIpv4Address(vec.at(0));
+		if (!validIpv4) {
+			return false;
+		}
+		Configurator::_checkPortRange(vec.at(1));
+	}
+	return true;
+}
+
 
 //bool isValidIpv4(const std::string& ip){
 //	size_t index = 0;

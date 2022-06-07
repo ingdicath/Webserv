@@ -18,7 +18,8 @@ public:
 	static bool _isValidPortRange(const std::string &port); // become private later
 
 	static void _checkPortRange(const std::string& port);
-	static bool isValidIpAddress(const std::string &ipAddress);
+	static bool isValidIpv4Address(const std::string &ipAddress);
+	static bool isValidIpPort(const std::string &listenValue);
 	void _checkServerName(const std::string& port);
 
 private:

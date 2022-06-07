@@ -33,7 +33,9 @@
 
 /** Default server values **/
 #define DEFAULT_CLIENT_MAX_BODY_SIZE 10000000 // 10MB
-#define DEFAULT_LISTEN 80
+#define DEFAULT_PORT 80
+#define DEFAULT_ADDRESS "0.0.0.0"
+#define DEFAULT_ROOT "/www"
 #define DEFAULT_SERVER_NAME ""
 #define DEFAULT_ERROR_PAGE 404
 #define MIN_PORT_NUMBER 1

@@ -140,14 +140,19 @@ int main(int argc, char **argv) {
 int main(){
 	try{
 //		std::string str = "45452r8";
-		std::string str1 = "255.255.255.255.";
+//		std::string str1 = "1.1.1.255.";
+		std::string str2 = "1.1.1.6:150";
 //		if (!utils::isPositiveNumber(str)){
 //			std::cerr << "no valid number" << std::endl;
 //		}
 //		size_t res = utils::stringToPositiveNum(str);
 //		Configurator::_checkPortRange(str);
-		bool res = Configurator::isValidIpAddress(str1);
-		std::cout << std::boolalpha << "answer is: " <<  res << std::endl;
+//		bool res = Configurator::isValidIpv4Address(str1);
+//		std::cout << std::boolalpha << "answer is: " <<  res << std::endl;
+
+		bool res1 = Configurator::isValidIpPort(str2);
+		std::cout << std::boolalpha << "answer is d: " <<  res1 << std::endl;
+
 //		std::cout << "res is: " << res << std::endl;
 //		std::cout << typeid(res).name() << std::endl;
 //
@@ -158,7 +163,7 @@ int main(){
 //
 //		std::cout << typeid(num1).name() << 	num1 << std::endl;
 	} catch (std::exception &e){
-		std::cerr << YELLOW << e.what() << RESET << std::endl;
+		std::cerr << PURPLE << e.what() << RESET << std::endl;
 	}
 
 
@@ -179,7 +184,7 @@ int main() {
 		std::string str4 = "localhost:8000";
 
 		std::cout << std::boolalpha << utils::validateIpAddress(str) << std::endl; // testing, delete
-		if (utils::isValidIpAddress(str)){
+		if (utils::isValidIpv4Address(str)){
 			std::cout << "mal" << std::endl;
 		}
 //		Configurator::_checkPortRange(str2);
