@@ -15,6 +15,11 @@ public:
 
 	static std::pair<std::string, std::string> splitDirective(std::string &input); // become private later
 
+	static bool _isValidPortRange(const std::string &port); // become private later
+
+	static void _checkPortRange(const std::string& port);
+	void _checkServerName(const std::string& port);
+
 private:
 	enum eDirectives {
 		LISTEN,
@@ -35,8 +40,8 @@ private:
 	static eDirectives resolveDirective(const std::string &input);
 
 
-
 	void setServerDirectives(const std::string &rawInput, Server *server);
+
 	static void setLocationDirectives(const std::string &input);
 
 

@@ -34,5 +34,5 @@
 #idea
 .idea
 cmake-build-debug
-CMakeLists.txt
+#CMakeLists.txt
 .DS_Store

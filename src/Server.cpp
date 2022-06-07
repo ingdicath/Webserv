@@ -7,6 +7,7 @@
 #include "utils.hpp"
 
 Server::Server() : _client_max_body_size(DEFAULT_CLIENT_MAX_BODY_SIZE) {
+
 }
 
 Server::~Server() {
@@ -28,16 +29,11 @@ Server &Server::operator=(const Server &obj) {
 	return *this;
 }
 
-void Server::_checkPortRange(const std::string& port) {
-	size_t portNumber;
-	if (!utils::isPositiveNumber(port)){
-		throw std::runtime_error("Config error: port must contain digits only " + port);
-	}
-	portNumber = utils::stringToNum(port);
-	if (portNumber > MAX_PORT_NUMBER){  //check numbers 0
-		throw std::runtime_error("Config error: port number greater than 65535." + port);
-	}
+const std::vector<std::string> &Server::getServerName() const {
+	return _server_name;
 }
+
+
 //
 //void Server::setListenFromInput(const std::string &str) {
 //
@@ -49,7 +45,7 @@ void Server::_checkPortRange(const std::string& port) {
 
 //// https://stackoverflow.com/questions/18677171/throwing-exception-when-the-same-key-inserted-into-stdmap
 //void Server::setListen(const std::string& str) {
-//	if (!_listen.insert(Server::_checkPortRange(str)).second){
+//	if (!_listen.insert(Server::_isValidPortRange(str)).second){
 //		//check if is better create a specific class for every exception
 //		throw std::invalid_argument("Config error: duplicate " + str);
 //	}

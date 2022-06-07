@@ -26,6 +26,12 @@ public:
 
 
 
+
+
+private:
+public:
+	const std::vector<std::string> &getServerName() const;
+
 private:
 
 	/** server **/
@@ -36,5 +42,5 @@ private:
 	std::vector<Location> _locations;
 
 
-	static void _checkPortRange(const std::string &port);
+
 };

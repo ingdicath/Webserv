@@ -36,6 +36,7 @@
 #define DEFAULT_LISTEN 80
 #define DEFAULT_SERVER_NAME ""
 #define DEFAULT_ERROR_PAGE 404
+#define MIN_PORT_NUMBER 1
 #define MAX_PORT_NUMBER 65535
 #define OFF 0
 #define ON 1

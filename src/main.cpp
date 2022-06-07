@@ -131,48 +131,57 @@ int main(int argc, char **argv) {
 	}
 	return EXIT_SUCCESS;
 }
-
 */
 
-/*
+
  // test atoi vs stringstream
 #include <typeinfo>
 
 int main(){
-	std::string str = "456899798798798798798798798798798";
-	if (!utils::isPositiveNumber(str)){
-		std::cerr << "no valid number" << std::endl;
-	}
-	size_t res = utils::stringToNum(str);
-	std::cout << "res is: " << res << std::endl;
-	std::cout << typeid(res).name() << std::endl;
+	try{
+		std::string str = "-1";
+//		if (!utils::isPositiveNumber(str)){
+//			std::cerr << "no valid number" << std::endl;
+//		}
+		size_t res = utils::stringToPositiveNum(str);
+		std::cout << "res is: " << res << std::endl;
+		std::cout << typeid(res).name() << std::endl;
 
-	size_t num = std::atoi(str.c_str());
-	std::cout << "res 2 is: " << num << std::endl;
-	std::cout << typeid(num).name() << std::endl;
+		size_t num = std::atoi(str.c_str());
+		std::cout << "res 2 is: " << num << std::endl;
+		std::cout << typeid(num).name() << std::endl;
+		size_t num1 = std::stoi(str);
+
+		std::cout << typeid(num1).name() << 	num1 << std::endl;
+	} catch (std::exception &e){
+		std::cerr << YELLOW << e.what() << RESET << std::endl;
+	}
+
+
+
+	return 0;
+
+
+}
+
+
+/*
+int main() {
+	try{
+		std::string str = "1.1.1.256";
+		std::string str1 = "1.1.1.1:8000 32.142.2.4:80";
+		std::string str2 = "800";
+		std::string str3 = "1.1.1.1";
+		std::string str4 = "localhost:8000";
+
+		std::cout << std::boolalpha << utils::validateIpAddress(str) << std::endl; // testing, delete
+		if (utils::validateIpAddress(str)){
+			std::cout << "mal" << std::endl;
+		}
+//		Configurator::_checkPortRange(str2);
+	} catch (std::exception &e){
+		std::cerr << RED << e.what() << RESET << std::endl;
+	}
 	return 0;
 }
 */
-
-//bool isValidListen (std::string value){
-//
-//	return false;
-//}
-
-
-
-int main() {
-	std::string str = "1.1.1.1:8000";
-	std::string str1 = "1.1.1.1:8000 32.142.2.4:80";
-	std::string str2 = "8000";
-	std::string str3 = "1.1.1.1";
-	std::string str4 = "localhost:8000";
-//	std::cout << isValidListen(str);
-//	std::cout << isValidListen(str2);
-//	std::cout << isValidListen(str3);
-//	std::cout << isValidListen(str4);
-	std::string s = "		 server_name	                             localhost";
-
-	return 0;
-}
-
