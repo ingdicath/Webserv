@@ -15,11 +15,14 @@ public:
 
 	static std::pair<std::string, std::string> splitDirective(std::string &input); // become private later
 
-	static bool _isValidPortRange(const std::string &port); // become private later
 
-	static void _checkPortRange(const std::string& port);
-	static bool isValidIpv4Address(const std::string &ipAddress);
-	static bool isValidIpPort(const std::string &listenValue);
+	static bool _isValidPortRange(const std::string& port);
+	static bool _isValidIpv4Address(const std::string &ipAddress);
+	static bool _isValidIpPort(const std::string &listenValue);
+
+	static bool _isValidPath(const std::string &path);
+	static bool _isValidErrorCode(const std::string &string);
+	static bool _isValidErrorPageConfig(std::string &string);
 	void _checkServerName(const std::string& port);
 
 private:

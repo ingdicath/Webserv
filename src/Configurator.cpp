@@ -14,7 +14,6 @@ Configurator::Configurator() {}
 
 Configurator::~Configurator() {}
 
-
 std::pair<std::string, std::string> Configurator::splitDirective(std::string &input) {
 	std::string cleanInput = utils::trim(input);
 	size_t splitPos = cleanInput.find_first_of(WHITESPACES);
@@ -45,33 +44,19 @@ Configurator::eDirectives Configurator::resolveDirective(const std::string &inpu
 	return INVALID;
 }
 
-//bool Configurator::_isValidPortRange(const std::string &port) { // testing
-//	size_t portNumber;
-//	if (!utils::isPositiveNumber(port)) {
-//		std::cerr << PURPLE "Config error: port must contain digits only [Check this --> " + port + "]" RESET
-//				  << std::endl;
-//		return false;
-////		throw std::runtime_error("Config error: port must contain digits only [" + port + "]");
-//	}
-//	portNumber = utils::stringToPositiveNum(port);
-//	if (portNumber < MIN_PORT_NUMBER || portNumber > MAX_PORT_NUMBER) {
-//		std::cerr << PURPLE "Config error: port number greater than 65535. [[Check this --> " + port + "]" RESET
-//				  << std::endl;
-//		return false;
-////		throw std::runtime_error("Config error: port number greater than 65535. [" + port + "]");
-//	}
-//	return true;
-//}
-
-void Configurator::_checkPortRange(const std::string &port) { // change the name
+/**
+ * LISTEN
+ */
+bool Configurator::_isValidPortRange(const std::string &port) {
 	size_t portNumber = utils::stringToPositiveNum(port);
 	if (portNumber < MIN_PORT_NUMBER || portNumber > MAX_PORT_NUMBER) {
-		throw std::runtime_error("Config error: invalid port value - Check this --> '" + port + "'");
+		throw std::runtime_error("Config error: invalid port value: '" + port + "'");
 	}
+	return true;
 }
 
 // Valid ipv4 address 127.127.127.127
-bool Configurator::isValidIpv4Address(const std::string &ipAddress) {
+bool Configurator::_isValidIpv4Address(const std::string &ipAddress) {
 	if (ipAddress == "localhost") {
 		return true;
 	}
@@ -91,7 +76,7 @@ bool Configurator::isValidIpv4Address(const std::string &ipAddress) {
 }
 
 //where do i assign correct values for ip and port??
-bool Configurator::isValidIpPort(const std::string &listenValue) {
+bool Configurator::_isValidIpPort(const std::string &listenValue) {
 //	std::string ip;
 //	std::string port;
 	size_t numColon = std::count(listenValue.begin(), listenValue.end(), ':');
@@ -101,33 +86,80 @@ bool Configurator::isValidIpPort(const std::string &listenValue) {
 		return false;
 	} else if (numColon == 1) {
 		std::vector<std::string> vec = utils::splitString(listenValue, ':');
-		bool validIpv4 = Configurator::isValidIpv4Address(vec.at(0));
-		if (!validIpv4) {
-			return false;
-		}
-		Configurator::_checkPortRange(vec.at(1));
+		bool valid = Configurator::_isValidIpv4Address(vec.at(0)) &&
+					 Configurator::_isValidPortRange(vec.at(1));
+		return valid;
+	} else {
+		bool valid = Configurator::_isValidIpv4Address(listenValue) ||
+					 Configurator::_isValidPortRange(listenValue);
+		return valid;
+	}
+}
+
+/**
+ * ERROR PAGES
+ */
+
+// check if this validation is necessary
+bool Configurator::_isValidPath(const std::string &path) {
+	if (path[0] != '/') {
+		return false;
 	}
 	return true;
 }
 
+// max possible error code is 505
+bool Configurator::_isValidErrorCode(const std::string &string) {
+	if (!utils::isPositiveNumber(string)) {
+		return false;
+	}
+	size_t errorCode = utils::stringToPositiveNum(string);
+	if (errorCode < 300 || errorCode > 506) {
+		throw std::runtime_error("Invalid error code.");
+	}
+	return true;
+}
 
-//bool isValidIpv4(const std::string& ip){
-//	size_t index = 0;
-//	size_t dotCounter = 0;
-//	size_t numCounter = 0;
-//	while (index < ip.size()){
-//		if (std::isdigit(ip[index])){
-//			size_t start = index;
-//			std::skip
-//		}
-//	}
-//}
+bool Configurator::_isValidErrorPageConfig(std::string &string) {
+	std::string cleanInput = utils::trim(string);
+//	std::cout << "clean input is: " << cleanInput << std::endl;
+	size_t splitPos = cleanInput.find_first_of(WHITESPACES);
+//	std::cout << "splitPos  is: " << splitPos << std::endl;
+//	std::cout << "size  is: " << string.size() << std::endl;
+
+	if (splitPos > string.size()) {
+		return false;
+	}
+	std::string errorCode = cleanInput.substr(0, splitPos);
+//	std::cout << "errorCode is: " << errorCode << std::endl;
+
+	std::string errorPath = cleanInput.substr(splitPos, cleanInput.size());
+	errorPath = utils::ltrim(errorPath);
+//	std::cout << "errorPath is: " << errorPath << std::endl;
+
+	if (!Configurator::_isValidErrorCode(errorCode) || !Configurator::_isValidPath(errorPath)) {
+		return false;
+	}
+	return true;
+}
+
+/**
+ * CLIENT MAX BODY SIZE
+ */
+
+
+
+
 
 //void Configurator::_checkServerName(const std::string &serverName) {
 //	if (serverName.empty()){
 //		Server::
 //	}
 //}
+
+
+
+
 
 
 

@@ -139,19 +139,27 @@ int main(int argc, char **argv) {
 
 int main(){
 	try{
-//		std::string str = "45452r8";
+//		std::string str = "454528";
 //		std::string str1 = "1.1.1.255.";
-		std::string str2 = "1.1.1.6:150";
+//		std::string str2 = "localhost";
+		std::string str3 = "		  505   			/localhost"     ;
+//		std::string str4 = "-510";
 //		if (!utils::isPositiveNumber(str)){
 //			std::cerr << "no valid number" << std::endl;
 //		}
 //		size_t res = utils::stringToPositiveNum(str);
-//		Configurator::_checkPortRange(str);
-//		bool res = Configurator::isValidIpv4Address(str1);
+//		Configurator::_isValidPortRange(str);
+
+//		bool res = Configurator::_isValidIpv4Address(str1);
 //		std::cout << std::boolalpha << "answer is: " <<  res << std::endl;
 
-		bool res1 = Configurator::isValidIpPort(str2);
-		std::cout << std::boolalpha << "answer is d: " <<  res1 << std::endl;
+//		bool res1 = Configurator::_isValidIpPort(str2);
+//		std::cout << std::boolalpha << "answer is d: " <<  res1 << std::endl;
+
+		bool res2 = Configurator::_isValidErrorPageConfig(str3);
+		std::cout << std::boolalpha << "answer for path is: " <<  res2 << std::endl;
+//		bool res3 = Configurator::_isValidErrorCode(str4);
+//		std::cout << std::boolalpha << "answer for error code is: " <<  res3 << std::endl;
 
 //		std::cout << "res is: " << res << std::endl;
 //		std::cout << typeid(res).name() << std::endl;
@@ -165,12 +173,7 @@ int main(){
 	} catch (std::exception &e){
 		std::cerr << PURPLE << e.what() << RESET << std::endl;
 	}
-
-
-
 	return 0;
-
-
 }
 
 
@@ -184,10 +187,10 @@ int main() {
 		std::string str4 = "localhost:8000";
 
 		std::cout << std::boolalpha << utils::validateIpAddress(str) << std::endl; // testing, delete
-		if (utils::isValidIpv4Address(str)){
+		if (utils::_isValidIpv4Address(str)){
 			std::cout << "mal" << std::endl;
 		}
-//		Configurator::_checkPortRange(str2);
+//		Configurator::_isValidPortRange(str2);
 	} catch (std::exception &e){
 		std::cerr << RED << e.what() << RESET << std::endl;
 	}

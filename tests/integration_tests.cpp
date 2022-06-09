@@ -7,43 +7,40 @@
 #include "catch.hpp"
 #include "Configurator.hpp"
 
-//TEST_CASE("Out of range port values", "[Config file]"){
-//	Configurator config;
-//	REQUIRE(config._isValidPortRange("0") == false );
-//	REQUIRE(config._isValidPortRange("65536") == false );
-//	REQUIRE(config._isValidPortRange("13246832000") == false );
-//}
-
-//TEST_CASE("Incorrect port values", "[Config file]"){
-//	Configurator config;
-//	REQUIRE(config._isValidPortRange("-0") == false );
-//	REQUIRE(config._isValidPortRange("hola") == false );
-//	REQUIRE(config._isValidPortRange("800+") == false );
-//}
-
-//TEST_CASE("Correct port values", "[Config file]"){
-//	Configurator config;
-//	REQUIRE(config._isValidPortRange("1") == true );
-//	REQUIRE(config._isValidPortRange("65535") == true );
-//	REQUIRE(config._isValidPortRange("8000") == true );
-//}
-
 // If exception is found, exit code is 0 for this tests.
-TEST_CASE("Out of range port values", "[Config file]") {
+TEST_CASE("Out of range port values", "[Config file][Port]") {
 	Configurator config;
-	CHECK_THROWS(config._checkPortRange("0"));
-	CHECK_THROWS(config._checkPortRange("65536"));
+	CHECK_THROWS(config._isValidPortRange("0"));
+	CHECK_THROWS(config._isValidPortRange("65536"));
 }
 
-TEST_CASE("Incorrect port values", "[Config file]") {
+TEST_CASE("Incorrect port values", "[Config file][Port]") {
 	Configurator config;
-	CHECK_THROWS(config._checkPortRange("-152"));
-	CHECK_THROWS(config._checkPortRange("hola"));
+	CHECK_THROWS(config._isValidPortRange("-152"));
+	CHECK_THROWS(config._isValidPortRange("hola"));
 }
 
-TEST_CASE("Correct port values", "[Config file]") {
+TEST_CASE("Correct port values", "[Config file][Port]") {
 	Configurator config;
 	INFO("Correct port values");
-	CHECK_NOTHROW(config._checkPortRange("1"));
-	CHECK_NOTHROW(config._checkPortRange("65535"));
+	CHECK(config._isValidPortRange("1"));
+	CHECK(config._isValidPortRange("65535"));
+}
+
+TEST_CASE("invalid port value in ip:port pair", "[Config file][ipPort]"){
+	Configurator config;
+	CHECK_THROWS(config._isValidIpPort("localhost:-6"));
+	CHECK_THROWS(config._isValidIpPort("1.1.1.1:500000"));
+}
+
+TEST_CASE("invalid port value (single) in ip:port pair", "[Config file][ipPort]"){
+	Configurator config;
+	CHECK_THROWS(config._isValidIpPort("0"));
+	CHECK_THROWS(config._isValidIpPort("65536"));
+}
+
+TEST_CASE("invalid address (single) in ip:port pair", "[Config file][ipPort]"){
+	Configurator config;
+	CHECK_THROWS(config._isValidIpPort("127.1.1"));
+	CHECK(config._isValidIpPort("localhost:") == false);
 }
