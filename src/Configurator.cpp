@@ -122,24 +122,30 @@ bool Configurator::_isValidErrorCode(const std::string &string) {
 
 bool Configurator::_isValidErrorPageConfig(std::string &string) {
 	std::string cleanInput = utils::trim(string);
-//	std::cout << "clean input is: " << cleanInput << std::endl;
 	size_t splitPos = cleanInput.find_first_of(WHITESPACES);
-//	std::cout << "splitPos  is: " << splitPos << std::endl;
-//	std::cout << "size  is: " << string.size() << std::endl;
 
 	if (splitPos > string.size()) {
 		return false;
 	}
 	std::string errorCode = cleanInput.substr(0, splitPos);
-//	std::cout << "errorCode is: " << errorCode << std::endl;
-
 	std::string errorPath = cleanInput.substr(splitPos, cleanInput.size());
 	errorPath = utils::ltrim(errorPath);
-//	std::cout << "errorPath is: " << errorPath << std::endl;
-
 	if (!Configurator::_isValidErrorCode(errorCode) || !Configurator::_isValidPath(errorPath)) {
 		return false;
 	}
+	return true;
+}
+
+/**
+ * BODY SIZE
+ */
+bool Configurator::_isValidBodySize(std::string &string) {
+	std::string cleanInput = utils::trim(string);
+	if (string.find_first_of("KMGkmg") != string.size() - 1) {
+		return false;
+	}
+
+
 	return true;
 }
 

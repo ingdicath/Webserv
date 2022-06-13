@@ -144,6 +144,7 @@ int main(){
 //		std::string str2 = "localhost";
 		std::string str3 = "		  505   			/localhost"     ;
 //		std::string str4 = "-510";
+		std::string str5 = "300 K";
 //		if (!utils::isPositiveNumber(str)){
 //			std::cerr << "no valid number" << std::endl;
 //		}

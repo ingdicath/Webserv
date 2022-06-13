@@ -23,6 +23,7 @@ public:
 	static bool _isValidPath(const std::string &path);
 	static bool _isValidErrorCode(const std::string &string);
 	static bool _isValidErrorPageConfig(std::string &string);
+	static bool _isValidBodySize(std::string &string);
 	void _checkServerName(const std::string& port);
 
 private:

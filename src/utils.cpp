@@ -59,5 +59,4 @@ namespace utils {
 	}
 
 
-
 } // end namespace utils
