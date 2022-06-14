@@ -32,7 +32,7 @@
 #define BOLDWHITE   "\033[1m\033[37m"
 
 /** Default server values **/
-#define DEFAULT_CLIENT_MAX_BODY_SIZE 10000000 // 10MB
+#define DEFAULT_CLIENT_MAX_BODY_SIZE 10000000 // (in B), 10000KB, 10MB, 0.01GB
 #define DEFAULT_PORT 80
 #define DEFAULT_ADDRESS "0.0.0.0"
 #define DEFAULT_ROOT "/www"

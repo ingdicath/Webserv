@@ -14,18 +14,80 @@ Configurator::Configurator() {}
 
 Configurator::~Configurator() {}
 
-std::pair<std::string, std::string> Configurator::splitDirective(std::string &input) {
+//std::pair<std::string, std::string> Configurator::splitDirective2(std::string &input) {
+//	std::string cleanInput = utils::trim(input);
+//	size_t splitPos = cleanInput.find_first_of(WHITESPACES);
+//
+//	if (splitPos > input.size()) {
+//		throw std::runtime_error("Config error: unbalanced directive.");
+//	}
+//	std::string directive = cleanInput.substr(0, splitPos);
+//	std::string directiveValue = cleanInput.substr(splitPos, cleanInput.size());
+//
+//	return std::pair<std::string, std::string>(utils::trim(directive), utils::trim(directiveValue));
+//}
+
+
+//option 2 for split directives
+std::pair<std::string, std::vector<std::string> > Configurator::splitDirective(std::string &input) {
 	std::string cleanInput = utils::trim(input);
 	size_t splitPos = cleanInput.find_first_of(WHITESPACES);
 
-	if (splitPos > input.size()) {
+	if (splitPos > input.size()) { // check if key and value exists
 		throw std::runtime_error("Config error: unbalanced directive.");
 	}
 	std::string directive = cleanInput.substr(0, splitPos);
 	std::string directiveValue = cleanInput.substr(splitPos, cleanInput.size());
+	std::vector<std::string> directiveValues;
 
-	return std::pair<std::string, std::string>(utils::trim(directive), utils::trim(directiveValue));
+	std::cout << " direective: " << directive << std::endl;
+	std::cout << " cleanInut: " << cleanInput << std::endl;
+	while (true) {
+		directiveValue = utils::trim(directiveValue);
+		splitPos = directiveValue.find_first_of(WHITESPACES);
+
+		std::string value = directiveValue.substr(0, splitPos);
+		directiveValues.push_back(value);
+		if (splitPos > directiveValue.size()) {
+			break;
+		}
+		directiveValue = directiveValue.substr(splitPos, directiveValue.size() - 1);
+	}
+
+	for (size_t i = 0; i < directiveValues.size(); i++) {
+		std::cout << "values are at: " << i << " " << directiveValues.at(i) << std::endl;
+	}
+
+
+//	// seccion volver directive value en un vector de valores limpios
+//	std::string directiveValue = cleanInput.substr(splitPos, cleanInput.size());
+//	directiveValue = utils::lTrim(directiveValue); //remove left spaces
+////	size_t splitPos1 = directiveValue.find_first_of(WHITESPACES);
+//
+//
+//
+//	std::vector<std::string> valueSplit;
+//
+//	//fin
+
+	return std::pair<std::string, std::vector<std::string> >(utils::trim(directive), directiveValues);
 }
+
+
+
+//std::vector<std::string> Configurator::splitDirectiveValues(std::string &input) {
+//	std::string cleanInput = utils::trim(input);
+//	size_t splitPos = cleanInput.find_first_of(WHITESPACES);
+//
+//	if (splitPos > input.size()) {
+//		throw std::runtime_error("Config error: unbalanced directive.");
+//	}
+//	std::string directive = cleanInput.substr(0, splitPos);
+//	std::string directiveValue = cleanInput.substr(splitPos, cleanInput.size());
+//
+//	return std::pair<std::string, std::string>(utils::trim(directive), utils::trim(directiveValue));
+//}
+
 
 // Translate strings to enums to allow work with switch case
 Configurator::eDirectives Configurator::resolveDirective(const std::string &input) {
@@ -149,14 +211,15 @@ bool Configurator::_isValidBodySize(std::string &string) {
 	if (string.find_first_of("KMGkmg") != string.size() - 1) {
 		return false;
 	}
-	cleanInput[cleanInput.size() - 1] = std::toupper(cleanInput[cleanInput.size() - 1]); //convert to uppercase last letter
+	cleanInput[cleanInput.size() - 1] = std::toupper(
+			cleanInput[cleanInput.size() - 1]); //convert to uppercase last letter
 	std::cout << "clean input is 2: " << cleanInput << std::endl; //delete
 
-	if (cleanInput[cleanInput.size() - 1] == 'K'){
+	if (cleanInput[cleanInput.size() - 1] == 'K') {
 		cleanInput = utils::deleteLastOf('K', cleanInput);
-	} else if (cleanInput[cleanInput.size() - 1] == 'M'){
+	} else if (cleanInput[cleanInput.size() - 1] == 'M') {
 		cleanInput = utils::deleteLastOf('M', cleanInput);
-	} else{
+	} else {
 		cleanInput = utils::deleteLastOf('G', cleanInput);
 	}
 	std::cout << "clean input is 3: " << cleanInput << std::endl; //delete
@@ -165,15 +228,55 @@ bool Configurator::_isValidBodySize(std::string &string) {
 //		throw std::logic_error("Config error: invalid client max body size.");
 //	}
 	size_t bodySize = utils::stringToPositiveNum(cleanInput);
-	if (bodySize <= 0 || bodySize > DEFAULT_CLIENT_MAX_BODY_SIZE){
+	if (bodySize <= 0 || bodySize > DEFAULT_CLIENT_MAX_BODY_SIZE) {
 		throw std::out_of_range("Config error: invalid client max body size.");
 	}
 	return true;
 }
 
+
 /**
- * CLIENT MAX BODY SIZE
+ * ROOT - check this
  */
+// https://www.youtube.com/watch?v=ewqX1IuYzC8 for realpath explanation
+
+bool Configurator::_isValidRoot(std::string &string) {
+	std::string cleanInput = utils::trim(string);
+	if (cleanInput.find_last_of('/') == cleanInput.size() - 1 && cleanInput.size() != 1) {
+		throw std::runtime_error("Config error: root can't be a directory.");
+	}
+	// resolve a pathname - get the absolute path of a file
+	if (cleanInput[0] != '/'){
+		char realPath[4096];
+		realpath(cleanInput.c_str(), realPath);
+		cleanInput = realPath;
+		std::cout << "cleanInput is : " << cleanInput << std::endl;
+		std::cout << "real path is: " << realPath << std::endl;
+	}
+	return true;
+}
+
+/**
+ * ALLOWED METHODS
+ */
+
+bool Configurator::_isValidAllowedMethod(std::string string) {
+	std::string cleanInput = utils::trim(string);
+
+	size_t splitPos = cleanInput.find_first_of(WHITESPACES);
+	std::cout << "splitPos is : " << splitPos << std::endl;
+	std::cout << "cleanInput is: " << cleanInput << std::endl;
+	std::cout << "cleanInput.size() is: " << cleanInput.size() << std::endl;
+
+	if (splitPos > cleanInput.size()) {
+		return false;
+	}
+
+	return  true;
+}
+
+
+
 
 
 

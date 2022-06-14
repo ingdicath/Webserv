@@ -134,37 +134,83 @@ int main(int argc, char **argv) {
 */
 
 
- // test atoi vs stringstream
+// test atoi vs stringstream
 #include <typeinfo>
 
-int main(){
-	try{
+int main() {
+	try {
 //		std::string str = "454528";
-//		std::string str1 = "1.1.1.255.";
-//		std::string str2 = "localhost";
-//		std::string str3 = "		  505   			/localhost"     ;
-//		std::string str4 = "-510";
-		std::string str5 = "15555555555555500G";
 //		if (!utils::isPositiveNumber(str)){
 //			std::cerr << "no valid number" << std::endl;
 //		}
 //		size_t res = utils::stringToPositiveNum(str);
 //		Configurator::_isValidPortRange(str);
 
+//		std::string str1 = "1.1.1.255.";
 //		bool res = Configurator::_isValidIpv4Address(str1);
 //		std::cout << std::boolalpha << "answer is: " <<  res << std::endl;
 
+//		std::string str2 = "localhost";
 //		bool res1 = Configurator::_isValidIpPort(str2);
 //		std::cout << std::boolalpha << "answer is d: " <<  res1 << std::endl;
 
+//		std::string str3 = "		  505   			/localhost"     ;
 //		bool res2 = Configurator::_isValidErrorPageConfig(str3);
 //		std::cout << std::boolalpha << "answer for path is: " <<  res2 << std::endl;
 
+//		std::string str4 = "-510";
 //		bool res3 = Configurator::_isValidErrorCode(str4);
 //		std::cout << std::boolalpha << "answer for error code is: " <<  res3 << std::endl;
 
-		bool res4 = Configurator::_isValidBodySize(str5);
-		std::cout << std::boolalpha << "answer for body size is: " <<  res4 << std::endl;
+//		std::string str5 = "155555500G";
+//		bool res4 = Configurator::_isValidBodySize(str5);
+//		std::cout << std::boolalpha << "answer for body size is: " <<  res4 << std::endl;
+
+//		std::string str6 = "Location.hpp";
+//		bool res5 = Configurator::_isValidRoot(str6);
+//		std::cout << std::boolalpha << "answer for root is: " << res5 << std::endl;
+
+//		std::string str7 = "     get 	GET   post				";
+//		bool res6 = Configurator::_isValidAllowedMethod(str7);
+//		std::cout << std::boolalpha << "answer for allowed method is: " << res6 << std::endl;
+//
+//		std::vector<std::string> directiveValues;
+		std::string input = "   	allowed_methods   GET		get POST          DELETE";
+		Configurator::splitDirective(input);
+
+//		std::string cleanInput = utils::trim(input);
+//		size_t splitPos = cleanInput.find_first_of(WHITESPACES);
+//		std::string a = cleanInput.substr(0, splitPos);
+//		directiveValues.push_back(a);
+//
+//		std::string b = cleanInput.substr(splitPos, cleanInput.size() - 1);
+//		b = utils::trim(b);
+//		size_t splitPos1 = b.find_first_of(WHITESPACES);
+//		std::string c = b.substr(0, splitPos1);
+//		directiveValues.push_back(c);
+
+//		std::string cleanInput = utils::trim(input);
+
+
+//		while (true) {
+//			input = utils::trim(input);
+//			size_t splitPos = input.find_first_of(WHITESPACES);
+//
+//			std::string value = input.substr(0, splitPos);
+//			directiveValues.push_back(value);
+//			if (splitPos > input.size()) {
+//				break;
+//			}
+//			input = input.substr(splitPos, input.size() - 1);
+//		}
+//
+//		for (size_t i = 0; i < directiveValues.size(); i++) {
+//			std::cout << "values are at: " << i << " " << directiveValues.at(i) << std::endl;
+//		}
+
+
+
+
 
 //		std::cout << "res is: " << res << std::endl;
 //		std::cout << typeid(res).name() << std::endl;
@@ -175,7 +221,7 @@ int main(){
 //		size_t num1 = std::stoi(str);
 //
 //		std::cout << typeid(num1).name() << 	num1 << std::endl;
-	} catch (std::exception &e){
+	} catch (std::exception &e) {
 		std::cerr << PURPLE << e.what() << RESET << std::endl;
 	}
 	return 0;

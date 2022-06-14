@@ -5,6 +5,7 @@
 #pragma once
 
 #include <string>
+#include <ostream>
 #include "Server.hpp"
 
 class Configurator {
@@ -13,7 +14,8 @@ public:
 
 	virtual ~Configurator();
 
-	static std::pair<std::string, std::string> splitDirective(std::string &input); // become private later
+//	static std::pair<std::string, std::string> splitDirective2(std::string &input); // become private later
+	static std::pair<std::string, std::vector<std::string> > splitDirective(std::string &input);
 
 
 	static bool _isValidPortRange(const std::string& port);
@@ -24,6 +26,8 @@ public:
 	static bool _isValidErrorCode(const std::string &string);
 	static bool _isValidErrorPageConfig(std::string &string);
 	static bool _isValidBodySize(std::string &string);
+	static bool _isValidRoot(std::string &string);
+	static bool _isValidAllowedMethod(std::string string);
 	void _checkServerName(const std::string& port);
 
 private:
@@ -42,6 +46,8 @@ private:
 		REDIRECTION,
 		INVALID
 	};
+
+private:
 
 	static eDirectives resolveDirective(const std::string &input);
 
