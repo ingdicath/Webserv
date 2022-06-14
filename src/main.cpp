@@ -142,9 +142,9 @@ int main(){
 //		std::string str = "454528";
 //		std::string str1 = "1.1.1.255.";
 //		std::string str2 = "localhost";
-		std::string str3 = "		  505   			/localhost"     ;
+//		std::string str3 = "		  505   			/localhost"     ;
 //		std::string str4 = "-510";
-		std::string str5 = "300 K";
+		std::string str5 = "15555555555555500G";
 //		if (!utils::isPositiveNumber(str)){
 //			std::cerr << "no valid number" << std::endl;
 //		}
@@ -157,10 +157,14 @@ int main(){
 //		bool res1 = Configurator::_isValidIpPort(str2);
 //		std::cout << std::boolalpha << "answer is d: " <<  res1 << std::endl;
 
-		bool res2 = Configurator::_isValidErrorPageConfig(str3);
-		std::cout << std::boolalpha << "answer for path is: " <<  res2 << std::endl;
+//		bool res2 = Configurator::_isValidErrorPageConfig(str3);
+//		std::cout << std::boolalpha << "answer for path is: " <<  res2 << std::endl;
+
 //		bool res3 = Configurator::_isValidErrorCode(str4);
 //		std::cout << std::boolalpha << "answer for error code is: " <<  res3 << std::endl;
+
+		bool res4 = Configurator::_isValidBodySize(str5);
+		std::cout << std::boolalpha << "answer for body size is: " <<  res4 << std::endl;
 
 //		std::cout << "res is: " << res << std::endl;
 //		std::cout << typeid(res).name() << std::endl;

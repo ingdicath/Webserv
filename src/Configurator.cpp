@@ -129,7 +129,7 @@ bool Configurator::_isValidErrorPageConfig(std::string &string) {
 	}
 	std::string errorCode = cleanInput.substr(0, splitPos);
 	std::string errorPath = cleanInput.substr(splitPos, cleanInput.size());
-	errorPath = utils::ltrim(errorPath);
+	errorPath = utils::lTrim(errorPath);
 	if (!Configurator::_isValidErrorCode(errorCode) || !Configurator::_isValidPath(errorPath)) {
 		return false;
 	}
@@ -138,14 +138,36 @@ bool Configurator::_isValidErrorPageConfig(std::string &string) {
 
 /**
  * BODY SIZE
+ * how check overflow client_body_size?
+ * Is 0 a valid value for body size?
+ * Will we predefine a max body size client?
  */
 bool Configurator::_isValidBodySize(std::string &string) {
 	std::string cleanInput = utils::trim(string);
+
+	std::cout << "clean input is 1: " << cleanInput << std::endl;  //delete
 	if (string.find_first_of("KMGkmg") != string.size() - 1) {
 		return false;
 	}
+	cleanInput[cleanInput.size() - 1] = std::toupper(cleanInput[cleanInput.size() - 1]); //convert to uppercase last letter
+	std::cout << "clean input is 2: " << cleanInput << std::endl; //delete
 
+	if (cleanInput[cleanInput.size() - 1] == 'K'){
+		cleanInput = utils::deleteLastOf('K', cleanInput);
+	} else if (cleanInput[cleanInput.size() - 1] == 'M'){
+		cleanInput = utils::deleteLastOf('M', cleanInput);
+	} else{
+		cleanInput = utils::deleteLastOf('G', cleanInput);
+	}
+	std::cout << "clean input is 3: " << cleanInput << std::endl; //delete
 
+//	if (!utils::isPositiveNumber(cleanInput)){
+//		throw std::logic_error("Config error: invalid client max body size.");
+//	}
+	size_t bodySize = utils::stringToPositiveNum(cleanInput);
+	if (bodySize <= 0 || bodySize > DEFAULT_CLIENT_MAX_BODY_SIZE){
+		throw std::out_of_range("Config error: invalid client max body size.");
+	}
 	return true;
 }
 

@@ -42,21 +42,30 @@ namespace utils {
 	}
 
 // trim from end of string (right)
-	std::string &rtrim(std::string &str) {
+	std::string &rTrim(std::string &str) {
 		str.erase(str.find_last_not_of(WHITESPACES) + 1);
 		return str;
 	}
 
 // trim from beginning of string (left)
-	std::string &ltrim(std::string &str) {
+	std::string &lTrim(std::string &str) {
 		str.erase(0, str.find_first_not_of(WHITESPACES));
 		return str;
 	}
 
 // trim from both ends of string (right then left)
 	std::string &trim(std::string &str) {
-		return ltrim(rtrim(str));
+		return lTrim(rTrim(str));
 	}
 
+
+	std::string deleteLastOf(char toSearch, std::string str) {
+		size_t pos = str.find_last_of(toSearch);
+		std::string cleanStr;
+		if (pos != std::string::npos) {
+			cleanStr = str.erase(pos, pos + 1);
+		}
+		return cleanStr;
+	}
 
 } // end namespace utils
