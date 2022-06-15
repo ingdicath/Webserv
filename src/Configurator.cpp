@@ -4,6 +4,8 @@
 
 #include <vector>
 #include <string>
+#include <set>
+#include <iterator>
 #include "Configurator.hpp"
 #include "Server.hpp"
 #include "settings.hpp"
@@ -34,14 +36,13 @@ std::pair<std::string, std::vector<std::string> > Configurator::splitDirective(s
 	size_t splitPos = cleanInput.find_first_of(WHITESPACES);
 
 	if (splitPos > input.size()) { // check if key and value exists
-		throw std::runtime_error("Config error: unbalanced directive.");
+		throw std::runtime_error("Config error: unbalanced directive Key.");
 	}
-	std::string directive = cleanInput.substr(0, splitPos);
+	std::string directiveKey = cleanInput.substr(0, splitPos);
 	std::string directiveValue = cleanInput.substr(splitPos, cleanInput.size());
 	std::vector<std::string> directiveValues;
 
-	std::cout << " direective: " << directive << std::endl;
-	std::cout << " cleanInut: " << cleanInput << std::endl;
+	std::cout << "directive: " << directiveKey << std::endl; //delete
 	while (true) {
 		directiveValue = utils::trim(directiveValue);
 		splitPos = directiveValue.find_first_of(WHITESPACES);
@@ -51,29 +52,18 @@ std::pair<std::string, std::vector<std::string> > Configurator::splitDirective(s
 		if (splitPos > directiveValue.size()) {
 			break;
 		}
-		directiveValue = directiveValue.substr(splitPos, directiveValue.size() - 1);
+		directiveValue = directiveValue.substr(splitPos, directiveValue.size());
 	}
 
+	//delete
 	for (size_t i = 0; i < directiveValues.size(); i++) {
 		std::cout << "values are at: " << i << " " << directiveValues.at(i) << std::endl;
 	}
+//	_isValidListenValues(directiveValues); //delete
+	_isValidErrorPageConfig(directiveValues);
 
-
-//	// seccion volver directive value en un vector de valores limpios
-//	std::string directiveValue = cleanInput.substr(splitPos, cleanInput.size());
-//	directiveValue = utils::lTrim(directiveValue); //remove left spaces
-////	size_t splitPos1 = directiveValue.find_first_of(WHITESPACES);
-//
-//
-//
-//	std::vector<std::string> valueSplit;
-//
-//	//fin
-
-	return std::pair<std::string, std::vector<std::string> >(utils::trim(directive), directiveValues);
+	return std::pair<std::string, std::vector<std::string> >(utils::trim(directiveKey), directiveValues);
 }
-
-
 
 //std::vector<std::string> Configurator::splitDirectiveValues(std::string &input) {
 //	std::string cleanInput = utils::trim(input);
@@ -89,22 +79,14 @@ std::pair<std::string, std::vector<std::string> > Configurator::splitDirective(s
 //}
 
 
-// Translate strings to enums to allow work with switch case
-Configurator::eDirectives Configurator::resolveDirective(const std::string &input) {
-	if (input == "listen") return LISTEN;
-	if (input == "server_name") return SERVER_NAME;
-	if (input == "error_page") return ERROR_PAGE;
-	if (input == "client_max_body_size") return BODY_SIZE;
-	if (input == "location") return ROUTE_LOCATION; // Check this
-	if (input == "root") return ROOT;
-	if (input == "accepted_methods") return ACCEPTED_METHODS;
-	if (input == "index") return INDEX;
-	if (input == "autoindex") return AUTOINDEX;
-	if (input == "cgi") return CGI;
-	if (input == "upload") return UPLOAD;
-	if (input == "redirection") return REDIRECTION;
-	return INVALID;
+void printSet(const std::set<std::string> mySet){
+	std::cout << "myset contains:";
+	for (auto it = mySet.begin(); it != mySet.end(); ++it) {
+		std::cout << ' ' << *it;
+	}
+	std::cout << std::endl;
 }
+
 
 /**
  * LISTEN
@@ -158,14 +140,84 @@ bool Configurator::_isValidIpPort(const std::string &listenValue) {
 	}
 }
 
+bool Configurator::_isValidListenValues(std::vector<std::string> values) {
+	std::set<std::string> mySet;
+	for (size_t i = 0; i < values.size(); i++) {
+		if (!_isValidIpPort(values[i])) {
+			throw std::runtime_error("Config error: invalid listen values.");
+		}
+		if (!mySet.insert(values[i]).second) {
+			throw std::runtime_error("Config error: duplicate value in listen.");
+		}
+	}
+
+	printSet(mySet); 	// delete
+
+	return true;
+}
+
+
+//bool Configurator::_isValidPortRange(std::vector<std::string> values) {
+//	size_t portNumber;
+//	std::set<std::size_t> setPort;
+//	for (size_t i = 0; i < values.size(); i++) {
+//		portNumber = utils::stringToPositiveNum(values[i]);
+//		if (portNumber < MIN_PORT_NUMBER || portNumber > MAX_PORT_NUMBER) {
+//			throw std::runtime_error("Config error: invalid port value.");
+//		}
+//		if (!setPort.insert(portNumber).second) {
+//			throw std::runtime_error("Config error: duplicate value in listen.");
+//		}
+//	}
+//
+//	// delete
+//	std::cout << "myset contains:";
+//	for (auto it = setPort.begin(); it != setPort.end(); ++it) {
+//		std::cout << ' ' << *it;
+//	}
+//	std::cout << std::endl;
+//
+//	return true;
+//}
+
+
+
+
 /**
  * ERROR PAGES
  */
+
+
+bool Configurator::_isValidErrorPageConfig(std::vector<std::string> values) {
+	if (values.size() != 2) {
+		throw std::runtime_error("Config error: invalid args for error pages directive.");
+	}
+	if (!_isValidErrorCode(values[0])) {
+		throw std::runtime_error("Config error: invalid path.");
+	}
+	if (!_isValidPath(values[1])) {
+		throw std::runtime_error("Config error: invalid path.");
+	}
+	std::set<std::string> mySet;
+	for (size_t i = 0; i < values.size(); ++i) {
+		if (!mySet.insert(values[i]).second) {
+			throw std::runtime_error("Config error: duplicate value in listen.");
+		}
+	}
+
+	printSet(mySet); 	// delete
+
+	return true;
+}
+
 
 // check if this validation is necessary
 bool Configurator::_isValidPath(const std::string &path) {
 	if (path[0] != '/') {
 		return false;
+	}
+	if (path.find_last_of('/') == path.size() - 1 && path.size() != 1) {
+		throw std::runtime_error("Config error: path can't be a directory.");
 	}
 	return true;
 }
@@ -177,7 +229,7 @@ bool Configurator::_isValidErrorCode(const std::string &string) {
 	}
 	size_t errorCode = utils::stringToPositiveNum(string);
 	if (errorCode < 300 || errorCode > 506) {
-		throw std::runtime_error("Invalid error code.");
+		throw std::runtime_error("Config error: Invalid error code.");
 	}
 	return true;
 }
@@ -246,7 +298,7 @@ bool Configurator::_isValidRoot(std::string &string) {
 		throw std::runtime_error("Config error: root can't be a directory.");
 	}
 	// resolve a pathname - get the absolute path of a file
-	if (cleanInput[0] != '/'){
+	if (cleanInput[0] != '/') {
 		char realPath[4096];
 		realpath(cleanInput.c_str(), realPath);
 		cleanInput = realPath;
@@ -272,8 +324,9 @@ bool Configurator::_isValidAllowedMethod(std::string string) {
 		return false;
 	}
 
-	return  true;
+	return true;
 }
+
 
 
 
@@ -289,6 +342,22 @@ bool Configurator::_isValidAllowedMethod(std::string string) {
 //}
 
 
+// Translate strings to enums to allow work with switch case
+Configurator::eDirectives Configurator::resolveDirective(const std::string &input) {
+	if (input == "listen") return LISTEN;
+	if (input == "server_name") return SERVER_NAME;
+	if (input == "error_page") return ERROR_PAGE;
+	if (input == "client_max_body_size") return BODY_SIZE;
+	if (input == "location") return ROUTE_LOCATION; // Check this
+	if (input == "root") return ROOT;
+	if (input == "accepted_methods") return ACCEPTED_METHODS;
+	if (input == "index") return INDEX;
+	if (input == "autoindex") return AUTOINDEX;
+	if (input == "cgi") return CGI;
+	if (input == "upload") return UPLOAD;
+	if (input == "redirection") return REDIRECTION;
+	return INVALID;
+}
 
 
 

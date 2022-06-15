@@ -133,12 +133,22 @@ int main(int argc, char **argv) {
 }
 */
 
-
+// set::insert (C++98)
+#include <iostream>
+#include <set>
 // test atoi vs stringstream
 #include <typeinfo>
 
 int main() {
 	try {
+		std::string input1 = "   	allowed_methods   GET		get POST          DELETE";
+		std::string input = "   	listen   127.0.0.1:8000	8000	80         localhost:8000  	9090";
+		std::string input2 = "		  error_page   	 404    /404.html		";
+		Configurator::splitDirective(input2);
+
+
+
+
 //		std::string str = "454528";
 //		if (!utils::isPositiveNumber(str)){
 //			std::cerr << "no valid number" << std::endl;
@@ -175,8 +185,8 @@ int main() {
 //		std::cout << std::boolalpha << "answer for allowed method is: " << res6 << std::endl;
 //
 //		std::vector<std::string> directiveValues;
-		std::string input = "   	allowed_methods   GET		get POST          DELETE";
-		Configurator::splitDirective(input);
+//		std::string input = "   	allowed_methods   GET		get POST          DELETE";
+//		Configurator::splitDirective(input);
 
 //		std::string cleanInput = utils::trim(input);
 //		size_t splitPos = cleanInput.find_first_of(WHITESPACES);
@@ -192,21 +202,7 @@ int main() {
 //		std::string cleanInput = utils::trim(input);
 
 
-//		while (true) {
-//			input = utils::trim(input);
-//			size_t splitPos = input.find_first_of(WHITESPACES);
-//
-//			std::string value = input.substr(0, splitPos);
-//			directiveValues.push_back(value);
-//			if (splitPos > input.size()) {
-//				break;
-//			}
-//			input = input.substr(splitPos, input.size() - 1);
-//		}
-//
-//		for (size_t i = 0; i < directiveValues.size(); i++) {
-//			std::cout << "values are at: " << i << " " << directiveValues.at(i) << std::endl;
-//		}
+
 
 
 
