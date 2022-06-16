@@ -12,6 +12,7 @@ INC_DIR := includes/
 
 # Flags
 FLAGS = -Wall -Wextra -Werror -std=c++98 -pedantic
+#FLAGS = -Wall -Wextra -pedantic
 IFLAGS := -I$(INC_DIR)
 FLAGS += $(IFLAGS)
 

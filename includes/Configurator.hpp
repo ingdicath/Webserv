@@ -9,14 +9,21 @@
 #include <set>
 #include "Server.hpp"
 
+struct Directive {
+	std::string key;
+	std::vector<std::string> value;
+};
+
 class Configurator {
 public:
 	Configurator();
 
 	virtual ~Configurator();
 
+
 //	static std::pair<std::string, std::string> splitDirective2(std::string &input); // become private later
-	static std::pair<std::string, std::vector<std::string> > splitDirective(std::string &input);
+//	static std::pair<std::string, std::vector<std::string> > splitDirective(std::string &input);
+	static Directive splitDirective(std::string &input);
 
 /** listen */
 
@@ -32,18 +39,19 @@ public:
 	static bool _isValidListenValues(std::vector<std::string> values);
 
 
-	static bool _isValidPath(const std::string &path);
-
-
 /** error codes and error page */
 
 	static bool _isValidErrorPageConfig(std::vector<std::string> values);
+//	static bool _isValidErrorPageConfig(std::string &string);
+
+	static bool _isValidPath(const std::string &path);
 
 	static bool _isValidErrorCode(const std::string &string);
 
-	static bool _isValidErrorPageConfig(std::string &string);
+/** client max body size */
 
-	static bool _isValidBodySize(std::string &string);
+	static bool _isValidBodySize(std::vector<std::string> values);
+//	static bool _isValidBodySize(std::string &string);
 
 	static bool _isValidRoot(std::string &string);
 
@@ -68,7 +76,7 @@ private:
 		INVALID
 	};
 
-private:
+
 	std::set<std::string> _listen;
 
 	static eDirectives resolveDirective(const std::string &input);

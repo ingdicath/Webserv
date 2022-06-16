@@ -31,7 +31,7 @@ Configurator::~Configurator() {}
 
 
 //option 2 for split directives
-std::pair<std::string, std::vector<std::string> > Configurator::splitDirective(std::string &input) {
+Directive Configurator::splitDirective(std::string &input) {
 	std::string cleanInput = utils::trim(input);
 	size_t splitPos = cleanInput.find_first_of(WHITESPACES);
 
@@ -56,13 +56,19 @@ std::pair<std::string, std::vector<std::string> > Configurator::splitDirective(s
 	}
 
 	//delete
-	for (size_t i = 0; i < directiveValues.size(); i++) {
-		std::cout << "values are at: " << i << " " << directiveValues.at(i) << std::endl;
-	}
-//	_isValidListenValues(directiveValues); //delete
-	_isValidErrorPageConfig(directiveValues);
+//	for (size_t i = 0; i < directiveValues.size(); i++) {
+//		std::cout << "values are at: " << i << " " << directiveValues.at(i) << std::endl;
+//	}
+	_isValidListenValues(directiveValues); //delete
+//	_isValidErrorPageConfig(directiveValues);
+	Directive directive;
+	directive.key = utils::trim(directiveKey);
+	directive.value = directiveValues;
+//(utils::trim(directiveKey),directiveValues);
 
-	return std::pair<std::string, std::vector<std::string> >(utils::trim(directiveKey), directiveValues);
+//	Directive directive2(utils::trim(directiveKey),directiveValues);
+	return directive;
+
 }
 
 //std::vector<std::string> Configurator::splitDirectiveValues(std::string &input) {
@@ -78,14 +84,15 @@ std::pair<std::string, std::vector<std::string> > Configurator::splitDirective(s
 //	return std::pair<std::string, std::string>(utils::trim(directive), utils::trim(directiveValue));
 //}
 
-
-void printSet(const std::set<std::string> mySet){
-	std::cout << "myset contains:";
-	for (auto it = mySet.begin(); it != mySet.end(); ++it) {
-		std::cout << ' ' << *it;
-	}
-	std::cout << std::endl;
-}
+////delete, used for testing purposes
+//void printSet(const std::set<std::string> mySet){
+//	std::cout << "my set contains:";
+////	std::set<int>::iterator it;
+//	for (auto it = mySet.begin(); it != mySet.end(); ++it) {
+//		std::cout << ' ' << *it;
+//	}
+//	std::cout << std::endl;
+//}
 
 
 /**
@@ -151,7 +158,7 @@ bool Configurator::_isValidListenValues(std::vector<std::string> values) {
 		}
 	}
 
-	printSet(mySet); 	// delete
+//	printSet(mySet); 	// delete
 
 	return true;
 }
@@ -205,7 +212,7 @@ bool Configurator::_isValidErrorPageConfig(std::vector<std::string> values) {
 		}
 	}
 
-	printSet(mySet); 	// delete
+//	printSet(mySet); 	// delete
 
 	return true;
 }
@@ -233,22 +240,22 @@ bool Configurator::_isValidErrorCode(const std::string &string) {
 	}
 	return true;
 }
-
-bool Configurator::_isValidErrorPageConfig(std::string &string) {
-	std::string cleanInput = utils::trim(string);
-	size_t splitPos = cleanInput.find_first_of(WHITESPACES);
-
-	if (splitPos > string.size()) {
-		return false;
-	}
-	std::string errorCode = cleanInput.substr(0, splitPos);
-	std::string errorPath = cleanInput.substr(splitPos, cleanInput.size());
-	errorPath = utils::lTrim(errorPath);
-	if (!Configurator::_isValidErrorCode(errorCode) || !Configurator::_isValidPath(errorPath)) {
-		return false;
-	}
-	return true;
-}
+//
+//bool Configurator::_isValidErrorPageConfig(std::string &string) {
+//	std::string cleanInput = utils::trim(string);
+//	size_t splitPos = cleanInput.find_first_of(WHITESPACES);
+//
+//	if (splitPos > string.size()) {
+//		return false;
+//	}
+//	std::string errorCode = cleanInput.substr(0, splitPos);
+//	std::string errorPath = cleanInput.substr(splitPos, cleanInput.size());
+//	errorPath = utils::lTrim(errorPath);
+//	if (!Configurator::_isValidErrorCode(errorCode) || !Configurator::_isValidPath(errorPath)) {
+//		return false;
+//	}
+//	return true;
+//}
 
 /**
  * BODY SIZE
@@ -256,6 +263,37 @@ bool Configurator::_isValidErrorPageConfig(std::string &string) {
  * Is 0 a valid value for body size?
  * Will we predefine a max body size client?
  */
+
+//bool Configurator::_isValidBodySize(std::vector<std::string> values) {
+//
+//
+//	if (string.find_first_of("KMGkmg") != string.size() - 1) {
+//		return false;
+//	}
+//	cleanInput[cleanInput.size() - 1] = std::toupper(
+//			cleanInput[cleanInput.size() - 1]); //convert to uppercase last letter
+//	std::cout << "clean input is 2: " << cleanInput << std::endl; //delete
+//
+//	if (cleanInput[cleanInput.size() - 1] == 'K') {
+//		cleanInput = utils::deleteLastOf('K', cleanInput);
+//	} else if (cleanInput[cleanInput.size() - 1] == 'M') {
+//		cleanInput = utils::deleteLastOf('M', cleanInput);
+//	} else {
+//		cleanInput = utils::deleteLastOf('G', cleanInput);
+//	}
+//	std::cout << "clean input is 3: " << cleanInput << std::endl; //delete
+//
+////	if (!utils::isPositiveNumber(cleanInput)){
+////		throw std::logic_error("Config error: invalid client max body size.");
+////	}
+//	size_t bodySize = utils::stringToPositiveNum(cleanInput);
+//	if (bodySize <= 0 || bodySize > DEFAULT_CLIENT_MAX_BODY_SIZE) {
+//		throw std::out_of_range("Config error: invalid client max body size.");
+//	}
+//	return true;
+//}
+
+/*
 bool Configurator::_isValidBodySize(std::string &string) {
 	std::string cleanInput = utils::trim(string);
 
@@ -285,7 +323,7 @@ bool Configurator::_isValidBodySize(std::string &string) {
 	}
 	return true;
 }
-
+*/
 
 /**
  * ROOT - check this
@@ -358,6 +396,7 @@ Configurator::eDirectives Configurator::resolveDirective(const std::string &inpu
 	if (input == "redirection") return REDIRECTION;
 	return INVALID;
 }
+
 
 
 
