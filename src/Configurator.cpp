@@ -42,7 +42,6 @@ Directive Configurator::splitDirective(std::string &input) {
 	std::string directiveValue = cleanInput.substr(splitPos, cleanInput.size());
 	std::vector<std::string> directiveValues;
 
-	std::cout << "directive: " << directiveKey << std::endl; //delete
 	while (true) {
 		directiveValue = utils::trim(directiveValue);
 		splitPos = directiveValue.find_first_of(WHITESPACES);
@@ -59,8 +58,10 @@ Directive Configurator::splitDirective(std::string &input) {
 //	for (size_t i = 0; i < directiveValues.size(); i++) {
 //		std::cout << "values are at: " << i << " " << directiveValues.at(i) << std::endl;
 //	}
-	_isValidListenValues(directiveValues); //delete
-//	_isValidErrorPageConfig(directiveValues);
+//	_isValidListenValues(directiveValues); //delete
+//	_isValidErrorPageConfig(directiveValues); //delete
+	_isValidAllowedMethod(directiveValues);
+
 	Directive directive;
 	directive.key = utils::trim(directiveKey);
 	directive.value = directiveValues;
@@ -84,15 +85,15 @@ Directive Configurator::splitDirective(std::string &input) {
 //	return std::pair<std::string, std::string>(utils::trim(directive), utils::trim(directiveValue));
 //}
 
-////delete, used for testing purposes
-//void printSet(const std::set<std::string> mySet){
-//	std::cout << "my set contains:";
-////	std::set<int>::iterator it;
-//	for (auto it = mySet.begin(); it != mySet.end(); ++it) {
-//		std::cout << ' ' << *it;
-//	}
-//	std::cout << std::endl;
-//}
+//delete, used for testing purposes
+void printSet(const std::set<std::string> mySet){
+	std::cout << "my set contains:";
+//	std::set<int>::iterator it;
+	for (auto it = mySet.begin(); it != mySet.end(); ++it) {
+		std::cout << ' ' << *it;
+	}
+	std::cout << std::endl;
+}
 
 
 /**
@@ -157,9 +158,6 @@ bool Configurator::_isValidListenValues(std::vector<std::string> values) {
 			throw std::runtime_error("Config error: duplicate value in listen.");
 		}
 	}
-
-//	printSet(mySet); 	// delete
-
 	return true;
 }
 
@@ -200,7 +198,7 @@ bool Configurator::_isValidErrorPageConfig(std::vector<std::string> values) {
 		throw std::runtime_error("Config error: invalid args for error pages directive.");
 	}
 	if (!_isValidErrorCode(values[0])) {
-		throw std::runtime_error("Config error: invalid path.");
+		throw std::runtime_error("Config error: invalid error code.");
 	}
 	if (!_isValidPath(values[1])) {
 		throw std::runtime_error("Config error: invalid path.");
@@ -211,9 +209,7 @@ bool Configurator::_isValidErrorPageConfig(std::vector<std::string> values) {
 			throw std::runtime_error("Config error: duplicate value in listen.");
 		}
 	}
-
-//	printSet(mySet); 	// delete
-
+	printSet(mySet); //delete
 	return true;
 }
 
@@ -350,20 +346,19 @@ bool Configurator::_isValidRoot(std::string &string) {
  * ALLOWED METHODS
  */
 
-bool Configurator::_isValidAllowedMethod(std::string string) {
-	std::string cleanInput = utils::trim(string);
-
-	size_t splitPos = cleanInput.find_first_of(WHITESPACES);
-	std::cout << "splitPos is : " << splitPos << std::endl;
-	std::cout << "cleanInput is: " << cleanInput << std::endl;
-	std::cout << "cleanInput.size() is: " << cleanInput.size() << std::endl;
-
-	if (splitPos > cleanInput.size()) {
-		return false;
-	}
-
-	return true;
-}
+//bool Configurator::_isValidAllowedMethod(std::string string) {
+//	std::string cleanInput = utils::trim(string);
+//
+//	size_t splitPos = cleanInput.find_first_of(WHITESPACES);
+//	std::cout << "splitPos is : " << splitPos << std::endl;
+//	std::cout << "cleanInput is: " << cleanInput << std::endl;
+//	std::cout << "cleanInput.size() is: " << cleanInput.size() << std::endl;
+//
+//	if (splitPos > cleanInput.size()) {
+//		return false;
+//	}
+//	return true;
+//}
 
 
 

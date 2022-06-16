@@ -143,9 +143,10 @@ int main() {
 	try {
 		std::string input1 = "   	allowed_methods   GET		get POST          DELETE";
 		std::string input = "   	listen   127.0.0.1:8000	8000	80         localhost:8000  	9090";
-		std::string input2 = "		  error_page   	 404    /404.html		";
-		Directive res = Configurator::splitDirective(input);
-		std::cout << "res is: " << res.key << std::endl;
+		std::string input2 = "		  error_page   	 404   /404.html		";
+
+		Directive res = Configurator::splitDirective(input1);
+		std::cout << "res key is: " << res.key << std::endl;
 		for (size_t i = 0; i < res.value.size(); ++i) {
 			std::cout << "res second is: " << res.value.at(i) << std::endl;
 		}

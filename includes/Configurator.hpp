@@ -55,7 +55,10 @@ public:
 
 	static bool _isValidRoot(std::string &string);
 
-	static bool _isValidAllowedMethod(std::string string);
+
+/** allowed methods */
+//	static bool _isValidAllowedMethod(std::string string);
+	static bool _isValidAllowedMethod(std::vector<std::string> values);
 
 	void _checkServerName(const std::string &port);
 
