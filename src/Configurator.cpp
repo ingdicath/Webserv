@@ -6,6 +6,7 @@
 #include <string>
 #include <set>
 #include <iterator>
+#include <algorithm>
 #include "Configurator.hpp"
 #include "Server.hpp"
 #include "settings.hpp"
@@ -60,7 +61,7 @@ Directive Configurator::splitDirective(std::string &input) {
 //	}
 //	_isValidListenValues(directiveValues); //delete
 //	_isValidErrorPageConfig(directiveValues); //delete
-	_isValidAllowedMethod(directiveValues);
+	_isValidAllowedMethod(directiveValues); //delete
 
 	Directive directive;
 	directive.key = utils::trim(directiveKey);
@@ -184,9 +185,6 @@ bool Configurator::_isValidListenValues(std::vector<std::string> values) {
 //
 //	return true;
 //}
-
-
-
 
 /**
  * ERROR PAGES
@@ -346,6 +344,28 @@ bool Configurator::_isValidRoot(std::string &string) {
  * ALLOWED METHODS
  */
 
+
+bool Configurator::_isValidAllowedMethod(std::vector<std::string> values) {
+	std::set<std::string> mySet;
+
+	for (size_t i = 0; i < values.size(); i++) {
+		for(size_t j = 0; j != std::string::npos; j++){
+
+		}
+		std::transform(values.begin(), values.end(), values.begin(), std::ptr_fun<int, int>(std::toupper));
+		std::transform(values.begin()->at(i), values.end(), values.begin(), ::toupper);
+
+
+		if (!mySet.insert(values[i]).second) {
+			throw std::runtime_error("Config error: duplicate value in listen.");
+		}
+	}
+	printSet(mySet); //delete
+	return true;
+
+
+	return true;
+}
 //bool Configurator::_isValidAllowedMethod(std::string string) {
 //	std::string cleanInput = utils::trim(string);
 //
@@ -391,6 +411,8 @@ Configurator::eDirectives Configurator::resolveDirective(const std::string &inpu
 	if (input == "redirection") return REDIRECTION;
 	return INVALID;
 }
+
+
 
 
 
