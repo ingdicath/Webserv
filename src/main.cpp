@@ -146,9 +146,10 @@ int main() {
 		std::string input2 = "		  error_page   	 404   /404.html		";
 		std::string input3= "		  client_max_body_size   	404g 		";
 		std::string input4= "		  root 			root.homl  		";
-		std::string input5= "		  index 			pollo.HTML.  		";
+		std::string input5= "		  index 			pollo.HTMl 		";
+		std::string input6= "		  autoindex 		On  		";
 
-		Directive res = Configurator::splitDirective(input5);
+		Directive res = Configurator::splitDirective(input6);
 		std::cout << "res key is: " << res.key << std::endl;
 		for (size_t i = 0; i < res.value.size(); ++i) {
 			std::cout << "res second is: " << res.value.at(i) << std::endl;

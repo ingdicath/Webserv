@@ -50,7 +50,9 @@ Directive Configurator::splitDirective(std::string &input) {
 //	_isValidAllowedMethod(directiveValues); //delete
 //	_isValidBodySize(directiveValues); // delete
 //	_isValidRoot(directiveValues); //delete
-	_isValidIndex(directiveValues);//delete
+//	_isValidIndex(directiveValues);//delete
+	_isValidAutoIndex(directiveValues);//delete
+
 	Directive directive;
 	directive.key = utils::trim(directiveKey);
 	directive.value = directiveValues;
@@ -289,19 +291,63 @@ bool Configurator::_isValidAllowedMethod(std::vector<std::string> values) {
 
 /**
  * INDEX
+ * in this case it is allowed just one html page. See if we need to change this in the future
+ * to allow more than one page and also other extensions
  */
 
 bool Configurator::_isValidIndex(std::vector<std::string> values) {
+	if (values.size() != 1) {
+		throw std::runtime_error("Config error: invalid args for index.");
+	}
 	size_t lastPos = values[0].size() - 1;
 	if (values[0].find_last_of('/') == lastPos && values[0].size() != 1) {
 		throw std::runtime_error("Config error: index can't be a directory.");
 	}
 	std::string extension = values[0].substr(values[0].find_last_of('.') + 1);
 	extension = utils::stringToLower(extension);
-	if (extension != "html")
-		throw std::runtime_error("Config error: index can only has a html extension");
+	if (extension != "html") {
+		throw std::runtime_error("Config error: index can only have html extension");
+	}
 	return true;
 }
+
+
+/**
+ * AUTOINDEX
+ */
+
+bool Configurator::_isValidAutoIndex(std::vector<std::string> values) {
+	if (values.size() != 1) {
+		throw std::runtime_error("Config error: invalid args for autoindex directive.");
+	}
+	values[0] = utils::stringToLower(values[0]);
+	if (values[0] != "on" && values[0] != "off") {
+		throw std::runtime_error("Config error: invalid value in autoindex directive. '" + values[0] + "'");
+	}
+//	if (values[0] == "on") {
+//		_autoindex = true;
+//	} else if (values[0] == "off") {
+//		_autoindex = false;
+//	} else {
+//		throw std::runtime_error("Config error: invalid value in autoindex directive. '" + values[0] + "'");
+//	}
+	return true;
+}
+
+
+/**
+ * CGI
+ */
+
+bool Configurator::_isValidCGI(std::vector<std::string> values) {
+
+	return true;
+}
+
+
+
+
+
 
 
 //void Configurator::_checkServerName(const std::string &serverName) {
@@ -327,6 +373,8 @@ Configurator::eDirectives Configurator::resolveDirective(const std::string &inpu
 	if (input == "redirection") return REDIRECTION;
 	return INVALID;
 }
+
+
 
 
 

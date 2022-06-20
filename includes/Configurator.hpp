@@ -63,10 +63,14 @@ public:
 
 
 /** index */
+	static bool _isValidIndex(std::vector<std::string> values);
 
-static bool _isValidIndex(std::vector<std::string> values);
 
+/** autoindex */
+	static bool _isValidAutoIndex(std::vector<std::string> values);
 
+/** cgi */
+	bool _isValidCGI(std::vector<std::string> values);
 
 	void _checkServerName(const std::string &port);
 
@@ -89,6 +93,8 @@ private:
 
 
 	std::set<std::string> _listen;
+	bool _autoindex;
+
 
 	static eDirectives resolveDirective(const std::string &input);
 
