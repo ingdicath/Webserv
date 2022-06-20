@@ -141,11 +141,14 @@ int main(int argc, char **argv) {
 
 int main() {
 	try {
-		std::string input1 = "   	allowed_methods   GET		get POST          DELETE";
+		std::string input1 = "   	allowed_methods   GET	get	POST          DELETE ";
 		std::string input = "   	listen   127.0.0.1:8000	8000	80         localhost:8000  	9090";
 		std::string input2 = "		  error_page   	 404   /404.html		";
+		std::string input3= "		  client_max_body_size   	404g 		";
+		std::string input4= "		  root 			root.homl  		";
+		std::string input5= "		  index 			pollo.HTML.  		";
 
-		Directive res = Configurator::splitDirective(input1);
+		Directive res = Configurator::splitDirective(input5);
 		std::cout << "res key is: " << res.key << std::endl;
 		for (size_t i = 0; i < res.value.size(); ++i) {
 			std::cout << "res second is: " << res.value.at(i) << std::endl;

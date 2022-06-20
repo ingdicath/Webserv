@@ -68,4 +68,18 @@ namespace utils {
 		return cleanStr;
 	}
 
+	std::string stringToUpper(std::string oString) {
+		for (size_t i = 0; i < oString.length(); i++) {
+			oString[i] = char(std::toupper(static_cast<unsigned char>(oString[i])));
+		}
+		return oString;
+	}
+
+	std::string stringToLower(std::string oString) {
+		for (size_t i = 0; i < oString.length(); i++) {
+			oString[i] = char(std::tolower(static_cast<unsigned char>(oString[i])));
+		}
+		return oString;
+	}
+
 } // end namespace utils

@@ -30,4 +30,8 @@ namespace utils {
 
 	std::string deleteLastOf(char toSearch, std::string str);
 
+	std::string stringToUpper(std::string oString);
+
+	std::string stringToLower(std::string oString);
+
 }

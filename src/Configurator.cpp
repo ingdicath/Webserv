@@ -17,26 +17,12 @@ Configurator::Configurator() {}
 
 Configurator::~Configurator() {}
 
-//std::pair<std::string, std::string> Configurator::splitDirective2(std::string &input) {
-//	std::string cleanInput = utils::trim(input);
-//	size_t splitPos = cleanInput.find_first_of(WHITESPACES);
-//
-//	if (splitPos > input.size()) {
-//		throw std::runtime_error("Config error: unbalanced directive.");
-//	}
-//	std::string directive = cleanInput.substr(0, splitPos);
-//	std::string directiveValue = cleanInput.substr(splitPos, cleanInput.size());
-//
-//	return std::pair<std::string, std::string>(utils::trim(directive), utils::trim(directiveValue));
-//}
-
-
-//option 2 for split directives
 Directive Configurator::splitDirective(std::string &input) {
 	std::string cleanInput = utils::trim(input);
 	size_t splitPos = cleanInput.find_first_of(WHITESPACES);
 
-	if (splitPos > input.size()) { // check if key and value exists
+	// check if key and value exists
+	if (splitPos > input.size()) {
 		throw std::runtime_error("Config error: unbalanced directive Key.");
 	}
 	std::string directiveKey = cleanInput.substr(0, splitPos);
@@ -61,8 +47,10 @@ Directive Configurator::splitDirective(std::string &input) {
 //	}
 //	_isValidListenValues(directiveValues); //delete
 //	_isValidErrorPageConfig(directiveValues); //delete
-	_isValidAllowedMethod(directiveValues); //delete
-
+//	_isValidAllowedMethod(directiveValues); //delete
+//	_isValidBodySize(directiveValues); // delete
+//	_isValidRoot(directiveValues); //delete
+	_isValidIndex(directiveValues);//delete
 	Directive directive;
 	directive.key = utils::trim(directiveKey);
 	directive.value = directiveValues;
@@ -70,24 +58,10 @@ Directive Configurator::splitDirective(std::string &input) {
 
 //	Directive directive2(utils::trim(directiveKey),directiveValues);
 	return directive;
-
 }
 
-//std::vector<std::string> Configurator::splitDirectiveValues(std::string &input) {
-//	std::string cleanInput = utils::trim(input);
-//	size_t splitPos = cleanInput.find_first_of(WHITESPACES);
-//
-//	if (splitPos > input.size()) {
-//		throw std::runtime_error("Config error: unbalanced directive.");
-//	}
-//	std::string directive = cleanInput.substr(0, splitPos);
-//	std::string directiveValue = cleanInput.substr(splitPos, cleanInput.size());
-//
-//	return std::pair<std::string, std::string>(utils::trim(directive), utils::trim(directiveValue));
-//}
-
 //delete, used for testing purposes
-void printSet(const std::set<std::string> mySet){
+void printSet(const std::set<std::string> mySet) {
 	std::cout << "my set contains:";
 //	std::set<int>::iterator it;
 	for (auto it = mySet.begin(); it != mySet.end(); ++it) {
@@ -163,33 +137,9 @@ bool Configurator::_isValidListenValues(std::vector<std::string> values) {
 }
 
 
-//bool Configurator::_isValidPortRange(std::vector<std::string> values) {
-//	size_t portNumber;
-//	std::set<std::size_t> setPort;
-//	for (size_t i = 0; i < values.size(); i++) {
-//		portNumber = utils::stringToPositiveNum(values[i]);
-//		if (portNumber < MIN_PORT_NUMBER || portNumber > MAX_PORT_NUMBER) {
-//			throw std::runtime_error("Config error: invalid port value.");
-//		}
-//		if (!setPort.insert(portNumber).second) {
-//			throw std::runtime_error("Config error: duplicate value in listen.");
-//		}
-//	}
-//
-//	// delete
-//	std::cout << "myset contains:";
-//	for (auto it = setPort.begin(); it != setPort.end(); ++it) {
-//		std::cout << ' ' << *it;
-//	}
-//	std::cout << std::endl;
-//
-//	return true;
-//}
-
 /**
  * ERROR PAGES
  */
-
 
 bool Configurator::_isValidErrorPageConfig(std::vector<std::string> values) {
 	if (values.size() != 2) {
@@ -204,7 +154,7 @@ bool Configurator::_isValidErrorPageConfig(std::vector<std::string> values) {
 	std::set<std::string> mySet;
 	for (size_t i = 0; i < values.size(); ++i) {
 		if (!mySet.insert(values[i]).second) {
-			throw std::runtime_error("Config error: duplicate value in listen.");
+			throw std::runtime_error("Config error: duplicate value in Error page.");
 		}
 	}
 	printSet(mySet); //delete
@@ -234,158 +184,124 @@ bool Configurator::_isValidErrorCode(const std::string &string) {
 	}
 	return true;
 }
-//
-//bool Configurator::_isValidErrorPageConfig(std::string &string) {
-//	std::string cleanInput = utils::trim(string);
-//	size_t splitPos = cleanInput.find_first_of(WHITESPACES);
-//
-//	if (splitPos > string.size()) {
-//		return false;
-//	}
-//	std::string errorCode = cleanInput.substr(0, splitPos);
-//	std::string errorPath = cleanInput.substr(splitPos, cleanInput.size());
-//	errorPath = utils::lTrim(errorPath);
-//	if (!Configurator::_isValidErrorCode(errorCode) || !Configurator::_isValidPath(errorPath)) {
-//		return false;
-//	}
-//	return true;
-//}
+
 
 /**
  * BODY SIZE
  * how check overflow client_body_size?
  * Is 0 a valid value for body size?
  * Will we predefine a max body size client?
+ * Remove or not remove last character here? Put another validation??
  */
 
-//bool Configurator::_isValidBodySize(std::vector<std::string> values) {
-//
-//
-//	if (string.find_first_of("KMGkmg") != string.size() - 1) {
-//		return false;
-//	}
-//	cleanInput[cleanInput.size() - 1] = std::toupper(
-//			cleanInput[cleanInput.size() - 1]); //convert to uppercase last letter
-//	std::cout << "clean input is 2: " << cleanInput << std::endl; //delete
-//
-//	if (cleanInput[cleanInput.size() - 1] == 'K') {
-//		cleanInput = utils::deleteLastOf('K', cleanInput);
-//	} else if (cleanInput[cleanInput.size() - 1] == 'M') {
-//		cleanInput = utils::deleteLastOf('M', cleanInput);
-//	} else {
-//		cleanInput = utils::deleteLastOf('G', cleanInput);
-//	}
-//	std::cout << "clean input is 3: " << cleanInput << std::endl; //delete
-//
-////	if (!utils::isPositiveNumber(cleanInput)){
-////		throw std::logic_error("Config error: invalid client max body size.");
-////	}
-//	size_t bodySize = utils::stringToPositiveNum(cleanInput);
-//	if (bodySize <= 0 || bodySize > DEFAULT_CLIENT_MAX_BODY_SIZE) {
-//		throw std::out_of_range("Config error: invalid client max body size.");
-//	}
-//	return true;
-//}
-
-/*
-bool Configurator::_isValidBodySize(std::string &string) {
-	std::string cleanInput = utils::trim(string);
-
-	std::cout << "clean input is 1: " << cleanInput << std::endl;  //delete
-	if (string.find_first_of("KMGkmg") != string.size() - 1) {
-		return false;
+bool Configurator::_isValidBodySize(std::vector<std::string> values) {
+	if (values.size() != 1) {
+		throw std::runtime_error("Config error: invalid args for body_size directive.");
 	}
-	cleanInput[cleanInput.size() - 1] = std::toupper(
-			cleanInput[cleanInput.size() - 1]); //convert to uppercase last letter
-	std::cout << "clean input is 2: " << cleanInput << std::endl; //delete
 
-	if (cleanInput[cleanInput.size() - 1] == 'K') {
-		cleanInput = utils::deleteLastOf('K', cleanInput);
-	} else if (cleanInput[cleanInput.size() - 1] == 'M') {
-		cleanInput = utils::deleteLastOf('M', cleanInput);
+	size_t lastPos = values[0].size() - 1;
+	if (values[0].find_first_of("KMGkmg") != lastPos) {
+		throw std::runtime_error("Config error: invalid measure for body_size directive.");
+	}
+	values[0].at(lastPos) = char(std::toupper(static_cast<unsigned char>(values[0].at(lastPos))));
+
+	if (values[0].at(lastPos) == 'K') {
+		// set here value, e.g. * 10000
+		values[0] = utils::deleteLastOf('K', values[0]);
+	} else if (values[0].at(lastPos) == 'M') {
+		// set here value, e.g. * 10000
+		values[0] = utils::deleteLastOf('M', values[0]);
 	} else {
-		cleanInput = utils::deleteLastOf('G', cleanInput);
+		// set here value, e.g. * 100000000
+		values[0] = utils::deleteLastOf('G', values[0]);
 	}
-	std::cout << "clean input is 3: " << cleanInput << std::endl; //delete
 
-//	if (!utils::isPositiveNumber(cleanInput)){
-//		throw std::logic_error("Config error: invalid client max body size.");
+//	std::set<std::string> mySet;
+//	for (size_t i = 0; i < values.size(); ++i) {
+//		if (!mySet.insert(values[i]).second) {
+//			throw std::runtime_error("Config error: duplicate value in client body size.");
+//		}
 //	}
-	size_t bodySize = utils::stringToPositiveNum(cleanInput);
-	if (bodySize <= 0 || bodySize > DEFAULT_CLIENT_MAX_BODY_SIZE) {
-		throw std::out_of_range("Config error: invalid client max body size.");
-	}
+//	printSet(mySet); //delete
 	return true;
 }
-*/
+
 
 /**
  * ROOT - check this
  */
 // https://www.youtube.com/watch?v=ewqX1IuYzC8 for realpath explanation
 
-bool Configurator::_isValidRoot(std::string &string) {
-	std::string cleanInput = utils::trim(string);
-	if (cleanInput.find_last_of('/') == cleanInput.size() - 1 && cleanInput.size() != 1) {
+bool Configurator::_isValidRoot(std::vector<std::string> values) {
+	if (values.size() != 1) {
+		throw std::runtime_error("Config error: invalid args for root.");
+	}
+
+	size_t lastPos = values[0].size() - 1;
+	if (values[0].find_last_of('/') == lastPos && values[0].size() != 1) {
 		throw std::runtime_error("Config error: root can't be a directory.");
 	}
-	// resolve a pathname - get the absolute path of a file
-	if (cleanInput[0] != '/') {
+	// resolve a pathname - get the absolute path of a file, check if is necessary
+	if (values[0].at(0) != '/') {
 		char realPath[4096];
-		realpath(cleanInput.c_str(), realPath);
-		cleanInput = realPath;
-		std::cout << "cleanInput is : " << cleanInput << std::endl;
-		std::cout << "real path is: " << realPath << std::endl;
+		realpath(values[0].c_str(), realPath);
+		values[0] = realPath;
+		std::cout << "cleanInput is : " << values[0] << std::endl; //delete
+		std::cout << "real path is: " << realPath << std::endl; //delete
 	}
 	return true;
 }
+
+//bool Configurator::_isValidRoot(std::string &string) {
+//	std::string cleanInput = utils::trim(string);
+//	if (cleanInput.find_last_of('/') == cleanInput.size() - 1 && cleanInput.size() != 1) {
+//		throw std::runtime_error("Config error: root can't be a directory.");
+//	}
+//	// resolve a pathname - get the absolute path of a file
+//	if (cleanInput[0] != '/') {
+//		char realPath[4096];
+//		realpath(cleanInput.c_str(), realPath);
+//		cleanInput = realPath;
+//		std::cout << "cleanInput is : " << cleanInput << std::endl;
+//		std::cout << "real path is: " << realPath << std::endl;
+//	}
+//	return true;
+//}
 
 /**
  * ALLOWED METHODS
  */
 
-
 bool Configurator::_isValidAllowedMethod(std::vector<std::string> values) {
 	std::set<std::string> mySet;
-
 	for (size_t i = 0; i < values.size(); i++) {
-		for(size_t j = 0; j != std::string::npos; j++){
-
-		}
-		std::transform(values.begin(), values.end(), values.begin(), std::ptr_fun<int, int>(std::toupper));
-		std::transform(values.begin()->at(i), values.end(), values.begin(), ::toupper);
-
-
+		values[i] = utils::stringToUpper(values.at(i));
 		if (!mySet.insert(values[i]).second) {
-			throw std::runtime_error("Config error: duplicate value in listen.");
+			throw std::runtime_error("Config error: duplicate value in allowed_method directive. '" + values[i] + "'");
+		}
+		if (values[i] != "GET" && values[i] != "POST" && values[i] != "DELETE") {
+			throw std::runtime_error("Config error: invalid value in allowed_method directive. '" + values[i] + "'");
 		}
 	}
 	printSet(mySet); //delete
 	return true;
+}
 
+/**
+ * INDEX
+ */
 
+bool Configurator::_isValidIndex(std::vector<std::string> values) {
+	size_t lastPos = values[0].size() - 1;
+	if (values[0].find_last_of('/') == lastPos && values[0].size() != 1) {
+		throw std::runtime_error("Config error: index can't be a directory.");
+	}
+	std::string extension = values[0].substr(values[0].find_last_of('.') + 1);
+	extension = utils::stringToLower(extension);
+	if (extension != "html")
+		throw std::runtime_error("Config error: index can only has a html extension");
 	return true;
 }
-//bool Configurator::_isValidAllowedMethod(std::string string) {
-//	std::string cleanInput = utils::trim(string);
-//
-//	size_t splitPos = cleanInput.find_first_of(WHITESPACES);
-//	std::cout << "splitPos is : " << splitPos << std::endl;
-//	std::cout << "cleanInput is: " << cleanInput << std::endl;
-//	std::cout << "cleanInput.size() is: " << cleanInput.size() << std::endl;
-//
-//	if (splitPos > cleanInput.size()) {
-//		return false;
-//	}
-//	return true;
-//}
-
-
-
-
-
-
-
 
 
 //void Configurator::_checkServerName(const std::string &serverName) {
@@ -411,10 +327,6 @@ Configurator::eDirectives Configurator::resolveDirective(const std::string &inpu
 	if (input == "redirection") return REDIRECTION;
 	return INVALID;
 }
-
-
-
-
 
 
 

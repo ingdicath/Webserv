@@ -53,12 +53,20 @@ public:
 	static bool _isValidBodySize(std::vector<std::string> values);
 //	static bool _isValidBodySize(std::string &string);
 
-	static bool _isValidRoot(std::string &string);
+	static bool _isValidRoot(std::vector<std::string> values);
+//static bool _isValidRoot(std::string &string);
 
 
 /** allowed methods */
 //	static bool _isValidAllowedMethod(std::string string);
 	static bool _isValidAllowedMethod(std::vector<std::string> values);
+
+
+/** index */
+
+static bool _isValidIndex(std::vector<std::string> values);
+
+
 
 	void _checkServerName(const std::string &port);
 
