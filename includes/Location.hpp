@@ -11,7 +11,11 @@
 
 class Location {
 public:
+	Location();
+
 	explicit Location(bool autoindex);
+
+	Location(Location *pLocation);
 
 	virtual ~Location();
 
@@ -20,7 +24,7 @@ private:
 	std::string _root;
 	std::set<std::string> _accepted_methods;
 	std::vector<std::string> _index;
-//	bool _autoindex;
+	bool _autoindex;
 	std::map<std::string, std::string> _cgi; // in case we decide accept other formats than .py, could be php?
 	std::string _upload;
 	std::map<int, std::string> _redirection;

@@ -10,6 +10,7 @@
 #include "settings.hpp"
 #include "utils.hpp"
 #include "Configurator.hpp"
+#include "Webserver.hpp"
 
 bool in_array(const std::string &value, const std::vector<std::string> &array) {
 	return std::find(array.begin(), array.end(), value) != array.end();
@@ -30,7 +31,11 @@ void openFile(std::ifstream &file, const std::string &filePath) {
 //	file.close(); // dont forget to close
 }
 
-/*
+
+void validarYAlmacenar(const Directive &directive, std::string &block, Webserver *webserver);
+
+void almacenarDirectivaEnServer(const Directive &directive, Server *server);
+
 int main(int argc, char **argv) {
 	std::string configFile;
 
@@ -67,55 +72,74 @@ int main(int argc, char **argv) {
 		std::ifstream file;
 		openFile(file, configFile);
 		std::string line;
+		Webserver webserver; // destructor debe liberar recursos - delete
 
 		std::string command;
 		char c;
 		bool comment = false;
-		std::stack<char> curlyBraces;
-		std::stack<std::string> directives;
-		Server server;
+//		std::stack<char> curlyBraces;
+		std::stack<std::string> block;
+//		Server server;
 
 		// loop getting single characters
 		while (file.get(c)) {
 			switch (c) {
 				case '{':
-					std::cout << "curly: " << command << std::endl;
-					directives.push(command); // fix
-					command = "";
-					curlyBraces.push(c);
-					// function to validate insert command and curly brace in the stack
+					if (!comment) {
+						std::cout << "curly: " << command << std::endl;
+						if (command == "server") {
+							webserver._servers.push_back(new Server());
+						}
+						// TODO extraer location
+						size_t postPath = command.find_first_of('/'); //que pasa si no hay /??
+						std::string cmdLocation = command.substr(0, postPath);
+//						std::string locationPath = command.substr(postPath, command.size()-1);
+						std::cout << "cmd is: " << cmdLocation << std::endl;
+						std::cout << "cmd size is: " << command.size() << std::endl;
+						std::cout << "pos path is: " << postPath << std::endl;
+//						std::cout << "path is: " << locationPath << std::endl;
+
+						// option 2
+						std::string cmdLocation1 = "location";
+						std::size_t found = command.find(cmdLocation1);
+						if (found != std::string::npos){
+							std::cout << "first 'needle' found at: " << found << '\n';
+
+						}
+
+						if (cmdLocation == "location") {
+							Server &server = webserver._servers.back();
+							server._locations.push_back(new Location());
+
+						}
+						block.push(command); // validar location antes del push
+						command = "";
+//						curlyBraces.push(c);
+					}
 					break;
 				case ';':
-					std::cout << Configurator::splitDirective(command).first << " [" << Configurator::splitDirective(command).second << "]" << std::endl;
-					command = "";
+					if (!comment) {
+						std::cout << "linea que se valida: " << command << std::endl;
+						Directive directive = Configurator::splitDirective(command);
+						validarYAlmacenar(directive, block.top(), &webserver);
+						command = "";
+					}
+					break;
+				case '}':
+					if (!comment) {
+						if (block.empty() && c == '}') {
+							throw std::runtime_error("Config error: unbalanced curly braces.");
+						}
+						if (c == '}') {
+							block.pop();
+						}
+					}
 					break;
 				case '#':
-					// CHECKEO TRATAMIENTO
-					//std::cout << "comentario" << std::endl;
 					comment = true;
 					break;
 				case '\n':
 					comment = false;
-					// ignore all jump line
-					break;
-//				case ' ':
-//				case '\t':
-//				case '\v':
-//				case '\f':
-//				case '\r':
-//					if (in_array(command, validCommands)) {
-//						std::cout << "in array: " << command << std::endl;
-//						command = "";
-//					}
-//					break;
-				case '}':
-					// disparador or trigger
-					if (curlyBraces.empty() && c == '}') {
-						throw std::runtime_error("Config error: unbalanced curly braces.");
-					}
-					if (c == '}') {
-						curlyBraces.pop();
-					}
 					break;
 				default:
 					if (!comment)
@@ -123,7 +147,7 @@ int main(int argc, char **argv) {
 					break;
 			}
 		}
-		if (!curlyBraces.empty()) {
+		if (!block.empty()) {
 			throw std::runtime_error("Config error: unbalanced curly braces.");
 		}
 	} catch (std::exception &e) {
@@ -131,12 +155,68 @@ int main(int argc, char **argv) {
 	}
 	return EXIT_SUCCESS;
 }
-*/
+
+void validarYAlmacenar(const Directive &directive, std::string &block, Webserver *webserver) {
+	if (block == "server") {
+		almacenarDirectivaEnServer(directive, &webserver->_servers.back());
+	}
+
+}
+
+void almacenarDirectivaEnServer(const Directive &directive, Server *server) {
+	switch (Configurator::resolveDirective(directive.key)) {
+		case Configurator::LISTEN:
+			server->validateAndSetListen(directive.value);
+			break;
+		case Configurator::SERVER_NAME:
+			break;
+		case Configurator::ERROR_PAGE:
+			break;
+		case Configurator::BODY_SIZE:
+			break;
+		case Configurator::ROUTE_LOCATION:
+			break;
+		case Configurator::ROOT:
+			break;
+		case Configurator::ACCEPTED_METHODS:
+			break;
+		case Configurator::INDEX:
+			break;
+		case Configurator::AUTOINDEX:
+			break;
+		case Configurator::CGI:
+			break;
+		case Configurator::UPLOAD:
+			break;
+		case Configurator::REDIRECTION:
+			break;
+		case Configurator::INVALID:
+			break;
+	}
+}
+
+
+//
+//void validarYAlmacenar(Directive directive, std::string basicString, Server *server) {
+//
+//	switch (Configurator::resolveDirective(directive.key)) {
+//			case Configurator::LISTEN:
+//				server->validateAndSetListen(directive.value);
+//				break;
+//		}
+//}
+
+
+
+
+
 
 // set::insert (C++98)
 #include <iostream>
 #include <set>
 // test atoi vs stringstream
+
+/*
 #include <typeinfo>
 
 int main() {
@@ -148,6 +228,7 @@ int main() {
 		std::string input4= "		  root 			root.homl  		";
 		std::string input5= "		  index 			pollo.HTMl 		";
 		std::string input6= "		  autoindex 		On  		";
+		std::string input7= "		  cgi 		.php /users/bin/php-cgi		";
 
 		Directive res = Configurator::splitDirective(input6);
 		std::cout << "res key is: " << res.key << std::endl;
@@ -233,7 +314,7 @@ int main() {
 }
 
 
-/*
+
 int main() {
 	try{
 		std::string str = "1.1.1.256";

@@ -7,7 +7,7 @@ include_directories(includes)
 
 add_executable(Webserv src/main.cpp
         src/utils.cpp src/Server.cpp
-        src/Configurator.cpp src/Location.cpp)
+        src/Configurator.cpp src/Location.cpp src/Webserver.cpp includes/Webserver.hpp)
 
 # for testing
 

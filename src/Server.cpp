@@ -5,6 +5,7 @@
 #include "Server.hpp"
 #include "settings.hpp"
 #include "utils.hpp"
+#include "Configurator.hpp"
 
 Server::Server() : _client_max_body_size(DEFAULT_CLIENT_MAX_BODY_SIZE) {
 
@@ -31,6 +32,56 @@ Server &Server::operator=(const Server &obj) {
 
 const std::vector<std::string> &Server::getServerName() const {
 	return _server_name;
+}
+
+Server::Server(Server *pServer) {
+
+}
+
+void Server::validateAndSetListen(std::vector<std::string> values) {
+	if (Configurator::_isValidListenValues(values)) {
+		std::set<std::string> mySet;
+		for (size_t i = 0; i < values.size(); i++) {
+			mySet.insert(values[i]);
+		}
+		_listen = mySet;
+	}
+}
+
+const std::vector<Location> &Server::getLocations() const {
+	return _locations;
+}
+
+const std::set<std::string> &Server::getListen() const {
+	return _listen;
+}
+
+const std::map<std::size_t, std::string> &Server::getErrorPage() const {
+	return _error_page;
+}
+
+size_t Server::getClientMaxBodySize() const {
+	return _client_max_body_size;
+}
+
+void Server::setLocations(const std::vector<Location> &locations) {
+	_locations = locations;
+}
+
+void Server::setListen1(const std::set<std::string> &listen) {
+	_listen = listen;
+}
+
+void Server::setServerName(const std::vector<std::string> &serverName) {
+	_server_name = serverName;
+}
+
+void Server::setErrorPage(const std::map<std::size_t, std::string> &errorPage) {
+	_error_page = errorPage;
+}
+
+void Server::setClientMaxBodySize(size_t clientMaxBodySize) {
+	_client_max_body_size = clientMaxBodySize;
 }
 
 

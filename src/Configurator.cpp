@@ -11,6 +11,7 @@
 #include "Server.hpp"
 #include "settings.hpp"
 #include "utils.hpp"
+#include "Server.hpp"
 #include <iostream>
 
 Configurator::Configurator() {}
@@ -51,7 +52,7 @@ Directive Configurator::splitDirective(std::string &input) {
 //	_isValidBodySize(directiveValues); // delete
 //	_isValidRoot(directiveValues); //delete
 //	_isValidIndex(directiveValues);//delete
-	_isValidAutoIndex(directiveValues);//delete
+//	_isValidAutoIndex(directiveValues);//delete
 
 	Directive directive;
 	directive.key = utils::trim(directiveKey);
@@ -76,29 +77,15 @@ void printSet(const std::set<std::string> mySet) {
 /**
  * LISTEN
  */
-bool Configurator::_isValidPortRange(const std::string &port) {
-	size_t portNumber = utils::stringToPositiveNum(port);
-	if (portNumber < MIN_PORT_NUMBER || portNumber > MAX_PORT_NUMBER) {
-		throw std::runtime_error("Config error: invalid port value: '" + port + "'");
-	}
-	return true;
-}
 
-// Valid ipv4 address 127.127.127.127
-bool Configurator::_isValidIpv4Address(const std::string &ipAddress) {
-	if (ipAddress == "localhost") {
-		return true;
-	}
-	size_t numDots = std::count(ipAddress.begin(), ipAddress.end(), '.');
-	std::vector<std::string> vec = utils::splitString(ipAddress, '.');
-	if (numDots > 3 || vec.size() != 4) {
-		return false;
-	}
-	size_t num;
-	for (size_t i = 0; i < vec.size(); i++) {
-		num = utils::stringToPositiveNum(vec.at(i));
-		if (num > 255) {
-			return false;
+bool Configurator::_isValidListenValues(std::vector<std::string> values) {
+	std::set<std::string> mySet;
+	for (size_t i = 0; i < values.size(); i++) {
+		if (!_isValidIpPort(values[i])) {
+			throw std::runtime_error("Config error: invalid listen values.");
+		}
+		if (!mySet.insert(values[i]).second) {
+			throw std::runtime_error("Config error: duplicate value in listen.");
 		}
 	}
 	return true;
@@ -125,19 +112,33 @@ bool Configurator::_isValidIpPort(const std::string &listenValue) {
 	}
 }
 
-bool Configurator::_isValidListenValues(std::vector<std::string> values) {
-	std::set<std::string> mySet;
-	for (size_t i = 0; i < values.size(); i++) {
-		if (!_isValidIpPort(values[i])) {
-			throw std::runtime_error("Config error: invalid listen values.");
-		}
-		if (!mySet.insert(values[i]).second) {
-			throw std::runtime_error("Config error: duplicate value in listen.");
+// Valid ipv4 address 127.127.127.127
+bool Configurator::_isValidIpv4Address(const std::string &ipAddress) {
+	if (ipAddress == "localhost") {
+		return true;
+	}
+	size_t numDots = std::count(ipAddress.begin(), ipAddress.end(), '.');
+	std::vector<std::string> vec = utils::splitString(ipAddress, '.');
+	if (numDots > 3 || vec.size() != 4) {
+		return false;
+	}
+	size_t num;
+	for (size_t i = 0; i < vec.size(); i++) {
+		num = utils::stringToPositiveNum(vec.at(i));
+		if (num > 255) {
+			return false;
 		}
 	}
 	return true;
 }
 
+bool Configurator::_isValidPortRange(const std::string &port) {
+	size_t portNumber = utils::stringToPositiveNum(port);
+	if (portNumber < MIN_PORT_NUMBER || portNumber > MAX_PORT_NUMBER) {
+		throw std::runtime_error("Config error: invalid port value: '" + port + "'");
+	}
+	return true;
+}
 
 /**
  * ERROR PAGES
@@ -340,6 +341,9 @@ bool Configurator::_isValidAutoIndex(std::vector<std::string> values) {
  */
 
 bool Configurator::_isValidCGI(std::vector<std::string> values) {
+	if (values.size() != 2) {
+		throw std::runtime_error("Config error: invalid args for cgi directive.");
+	}
 
 	return true;
 }

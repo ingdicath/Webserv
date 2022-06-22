@@ -74,7 +74,7 @@ public:
 
 	void _checkServerName(const std::string &port);
 
-private:
+public: //TODO hacerlo privado
 	enum eDirectives {
 		LISTEN,
 		SERVER_NAME,
@@ -90,7 +90,10 @@ private:
 		REDIRECTION,
 		INVALID
 	};
-
+	 enum eBlock{
+		 SERVER,
+		 LOCATION,
+	 };
 
 	std::set<std::string> _listen;
 	bool _autoindex;
