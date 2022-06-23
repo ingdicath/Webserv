@@ -53,22 +53,6 @@ int main(int argc, char **argv) {
 			return EXIT_FAILURE;
 	}
 	try {
-		// https://stackoverflow.com/questions/14561941/how-do-i-pass-multiple-ints-into-a-vector-at-once
-		// valid command list
-		std::vector<std::string> validCommands;
-		validCommands.push_back("listen");
-		validCommands.push_back("location");
-		validCommands.push_back("server_name");
-		validCommands.push_back("error_page");
-		validCommands.push_back("client_max_body_size");
-		validCommands.push_back("index");
-		validCommands.push_back("root");
-		validCommands.push_back("accepted_methods");
-		validCommands.push_back("autoindex");
-		validCommands.push_back("cgi");
-		validCommands.push_back("upload");
-		validCommands.push_back("return");
-
 		std::ifstream file;
 		openFile(file, configFile);
 		std::string line;
@@ -87,30 +71,27 @@ int main(int argc, char **argv) {
 				case '{':
 					if (!comment) {
 						std::cout << "curly: " << command << std::endl;
-						if (command == "server") {
+						if (command == SERVER) { // See if it is better define as enum
 							webserver._servers.push_back(new Server());
 						}
 						// TODO extraer location
-						size_t postPath = command.find_first_of('/'); //que pasa si no hay /??
+						size_t postPath = command.find_first_of('/'); //what does happen if there is no '/'??
 						std::string cmdLocation = command.substr(0, postPath);
-//						std::string locationPath = command.substr(postPath, command.size()-1);
+////						std::string locationPath = command.substr(postPath, command.size()-1);
 						std::cout << "cmd is: " << cmdLocation << std::endl;
 						std::cout << "cmd size is: " << command.size() << std::endl;
-						std::cout << "pos path is: " << postPath << std::endl;
-//						std::cout << "path is: " << locationPath << std::endl;
+////						std::cout << "pos path is: " << postPath << std::endl;
 
 						// option 2
-						std::string cmdLocation1 = "location";
-						std::size_t found = command.find(cmdLocation1);
-						if (found != std::string::npos){
-							std::cout << "first 'needle' found at: " << found << '\n';
+//						std::string cmdLocation1 = LOCATION;
+//						std::size_t found = command.find(cmdLocation1);
+//						if (found != std::string::npos) {
+//							std::cout << "first 'needle' found at: " << found << '\n';
+//						}
 
-						}
-
-						if (cmdLocation == "location") {
+						if (cmdLocation == LOCATION) {
 							Server &server = webserver._servers.back();
 							server._locations.push_back(new Location());
-
 						}
 						block.push(command); // validar location antes del push
 						command = "";
@@ -156,41 +137,54 @@ int main(int argc, char **argv) {
 	return EXIT_SUCCESS;
 }
 
+//change name to English
 void validarYAlmacenar(const Directive &directive, std::string &block, Webserver *webserver) {
 	if (block == "server") {
 		almacenarDirectivaEnServer(directive, &webserver->_servers.back());
 	}
-
 }
 
+//change name to English
 void almacenarDirectivaEnServer(const Directive &directive, Server *server) {
 	switch (Configurator::resolveDirective(directive.key)) {
 		case Configurator::LISTEN:
 			server->validateAndSetListen(directive.value);
 			break;
 		case Configurator::SERVER_NAME:
+			//TODO
 			break;
 		case Configurator::ERROR_PAGE:
+			//TODO
 			break;
 		case Configurator::BODY_SIZE:
+			//TODO
 			break;
 		case Configurator::ROUTE_LOCATION:
+			//TODO
 			break;
 		case Configurator::ROOT:
+			//TODO
 			break;
 		case Configurator::ACCEPTED_METHODS:
+			//TODO
 			break;
 		case Configurator::INDEX:
+			//TODO
 			break;
 		case Configurator::AUTOINDEX:
+			//TODO
 			break;
 		case Configurator::CGI:
+			//TODO
 			break;
 		case Configurator::UPLOAD:
+			//TODO
 			break;
 		case Configurator::REDIRECTION:
+			//TODO
 			break;
 		case Configurator::INVALID:
+			//TODO, error message
 			break;
 	}
 }
@@ -207,17 +201,8 @@ void almacenarDirectivaEnServer(const Directive &directive, Server *server) {
 //}
 
 
-
-
-
-
 // set::insert (C++98)
-#include <iostream>
-#include <set>
-// test atoi vs stringstream
-
 /*
-#include <typeinfo>
 
 int main() {
 	try {
@@ -235,16 +220,6 @@ int main() {
 		for (size_t i = 0; i < res.value.size(); ++i) {
 			std::cout << "res second is: " << res.value.at(i) << std::endl;
 		}
-
-
-
-
-//		std::string str = "454528";
-//		if (!utils::isPositiveNumber(str)){
-//			std::cerr << "no valid number" << std::endl;
-//		}
-//		size_t res = utils::stringToPositiveNum(str);
-//		Configurator::_isValidPortRange(str);
 
 //		std::string str1 = "1.1.1.255.";
 //		bool res = Configurator::_isValidIpv4Address(str1);
@@ -278,58 +253,8 @@ int main() {
 //		std::string input = "   	allowed_methods   GET		get POST          DELETE";
 //		Configurator::splitDirective(input);
 
-//		std::string cleanInput = utils::trim(input);
-//		size_t splitPos = cleanInput.find_first_of(WHITESPACES);
-//		std::string a = cleanInput.substr(0, splitPos);
-//		directiveValues.push_back(a);
-//
-//		std::string b = cleanInput.substr(splitPos, cleanInput.size() - 1);
-//		b = utils::trim(b);
-//		size_t splitPos1 = b.find_first_of(WHITESPACES);
-//		std::string c = b.substr(0, splitPos1);
-//		directiveValues.push_back(c);
-
-//		std::string cleanInput = utils::trim(input);
-
-
-
-
-
-
-
-
-//		std::cout << "res is: " << res << std::endl;
-//		std::cout << typeid(res).name() << std::endl;
-//
-//		size_t num = std::atoi(str.c_str());
-//		std::cout << "res 2 is: " << num << std::endl;
-//		std::cout << typeid(num).name() << std::endl;
-//		size_t num1 = std::stoi(str);
-//
-//		std::cout << typeid(num1).name() << 	num1 << std::endl;
 	} catch (std::exception &e) {
 		std::cerr << PURPLE << e.what() << RESET << std::endl;
-	}
-	return 0;
-}
-
-
-
-int main() {
-	try{
-		std::string str = "1.1.1.256";
-		std::string str1 = "1.1.1.1:8000 32.142.2.4:80";
-		std::string str2 = "800";
-		std::string str3 = "1.1.1.1";
-		std::string str4 = "localhost:8000";
-
-		std::cout << std::boolalpha << utils::validateIpAddress(str) << std::endl; // testing, delete
-		if (utils::_isValidIpv4Address(str)){
-			std::cout << "mal" << std::endl;
-		}
-//		Configurator::_isValidPortRange(str2);
-	} catch (std::exception &e){
-		std::cerr << RED << e.what() << RESET << std::endl;
 	}
 	return 0;
 }

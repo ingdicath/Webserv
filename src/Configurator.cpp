@@ -322,7 +322,7 @@ bool Configurator::_isValidAutoIndex(std::vector<std::string> values) {
 		throw std::runtime_error("Config error: invalid args for autoindex directive.");
 	}
 	values[0] = utils::stringToLower(values[0]);
-	if (values[0] != "on" && values[0] != "off") {
+	if (values[0] != ON && values[0] != OFF) {
 		throw std::runtime_error("Config error: invalid value in autoindex directive. '" + values[0] + "'");
 	}
 //	if (values[0] == "on") {
@@ -337,7 +337,7 @@ bool Configurator::_isValidAutoIndex(std::vector<std::string> values) {
 
 
 /**
- * CGI
+ * CGI, We have to manage only one extension. For bonus part, multiple extensions
  */
 
 bool Configurator::_isValidCGI(std::vector<std::string> values) {

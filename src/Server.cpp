@@ -35,7 +35,6 @@ const std::vector<std::string> &Server::getServerName() const {
 }
 
 Server::Server(Server *pServer) {
-
 }
 
 void Server::validateAndSetListen(std::vector<std::string> values) {
@@ -93,7 +92,6 @@ void Server::setClientMaxBodySize(size_t clientMaxBodySize) {
 //}
 
 
-
 //// https://stackoverflow.com/questions/18677171/throwing-exception-when-the-same-key-inserted-into-stdmap
 //void Server::setListen(const std::string& str) {
 //	if (!_listen.insert(Server::_isValidPortRange(str)).second){
@@ -101,4 +99,3 @@ void Server::setClientMaxBodySize(size_t clientMaxBodySize) {
 //		throw std::invalid_argument("Config error: duplicate " + str);
 //	}
 //}
-

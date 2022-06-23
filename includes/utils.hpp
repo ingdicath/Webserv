@@ -14,7 +14,7 @@ namespace utils {
 
 	void removeWhiteSpaces(std::string str); // check usage
 
-	std::vector<std::string> splitString(const std::string &str, char splitter);  // check usage
+	std::vector<std::string> splitString(const std::string &str, char splitter);
 
 	bool isPositiveNumber(const std::string &str);
 

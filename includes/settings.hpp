@@ -40,5 +40,7 @@
 #define DEFAULT_ERROR_PAGE 404
 #define MIN_PORT_NUMBER 1
 #define MAX_PORT_NUMBER 65535
-#define OFF 0
-#define ON 1
+#define SERVER "server"
+#define LOCATION "location"
+#define OFF "off"
+#define ON "on"

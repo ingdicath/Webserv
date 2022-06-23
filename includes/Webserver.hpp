@@ -6,11 +6,10 @@
 
 #include "Server.hpp"
 
-
+//TODO: include const, destr, assignment oper, copy const
 class Webserver {
 public:
 
 	std::vector<Server> _servers;
 
 };
-
