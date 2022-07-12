@@ -1,13 +1,25 @@
+/* ************************************************************************** */
+/*                                                                            */
+/*                                                        ::::::::            */
+/*   Server.cpp                                         :+:    :+:            */
+/*                                                     +:+                    */
+/*   By: aheister <aheister@student.codam.nl>         +#+                     */
+/*                                                   +#+                      */
+/*   Created: 2022/07/11 15:09:47 by aheister      #+#    #+#                 */
+/*   Updated: 2022/07/11 15:09:50 by aheister      ########   odam.nl         */
+/*                                                                            */
+/* ************************************************************************** */
 
-#include "../includes/settings.hpp"
-#include "../includes/Server.hpp"
+
+#include "settings.hpp"
+#include "Server.hpp"
 
 #include <iostream>
 
 Server::Server(void) :
 	_port(DEFAULT_PORT),
-    _server_name(DEFAULT_SERVER_NAME),
-    _error_page(DEFAULT_ERROR_PAGE) {
+    _serverName(DEFAULT_SERVER_NAME),
+    _errorPage(DEFAULT_ERROR_PAGE) {
 
 	std::cout << "Server created" << std::endl;
 }
@@ -19,8 +31,8 @@ Server::Server(const Server & src) {
 Server& Server::operator=(const Server & rhs) {
 	if (this != & rhs) {
 		_port = rhs._port;
-		_server_name = rhs._server_name;
-		_error_page = rhs._error_page;
+		_serverName = rhs._serverName;
+		_errorPage = rhs._errorPage;
 	}
 	return *this;
 }
@@ -42,19 +54,19 @@ void	Server::configServer(void) {
 ** 3. Creates the connection by putting the server in a listening state
 */
 void	Server::setupServer(void) {
-	if ((this->_server_socket = socket(AF_INET, SOCK_STREAM, 0)) < 0)
+	if ((this->_serverSocket = socket(AF_INET, SOCK_STREAM, 0)) < 0)
 		throw (std::runtime_error("Socket creation failed"));
-    if (fcntl(this->_server_socket, F_SETFL, O_NONBLOCK) < 0)
+    if (fcntl(this->_serverSocket, F_SETFL, O_NONBLOCK) < 0)
 		throw (std::runtime_error("Transforming the socket to non-blocking failed"));
 	
-	memset(&_server_addr, 0, sizeof(_server_addr));
-    _server_addr.sin_family = AF_INET;
-    _server_addr.sin_port = htons(_port);
-    _server_addr.sin_addr.s_addr = htonl(INADDR_ANY);
-    if (bind(this->_server_socket, (struct sockaddr *)&_server_addr, sizeof(_server_addr)) < 0)
+	memset(&_serverAddr, 0, sizeof(_serverAddr));
+    _serverAddr.sin_family = AF_INET;
+    _serverAddr.sin_port = htons(_port);
+    _serverAddr.sin_addr.s_addr = htonl(INADDR_ANY);
+    if (bind(this->_serverSocket, (struct sockaddr *)&_serverAddr, sizeof(_serverAddr)) < 0)
 		throw (std::runtime_error("Binding of the socket failed"));
 
-	if (listen(this->_server_socket, DEFAULT_BACKLOG) < 0)
+	if (listen(this->_serverSocket, DEFAULT_BACKLOG) < 0)
 		throw (std::runtime_error("Listen failed"));
 
 	//test
@@ -66,31 +78,35 @@ void	Server::setupServer(void) {
 */
 int Server::acceptConnection(void) {
 	Client	client;
-	int		new_socket;
-	struct	sockaddr_in client_addr;
-	int		client_addrlen = sizeof(client_addr);
+	int		newSocket;
+	struct	sockaddr_in clientAddr;
+	int		clientAddrlen = sizeof(clientAddr);
 
-	if ((new_socket = accept(this->_server_socket, (struct sockaddr *)&client_addr, (socklen_t*)&client_addrlen)) < 0) {
+	if ((newSocket = accept(this->_serverSocket, (struct sockaddr *)&clientAddr, (socklen_t*)&clientAddrlen)) < 0) {
 		throw (std::runtime_error("Accept incoming connection failed"));
 	}
 
-	client.setClientAddress(client_addr);
+	client.setClientAddress(clientAddr);
 	// test
-	std::cout << "Client: " << inet_ntoa(client_addr.sin_addr) << std::endl;
-	client.setClientSocket(new_socket);
+	std::cout << "Client: " << inet_ntoa(clientAddr.sin_addr) << std::endl;
+	client.setClientSocket(newSocket);
 	_clients.push_back(client);
 
 	// test
-	std::cout << "Client accepted: " << new_socket << std::endl;
+	std::cout << "Client accepted: " << newSocket << std::endl;
 
-	return new_socket;
+	return newSocket;
 }
 
-int		Server::getServerSocket(void) {
-	return _server_socket;
+
+/*
+** GET functions
+*/
+int		Server::getServerSocket(void) const {
+	return _serverSocket;
 }
 
-int		Server::getPort(void) {
+int		Server::getPort(void) const {
 	return _port;
 }
 

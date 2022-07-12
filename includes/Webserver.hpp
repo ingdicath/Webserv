@@ -24,10 +24,10 @@ public:
 	void	updateMaxSocket(int new_socket);
 
 private:
-	int						_max_socket;
-	fd_set					_current_sockets;
-	fd_set					_ready_read;
-	fd_set					_ready_write;
+	int						_maxSocket;
+	fd_set					_currentSockets;
+	fd_set					_readyRead;
+	fd_set					_readyWrite;
 	std::vector<Server>		_servers;
 };
 

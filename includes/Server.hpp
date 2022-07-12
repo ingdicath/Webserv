@@ -44,23 +44,23 @@ public:
 	int		acceptConnection(void);
 
 	//Get functions
-	int		getServerSocket(void);
-	int		getPort(void);
+	int		getServerSocket(void) const;
+	int		getPort(void) const;
 	
 private:
 	//Configuration
-	int					_port;
-	//std::string 		_host;										// Format??
-    std::string			_server_name;
-    int					_error_page;								// Explore how this works
-	//int					_time_out								// Explore how this works
-	//std::map<std::string, std::string>	_cgi_file_types;		// Associative container that store elements formed by a combination of a key value and a mapped value
-	//std::vector<Location>		_location_block;					// Explore how this works
-	std::size_t			_client_max_body_size;						// WHAT IS THIS?
+	int										_port;
+	//std::string 							_host;					// Format??
+    std::string								_serverName;
+    int										_errorPage;				// Explore how this works
+	//int									_timeOut				// Explore how this works
+	//std::map<std::string, std::string>	_cgiFileTypes;			// Associative container that store elements formed by a combination of a key value and a mapped value
+	//std::vector<Location>					_locationBlocks;		// Explore how this works
+	//std::size_t							_clientMaxBodySize;		// WHAT IS THIS?
 
 	//Connection
-	int					_server_socket;
-	struct sockaddr_in 	_server_addr;
+	int					_serverSocket;
+	struct sockaddr_in 	_serverAddr;
 	std::vector<Client> _clients;
 
 };

@@ -6,11 +6,11 @@
 /*   By: aheister <aheister@student.codam.nl>         +#+                     */
 /*                                                   +#+                      */
 /*   Created: 2022/07/07 13:40:13 by aheister      #+#    #+#                 */
-/*   Updated: 2022/07/08 08:59:18 by aheister      ########   odam.nl         */
+/*   Updated: 2022/07/11 15:50:08 by aheister      ########   odam.nl         */
 /*                                                                            */
 /* ************************************************************************** */
 
-#include "../includes/Client.hpp"
+#include "Client.hpp"
 #include <iostream>
 
 Client::Client(void) {
@@ -23,8 +23,8 @@ Client::Client(Client const & src) {
 
 Client& Client::operator=(Client const & rhs) {
 	if (this != & rhs) {
-		_client_socket = rhs._client_socket;
-		_client_addr = rhs._client_addr;
+		_clientSocket = rhs._clientSocket;
+		_clientAddr = rhs._clientAddr;
 	}
 	return *this;
 }
@@ -33,19 +33,23 @@ Client::~Client(void) {
 	return;
 }
 
-// GET functions
-int	Client::getClientSocket(void) {
-	return _client_socket;
+/*
+** GET functions
+*/
+int	Client::getClientSocket(void) const {
+	return _clientSocket;
 }
-struct sockaddr_in  Client::getClientAddress(void) {
-	return _client_addr;
-}
-
-// SET functions
-void Client::setClientSocket(int new_socket) {
-	_client_socket = new_socket;
+struct sockaddr_in  Client::getClientAddress(void) const {
+	return _clientAddr;
 }
 
-void Client::setClientAddress(struct sockaddr_in new_addr) {
-	_client_addr = new_addr;
+/*
+** SET functions
+*/
+void Client::setClientSocket(const int newSocket) {
+	_clientSocket = newSocket;
+}
+
+void Client::setClientAddress(struct sockaddr_in newAddr) {
+	_clientAddr = newAddr;
 }
