@@ -45,3 +45,5 @@
 #define LOCATION "location"
 #define OFF "off"
 #define ON "on"
+
+#define MAXLINE 4096

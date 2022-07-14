@@ -29,6 +29,7 @@ private:
 	fd_set					_readyRead;
 	fd_set					_readyWrite;
 	std::vector<Server>		_servers;
+
 };
 
 #endif //WEBSERV_WEBSERVER_H

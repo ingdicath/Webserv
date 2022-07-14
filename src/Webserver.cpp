@@ -7,7 +7,11 @@
 // TODO: comments met beschrijving functie toevoegen aan iedere functie 
 // TODO: checken waarom bij browser clients er in 1 call 2 clients aangemaakt worden 
 //       (misschien omdat er geen reply wordt gegeven door de server: uitproberen)?
+// TODO: check of er iets ge-fflush-d moet worden voor accept
 // TODO: timeout toevoegen
+// TODO: uitzoeken waarom de browser pas iets laat zien als de verbinding closed wordt.
+// TODO: send en receive gaan gebruiken in plaats van read en write
+// TODO: maak voorbeeld met 2 servers om dat te testen: nadat basis werkt met 1
 
 #include "settings.hpp"
 #include "Webserver.hpp"
@@ -72,12 +76,13 @@ void    Webserver::createConnection(void) {
 
 void    Webserver::runWebserver(void) {
 	// initialise fd_sets for ready sockets
-	FD_ZERO(&_readyRead);
-	FD_ZERO(&_readyWrite);
-	int running = 1;
+	uint8_t			buff[MAXLINE + 1];
+	uint8_t			recvline[MAXLINE + 1];
+	int 			running = 1;
+	int				ret;
 
+	std::cout << "+++++++ Waiting for connection ++++++++" << std::endl;
 	while (running) {
-		std::cout << "+++++++ Waiting for connection ++++++++" << std::endl;
 		updateReadySockets();
 		// loop through all servers
 		for (std::vector<Server>::iterator it = _servers.begin(); it < _servers.end(); it++) {
@@ -93,9 +98,21 @@ void    Webserver::runWebserver(void) {
 						updateMaxSocket(newSocket);
 					// existing connection
 					} else {
-						std::cout << "Handling connection" << std::endl;
-						// klopt dit: moet niet de lijst met ready worden aangepast hier?
+						// handling connection
+						memset(recvline, 0, MAXLINE);
+						// read the clients message
+						while ((ret = read(i, recvline, MAXLINE-1)) > 0) {
+							std::cout << recvline << std::endl;
+							if (recvline[ret - 1] == '\n') {
+								std::cout << "break" << std::endl;
+								break;
+							}
+							memset(recvline, 0, MAXLINE);
+						}
+						snprintf((char*)buff, sizeof(buff), "HTTP/1.1 200 OK\r\n\r\nHello");
+						write(i, (char*)buff, strlen((char*)buff));
 						FD_CLR(i, &_currentSockets);
+						close(i);
 					}
 				}
 			} // loop through all sockets
@@ -107,6 +124,8 @@ void    Webserver::runWebserver(void) {
 ** Function that updates the fd_sets _ready_read and _ready_write
 */
 void	Webserver::updateReadySockets(void) {
+	FD_ZERO(&_readyRead);
+	FD_ZERO(&_readyWrite);
 	_readyRead = _currentSockets;
 	//arguments of select: 1: setsize, 2: reading_sockets, 3: writing_sockets, 4: errors, 5: timeout
 	if (select(_maxSocket + 1, &_readyRead, &_readyWrite, NULL, NULL) < 0) {
