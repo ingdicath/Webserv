@@ -20,7 +20,7 @@ public:
 	void	loadConfiguration(void);
 	void	createConnection(void);
 	void	runWebserver(void);
-	void	updateReadySockets(void);
+	int		updateReadySockets(void);
 	void	updateMaxSocket(int new_socket);
 
 private:
