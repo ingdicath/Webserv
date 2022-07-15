@@ -1,46 +1,56 @@
-#
-# Created by Diana Salamanca on 20-Apr-22.
-#
+# **************************************************************************** #
+#                                                                              #
+#                                                         ::::::::             #
+#    Makefile                                           :+:    :+:             #
+#                                                      +:+                     #
+#    By: aheister <aheister@student.codam.nl>         +#+                      #
+#                                                    +#+                       #
+#    Created: 2022/07/10 09:01:00 by aheister      #+#    #+#                  #
+#    Updated: 2022/07/11 14:15:28 by aheister      ########   odam.nl          #
+#                                                                              #
+# **************************************************************************** #
 
-# Name of the program
-NAME := webserv
 
-# Directories
-OBJ_DIR := obj/
-SRC_DIR := src/
-INC_DIR := includes/
+NAME			=	webserv
 
-# Flags
-#FLAGS = -Wall -Wextra -Werror -std=c++98 -pedantic
-FLAGS = -Wall -Wextra -pedantic
-IFLAGS := -I$(INC_DIR)
-FLAGS += $(IFLAGS)
+#CFLAGS			=	-Wall -Werror -Wextra -Iincludes -std=c++98
+CFLAGS			=	-Wall -Werror -Iincludes -std=c++98
+CC				=	c++
 
-# Sources and objects
-SRC := main.cpp utils.cpp Server.cpp Configurator.cpp Location.cpp
-SRC_PATH:= $(addprefix $(SRC_DIR), $(SRC))
-OBJ := $(SRC_PATH:$(SRC_DIR)%.cpp=$(OBJ_DIR)%.o)
+SRC_DIR			=	src/
+OBJ_DIR 		=	obj/
 
-RM = /bin/rm -rf
+SRC				=	main.cpp\
+					Client.cpp\
+					Server.cpp\
+					Webserver.cpp\
 
-all: $(NAME)
+SRC_PATH		=	$(addprefix $(SRC_DIR), $(SRC))
+OBJ_FILES		=	$(SRC_PATH:$(SRC_DIR)%.cpp=$(OBJ_DIR)%.o)
 
-$(NAME): $(OBJ)
-	@$(CXX) $^ -o $@
-	@echo "\033[38;5;10m'$(NAME)' executable has been created.\n\033[0m"
+RM				=	/bin/rm -rf
 
-$(OBJ_DIR)%.o: $(SRC_DIR)%.cpp
-	@mkdir -p $(@D)
-	@$(CXX) $(FLAGS) -o $@ -c $<
+all:				$(NAME)
+
+$(NAME):			$(OBJ_FILES)
+					$(CC) $(CFLAGS) -o $(NAME) $(OBJ_FILES)
+					@echo "\033[38;5;10m'$(NAME)' executable has been created.\n\033[0m"
+
+$(OBJ_DIR)%.o:		$(SRC_DIR)%.cpp
+					mkdir -p $(OBJ_DIR)
+					$(CC) -c $(CFLAGS) -o $@ $<
+					@echo "Objects are created"
 
 clean:
-	@$(RM) $(OBJ_DIR)
-	@echo "Objects were removed - clean."
+					@$(RM) $(OBJ_DIR)
+					@echo "Objects were removed - clean."
 
-fclean: clean
-	@$(RM) $(NAME)
-	@echo "\033[38;5;81m'$(NAME)' executable was removed - fclean.\033[0m"
+fclean: 			clean
+					@$(RM) $(NAME)
+					@echo "\033[38;5;81m'$(NAME)' executable was removed - fclean.\033[0m"
 
-re: fclean all
+re:
+					$(MAKE) fclean
+					$(MAKE) all
 
-.PHONY: all clean fclean re
+.PHONY:				all clean fclean re

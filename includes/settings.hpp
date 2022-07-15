@@ -10,12 +10,12 @@
 /** colors **/
 #define RESET   "\033[0m"
 #define ITALIC  "\033[3m"
-# define GREEN_2 "\033[38;5;10m"
+#define GREEN_2 "\033[38;5;10m"
 #define BLACK   "\033[30m"
 #define CYAN_L  "\033[0;36m"
 #define RED     "\033[31m"
-# define ORANGE "\033[38;5;172m"
-# define PURPLE "\033[35;5;95m"
+#define ORANGE "\033[38;5;172m"
+#define PURPLE "\033[35;5;95m"
 #define GREEN   "\033[32m"
 #define YELLOW  "\033[33m"
 #define BLUE    "\033[34m"
@@ -38,7 +38,12 @@
 #define DEFAULT_ROOT "/www"
 #define DEFAULT_SERVER_NAME ""
 #define DEFAULT_ERROR_PAGE 404
+#define DEFAULT_BACKLOG 100 // added: don't know if this is the right place / amount
 #define MIN_PORT_NUMBER 1
 #define MAX_PORT_NUMBER 65535
-#define OFF 0
-#define ON 1
+#define SERVER "server"
+#define LOCATION "location"
+#define OFF "off"
+#define ON "on"
+
+#define MAXLINE 4096
