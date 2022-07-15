@@ -4,6 +4,12 @@
 
 // TODO: maybe make a set of a variable listen with host and port??
 // TODO: comments met beschrijving functie toevoegen aan iedere functie 
+// TODO: set maken van listen met host en port??
+// TODO: uitzoeken hoe het zit met ports / server_names / hosts en andere server eigenschappen
+// TODO: comments met beschrijving functie toevoegen aan iedere functie 
+// TODO: checken waarom bij browser clients er in 1 call 2 clients aangemaakt worden 
+//       (misschien omdat er geen reply wordt gegeven door de server: uitproberen)?
+// TODO: check of er iets ge-fflush-d moet worden voor accept
 // TODO: timeout toevoegen
 // TODO: uitzoeken waarom de browser pas iets laat zien als de verbinding closed wordt.
 // TODO: send en receive gaan gebruiken in plaats van read en write
@@ -18,6 +24,9 @@ Webserver::Webserver(void)
 	FD_ZERO(&_currentSockets);
 	FD_ZERO(&_readyRead);
 	FD_ZERO(&_readyWrite);
+// Kijken of hier niet al meer geinitialiseerd moet worden: bijvoorbeeld de FD_ZERO's
+Webserver::Webserver(void)
+	: 	_maxSocket(0) {
 	std::cout << "Webserver created" << std::endl;
 }
 
@@ -59,6 +68,8 @@ void    Webserver::loadConfiguration(void) {
 ** 3. Updates the _max_socket fd
 */
 void    Webserver::createConnection(void) {
+	FD_ZERO(&_currentSockets);
+
 	for (std::vector<Server>::iterator it = _servers.begin(); it < _servers.end(); it++) {
 		it->setupServer();
 		FD_SET(it->getServerSocket(), &_currentSockets);
@@ -84,6 +95,15 @@ void    Webserver::runWebserver(void) {
 		ret = updateReadySockets();
 		//test
 		std::cout << ret << std::endl;
+	// initialise fd_sets for ready sockets
+	uint8_t			buff[MAXLINE + 1];
+	uint8_t			recvline[MAXLINE + 1];
+	int 			running = 1;
+	int				ret;
+
+	std::cout << "+++++++ Waiting for connection ++++++++" << std::endl;
+	while (running) {
+		updateReadySockets();
 		// loop through all servers
 		for (std::vector<Server>::iterator it = _servers.begin(); it < _servers.end(); it++) {
 			// loop through all existing sockets
@@ -99,11 +119,13 @@ void    Webserver::runWebserver(void) {
 					// existing connection
 					} else {
 						// handling connection: could be replaced to class Request (HTTP)
+						// handling connection
 						memset(recvline, 0, MAXLINE);
 						// read the clients message
 						while ((ret = read(i, recvline, MAXLINE-1)) > 0) {
 							std::cout << recvline << std::endl;
 							if (recvline[ret - 1] == '\n') {
+								std::cout << "break" << std::endl;
 								break;
 							}
 							memset(recvline, 0, MAXLINE);
@@ -113,6 +135,8 @@ void    Webserver::runWebserver(void) {
 						write(i, (char*)buff, strlen((char*)buff));
 
 						// TODO: uitzoeken of de connectie gesloten moet worden na voldoen aan request
+						snprintf((char*)buff, sizeof(buff), "HTTP/1.1 200 OK\r\n\r\nHello");
+						write(i, (char*)buff, strlen((char*)buff));
 						FD_CLR(i, &_currentSockets);
 						close(i);
 					}
@@ -125,15 +149,16 @@ void    Webserver::runWebserver(void) {
 /*
 ** Function that updates the fd_sets _readyRead and _readyWrite
 */
-int	Webserver::updateReadySockets(void) {
-	int	ret;
-
+void	Webserver::updateReadySockets(void) {
 	FD_ZERO(&_readyRead);
 	FD_ZERO(&_readyWrite);
 	_readyRead = _currentSockets;
 	//arguments of select: 1: setsize, 2: reading_sockets, 3: writing_sockets, 4: errors, 5: timeout
 	ret = select(_maxSocket + 1, &_readyRead, &_readyWrite, NULL, NULL);
 	return ret;
+	if (select(_maxSocket + 1, &_readyRead, &_readyWrite, NULL, NULL) < 0) {
+		throw (std::runtime_error("Select failed"));
+	}
 }
 
 void Webserver::updateMaxSocket(int newSocket) {
