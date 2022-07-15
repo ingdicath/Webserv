@@ -12,6 +12,12 @@
 // TODO: uitzoeken waarom de browser pas iets laat zien als de verbinding closed wordt.
 // TODO: send en receive gaan gebruiken in plaats van read en write
 // TODO: maak voorbeeld met 2 servers om dat te testen: nadat basis werkt met 1
+// TODO: epoll uitproberen
+// TODO: nadenken over oplossing met meerdere sockets per server: 2 opties
+//		 1. van iedere socket een aparte server maken: iedere socket heeft eigen lijst clients bijv, 
+//			dus dat maakt het wel makkelijker, anderzijds is de rest van de info wel gelijk
+//		 2. meerdere listen's maken en clients aan een socket koppelen. Wel wat ingewikkelder maar zuiverder
+// TODO: git probleem oplossen
 
 #include "settings.hpp"
 #include "Webserver.hpp"
