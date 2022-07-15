@@ -24,10 +24,6 @@ Webserver::Webserver(void)
 	FD_ZERO(&_currentSockets);
 	FD_ZERO(&_readyRead);
 	FD_ZERO(&_readyWrite);
-// Kijken of hier niet al meer geinitialiseerd moet worden: bijvoorbeeld de FD_ZERO's
-Webserver::Webserver(void)
-	: 	_maxSocket(0) {
-	std::cout << "Webserver created" << std::endl;
 }
 
 // TODO: Checken of deep copy van server vector gemaakt moet worden
@@ -93,17 +89,7 @@ void    Webserver::runWebserver(void) {
 	std::cout << "+++++++ Waiting for connection ++++++++" << std::endl;
 	while (running) {
 		ret = updateReadySockets();
-		//test
 		std::cout << ret << std::endl;
-	// initialise fd_sets for ready sockets
-	uint8_t			buff[MAXLINE + 1];
-	uint8_t			recvline[MAXLINE + 1];
-	int 			running = 1;
-	int				ret;
-
-	std::cout << "+++++++ Waiting for connection ++++++++" << std::endl;
-	while (running) {
-		updateReadySockets();
 		// loop through all servers
 		for (std::vector<Server>::iterator it = _servers.begin(); it < _servers.end(); it++) {
 			// loop through all existing sockets
@@ -149,16 +135,15 @@ void    Webserver::runWebserver(void) {
 /*
 ** Function that updates the fd_sets _readyRead and _readyWrite
 */
-void	Webserver::updateReadySockets(void) {
+int	Webserver::updateReadySockets(void) {
+	int ret;
+
 	FD_ZERO(&_readyRead);
 	FD_ZERO(&_readyWrite);
 	_readyRead = _currentSockets;
 	//arguments of select: 1: setsize, 2: reading_sockets, 3: writing_sockets, 4: errors, 5: timeout
 	ret = select(_maxSocket + 1, &_readyRead, &_readyWrite, NULL, NULL);
 	return ret;
-	if (select(_maxSocket + 1, &_readyRead, &_readyWrite, NULL, NULL) < 0) {
-		throw (std::runtime_error("Select failed"));
-	}
 }
 
 void Webserver::updateMaxSocket(int newSocket) {
