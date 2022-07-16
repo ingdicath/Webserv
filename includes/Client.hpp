@@ -6,12 +6,9 @@
 /*   By: aheister <aheister@student.codam.nl>         +#+                     */
 /*                                                   +#+                      */
 /*   Created: 2022/07/07 13:31:18 by aheister      #+#    #+#                 */
-/*   Updated: 2022/07/11 14:58:16 by aheister      ########   odam.nl         */
+/*   Updated: 2022/07/15 12:37:32 by aheister      ########   odam.nl         */
 /*                                                                            */
 /* ************************************************************************** */
-
-#ifndef WEBSERV_CLIENT_H
-#define WEBSERV_CLIENT_H
 
 #pragma once
 
@@ -34,5 +31,3 @@ private:
     int                 _clientSocket;
     struct sockaddr_in 	_clientAddr;
 };
-
-#endif //WEBSERV_CLIENT_H

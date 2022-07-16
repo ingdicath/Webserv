@@ -2,9 +2,6 @@
 // Created by Diana catherine Salamanca leguizamon on 5/24/22.
 //
 
-#ifndef WEBSERV_SERVER_H
-#define WEBSERV_SERVER_H
-
 #pragma once
 
 // #include "Location.hpp"
@@ -21,31 +18,30 @@
 
 #include <vector>
 #include <string>
-// #include <map>
-// #include <set>
 
 #include <iostream>
-#include <stdexcept>
-
-#include <unistd.h> // used for read/write/close
+#include <stdexcept>	// used for exceptions
+#include <unistd.h>		// used for read/write/close
 
 class Server {
 public:
 	Server(void);
+	Server(int port);
 	Server(Server const & src);
 	Server& operator=(Server const & rhs);
 	virtual ~Server(void);
 
 	//Configuration functions
-	void	configServer(void);
+	void	configServer(int port);
 
 	//Socket functions
 	void	setupServer(void);
 	int		acceptConnection(void);
 
 	//Get functions
-	int		getServerSocket(void) const;
-	int		getPort(void) const;
+	int					getServerSocket(void) const;
+	int					getPort(void) const;
+	std::vector<Client>	getClients(void) const;
 	
 private:
 	//Configuration
@@ -64,8 +60,6 @@ private:
 	std::vector<Client> _clients;
 
 };
-
-#endif //WEBSERV_SERVER_H
 
 // class Server {
 // public:

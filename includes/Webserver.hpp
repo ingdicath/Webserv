@@ -2,9 +2,6 @@
 // Created by Diani on 20/06/2022.
 //
 
-#ifndef WEBSERV_WEBSERVER_H
-#define WEBSERV_WEBSERVER_H
-
 #pragma once
 
 #include "Server.hpp"
@@ -32,4 +29,3 @@ private:
 
 };
 
-#endif //WEBSERV_WEBSERVER_H

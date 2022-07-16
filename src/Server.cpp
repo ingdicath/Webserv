@@ -6,7 +6,7 @@
 /*   By: aheister <aheister@student.codam.nl>         +#+                     */
 /*                                                   +#+                      */
 /*   Created: 2022/07/11 15:09:47 by aheister      #+#    #+#                 */
-/*   Updated: 2022/07/14 08:57:47 by aheister      ########   odam.nl         */
+/*   Updated: 2022/07/16 10:33:57 by aheister      ########   odam.nl         */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -14,10 +14,16 @@
 #include "settings.hpp"
 #include "Server.hpp"
 
-#include <iostream>
-
 Server::Server(void) :
 	_port(DEFAULT_PORT),
+    _serverName(DEFAULT_SERVER_NAME),
+    _errorPage(DEFAULT_ERROR_PAGE) {
+
+	std::cout << "Server created" << std::endl;
+}
+
+Server::Server(int port) :
+	_port(port),
     _serverName(DEFAULT_SERVER_NAME),
     _errorPage(DEFAULT_ERROR_PAGE) {
 
@@ -44,7 +50,7 @@ Server::~Server(void) {
 /*
 ** Configuration of the server 
 */
-void	Server::configServer(void) {
+void	Server::configServer(int port) {
 	return;
 }
 
@@ -108,6 +114,10 @@ int		Server::getServerSocket(void) const {
 
 int		Server::getPort(void) const {
 	return _port;
+}
+
+std::vector<Client>	Server::getClients(void) const {
+	return _clients;
 }
 
 
