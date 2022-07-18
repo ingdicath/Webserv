@@ -6,7 +6,7 @@
 /*   By: aheister <aheister@student.codam.nl>         +#+                     */
 /*                                                   +#+                      */
 /*   Created: 2022/07/11 15:09:47 by aheister      #+#    #+#                 */
-/*   Updated: 2022/07/16 10:33:57 by aheister      ########   odam.nl         */
+/*   Updated: 2022/07/16 13:23:56 by aheister      ########   odam.nl         */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -83,7 +83,7 @@ void	Server::setupServer(void) {
 ** Accepts an incoming connection from a client. In the struct _client_address, the IP address and port of the client is stored.
 */
 int Server::acceptConnection(void) {
-	Client	client;
+
 	int		newSocket;
 	struct	sockaddr_in clientAddr;
 	int		clientAddrlen = sizeof(clientAddr);
@@ -91,18 +91,33 @@ int Server::acceptConnection(void) {
 	if ((newSocket = accept(this->_serverSocket, (struct sockaddr *)&clientAddr, (socklen_t*)&clientAddrlen)) < 0) {
 		throw (std::runtime_error("Accept incoming connection failed"));
 	}
-
-	client.setClientAddress(clientAddr);
-	// test
-	std::cout << "Client: " << inet_ntoa(clientAddr.sin_addr) << std::endl;
-	client.setClientSocket(newSocket);
-	_clients.push_back(client);
-
-	// test
-	std::cout << "Client accepted: " << newSocket << std::endl;
-
+	this->addClient(newSocket, clientAddr);
 	return newSocket;
 }
+
+void	Server::addClient(int newSocket, struct	sockaddr_in clientAddr) {
+	Client	client;
+
+	client.setClientAddress(clientAddr);
+	std::cout << "Client: " << inet_ntoa(clientAddr.sin_addr) << std::endl; // test: delete later
+	client.setClientSocket(newSocket);
+	_clients.push_back(client);
+	std::cout << "Client accepted: " << newSocket << std::endl; // test: delete later
+
+}
+
+void	Server::removeClient(int thisSocket) {
+	for (std::vector<Client>::iterator it = _clients.begin(); it < _clients.end(); it++) {
+		if (it->getClientSocket() == thisSocket)
+			_clients.erase(it);
+	}
+	std::cout << "Current clients: ";
+	for (std::vector<Client>::iterator it = _clients.begin(); it < _clients.end(); it++) {
+		std::cout << it->getClientSocket() << ", ";
+	}
+	std::cout << "..." << std::endl;
+}
+
 
 
 /*

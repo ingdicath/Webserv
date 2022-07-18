@@ -37,11 +37,14 @@ public:
 	//Socket functions
 	void	setupServer(void);
 	int		acceptConnection(void);
+	void	addClient(int newSocket, struct	sockaddr_in clientAddr);
+	void	removeClient(int thisSocket);
 
 	//Get functions
 	int					getServerSocket(void) const;
 	int					getPort(void) const;
 	std::vector<Client>	getClients(void) const;
+	
 	
 private:
 	//Configuration
