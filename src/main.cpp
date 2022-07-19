@@ -3,6 +3,15 @@
 #include "Server.hpp"
 #include "settings.hpp"
 
+void	signal_handler(int signal)
+{
+	if (signal == SIGINT)
+	{
+		std::cout << GREEN "\b\bWebserver stopped" RESET << std::endl;
+		exit(EXIT_SUCCESS);
+	}
+}
+
 int     main(int argc, char* argv[]) {
 
 	if (argc != 2) {
@@ -14,12 +23,14 @@ int     main(int argc, char* argv[]) {
 		Webserver webserver;
 
 		try {
+			signal(SIGINT, signal_handler);
 			webserver.loadConfiguration();
 			webserver.createConnection();
 			webserver.runWebserver();
 		}
 		catch (std::exception &e) {
-			std::cout << e.what() << std::endl;
+			std::cout << RED << e.what() << RESET << std::endl;
+			webserver.clear();
 		}
 	}
 	return 0;

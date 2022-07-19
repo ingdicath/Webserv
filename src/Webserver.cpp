@@ -6,14 +6,9 @@
 //		 Two options: 1. define each socket as a separate server (rest of server information is the same)
 //					  2. make it possible to have multiple tcp_sockets for 1 server, each with his own clients
 //						 last one is more difficult in looping through sockets and servers
-// TODO: Write descriptions with every function
-// TODO: Build-in time-out functionality to select function
-// TODO: Decide whether to use send en receive instead of read en write
-// TODO: Find out if the client needs to be removed after the connection closes
-// TODO: Find out why binding the socket sometimes failes a couple of times after each other
-// TODO: What to do if server fails: start up again?
 // TODO: Find out what to do with location / location block
-// TODO: Find out when/if clear/close used fd's.
+// TODO: Update max_socket fd after removing a client
+// TODO: Find a way to not show 'Waiting for connection' when a client is sleeping
 
 #include "settings.hpp"
 #include "Webserver.hpp"
@@ -77,73 +72,122 @@ void    Webserver::createConnection(void) {
 void    Webserver::runWebserver(void) {
 	int 			running = 1;
 	int				ret = 0;
+	struct timeval	timeout;
 	
 	// temp as long as Request class isn't ready
 	uint8_t			buff[MAXLINE + 1];
 	uint8_t			recvline[MAXLINE + 1];
 
-	std::cout << "+++++++ Waiting for connection ++++++++" << std::endl;
+	std::cout << GREEN "Webserver running" RESET << std::endl;
 	while (running) {
-		for (std::vector<Server>::iterator itServer = _servers.begin(); itServer < _servers.end(); itServer++) {
-			// loop through all existing sockets
-			for (int i = 0; i < _maxSocket + 1; i++) {
-				ret = updateReadySockets();
-				if (FD_ISSET(i, &_readyRead)) {
-					// new connection
-					if (i == itServer->getServerSocket()) {
-						std::cout << "new connection of socket " << i << std::endl;
-						int newSocket = itServer->acceptConnection();
-						// new client is added to _current_sockets
-						FD_SET(newSocket, &_currentSockets);
-						// _max_socket is updated with new socket
-						updateMaxSocket(newSocket);
-					// existing connection
-					} else {
-						std::vector<Client> clients = itServer->getClients();
-						for (std::vector<Client>::iterator itClient = clients.begin(); itClient < clients.end(); itClient++) {
-							if (i == itClient->getClientSocket()) { 
-								std::cout << "existing connection of socket " << i << std::endl; // test: delete later
-								// handling connection: could be replaced to class Request (HTTP)
-								memset(recvline, 0, MAXLINE);
-								// read the clients message
-								while ((ret = read(i, recvline, MAXLINE - 1)) > 0) {
-									std::cout << recvline << std::endl;
-									if (recvline[ret - 1] == '\n') {
-										std::cout << "break" << std::endl; // test: delete later
-										break;
-									}
+		if (ret == 0) {
+			std::cout << CYAN "+++++++ Waiting for connection ++++++++" RESET << std::endl;
+			while (ret == 0) {
+				timeout.tv_sec  = 1;
+				timeout.tv_usec = 0;
+				ret = updateReadySockets(timeout);
+			}
+		}
+		else if (ret > 0) {
+			for (std::vector<Server>::iterator itServer = _servers.begin(); itServer < _servers.end(); itServer++) {
+				// loop through all existing sockets
+				for (int i = 0; i < _maxSocket + 1; i++) {
+					if (FD_ISSET(i, &_readyRead)) {
+						// new connection
+						if (i == itServer->getServerSocket()) {
+							std::cout << "new connection of socket " << i << std::endl;
+							int newSocket = itServer->acceptConnection();
+							// new client is added to _current_sockets
+							FD_SET(newSocket, &_currentSockets);
+							// _max_socket is updated with new socket
+							updateMaxSocket(newSocket);
+							// TODO: check if this is the right place
+							ret = updateReadySockets(timeout);
+						// existing connection
+						} else {
+							std::vector<Client> clients = itServer->getClients();
+							for (std::vector<Client>::iterator itClient = clients.begin(); itClient < clients.end(); itClient++) {
+								if (i == itClient->getClientSocket()) { 
+									std::cout << "existing connection of socket " << i << std::endl; // test: delete later
+									// handling connection: could be replaced to class Request (HTTP)
 									memset(recvline, 0, MAXLINE);
+									// read the clients message
+									while ((ret = read(i, recvline, MAXLINE - 1)) > 0) {
+										std::cout << recvline << std::endl;
+										if (recvline[ret - 1] == '\n') {
+											break;
+										}
+										memset(recvline, 0, MAXLINE);
+									}
+									// write an answer to the client
+									snprintf((char*)buff, sizeof(buff), "HTTP/1.1 200 OK\r\n\r\nHello");
+									write(i, (char*)buff, strlen((char*)buff));
+									FD_CLR(i, &_currentSockets);
+									itServer->removeClient(i);
+									ret = 0;
 								}
-								// write an answer to the client
-								snprintf((char*)buff, sizeof(buff), "HTTP/1.1 200 OK\r\n\r\nHello");
-								write(i, (char*)buff, strlen((char*)buff));
-								FD_CLR(i, &_currentSockets);
-								itServer->removeClient(i);
-								close(i);
 							}
 						}
 					}
-				}
-			} // loop through all sockets
-		} // loop through all servers
+				} // loop through all sockets
+			} // loop through all servers
+		}
 	}
 }
 
 /*
 ** Function that updates the fd_sets _readyRead and _readyWrite
 */
-int	Webserver::updateReadySockets(void) {
+int	Webserver::updateReadySockets(struct timeval timeout) {
 	int ret;
 
 	FD_ZERO(&_readyRead);
 	FD_ZERO(&_readyWrite);
 	_readyRead = _currentSockets;
-	//arguments of select: 1: setsize, 2: reading_sockets, 3: writing_sockets, 4: errors, 5: timeout
-	ret = select(_maxSocket + 1, &_readyRead, &_readyWrite, NULL, NULL);
+	ret = select(_maxSocket + 1, &_readyRead, &_readyWrite, NULL, &timeout);
+	checkTimeout();
 	return ret;
 }
 
+// ADD DESCRIPTION
 void Webserver::updateMaxSocket(int newSocket) {
 	if (newSocket > _maxSocket)
 		_maxSocket = newSocket;
+}
+
+// ADD DESCRIPTION
+void Webserver::clear(void) {
+	for (std::vector<Server>::iterator itServer = _servers.begin(); itServer < _servers.end(); itServer++) {
+		std::cout << itServer->getServerSocket() << " closed" << std::endl; // test: delete later
+		close(itServer->getServerSocket());
+
+		_servers.erase(itServer);
+	}
+}
+
+/*
+** Function that checks for every server if there are clients that have a connection but are not responding anymore.
+** The function compares the timestamp of the clients connection with the current time. If that's more than the servers 
+** time_out the client's socket is closed and the client is removed from the list of clients.
+** JOBS:
+** 1. Loop through <vector> with all servers
+** 2. For each server loop through <vector> with all clients
+** 3. Updates the _max_socket fd
+*/
+void Webserver::checkTimeout(void) {
+	struct		timeval tv;
+	long long	seconds;
+
+	for (std::vector<Server>::iterator itServer = _servers.begin(); itServer < _servers.end(); itServer++) {
+		std::vector<Client> clients = itServer->getClients();
+		for (std::vector<Client>::iterator itClient = clients.begin(); itClient < clients.end(); itClient++) {
+			gettimeofday(&tv, NULL);
+			seconds = tv.tv_sec - itClient->getClientTimeStamp();
+			if (seconds >= itServer->getTimeout()) {
+				std::cout << "client " << itClient->getClientSocket() << " timed out: " << seconds << " seconds" << std::endl; // test: delete later
+				FD_CLR(itClient->getClientSocket(), &_currentSockets);
+				itServer->removeClient(itClient->getClientSocket());
+			}
+		}
+	}
 }

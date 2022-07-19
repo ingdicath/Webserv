@@ -17,8 +17,10 @@ public:
 	void	loadConfiguration(void);
 	void	createConnection(void);
 	void	runWebserver(void);
-	int		updateReadySockets(void);
+	int		updateReadySockets(struct timeval timeout);
 	void	updateMaxSocket(int new_socket);
+	void	checkTimeout(void);
+	void	clear(void);
 
 private:
 	int						_maxSocket;

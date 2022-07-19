@@ -38,6 +38,7 @@ int main(int argc, char const *argv[])
         printf("\nConnection Failed \n");
         return -1;
     }
+    sleep(12);
     send(sock , hello , strlen(hello) , 0 );
     printf("Hello message sent\n");
     valread = read( sock , buffer, 1024);

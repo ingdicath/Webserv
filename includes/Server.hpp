@@ -44,6 +44,7 @@ public:
 	int					getServerSocket(void) const;
 	int					getPort(void) const;
 	std::vector<Client>	getClients(void) const;
+	long long			getTimeout(void) const;
 	
 	
 private:
@@ -52,7 +53,7 @@ private:
 	//std::string 							_host;					// Format??
     std::string								_serverName;
     int										_errorPage;				// Explore how this works
-	//int									_timeOut				// Explore how this works
+	int										_timeOut;
 	//std::map<std::string, std::string>	_cgiFileTypes;			// Associative container that store elements formed by a combination of a key value and a mapped value
 	//std::vector<Location>					_locationBlocks;		// Explore how this works
 	//std::size_t							_clientMaxBodySize;		// WHAT IS THIS?

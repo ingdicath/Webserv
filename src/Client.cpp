@@ -6,7 +6,7 @@
 /*   By: aheister <aheister@student.codam.nl>         +#+                     */
 /*                                                   +#+                      */
 /*   Created: 2022/07/07 13:40:13 by aheister      #+#    #+#                 */
-/*   Updated: 2022/07/11 15:50:08 by aheister      ########   odam.nl         */
+/*   Updated: 2022/07/19 13:34:23 by aheister      ########   odam.nl         */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -25,6 +25,7 @@ Client& Client::operator=(Client const & rhs) {
 	if (this != & rhs) {
 		_clientSocket = rhs._clientSocket;
 		_clientAddr = rhs._clientAddr;
+		_clientTimeStamp = rhs._clientTimeStamp;
 	}
 	return *this;
 }
@@ -43,6 +44,10 @@ struct sockaddr_in  Client::getClientAddress(void) const {
 	return _clientAddr;
 }
 
+long long Client::getClientTimeStamp(void) const {
+	return _clientTimeStamp;
+}
+
 /*
 ** SET functions
 */
@@ -52,4 +57,8 @@ void Client::setClientSocket(const int newSocket) {
 
 void Client::setClientAddress(struct sockaddr_in newAddr) {
 	_clientAddr = newAddr;
+}
+
+void Client::setClientTimeStamp(long long newTimeStamp) {
+	_clientTimeStamp = newTimeStamp;
 }

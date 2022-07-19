@@ -6,7 +6,7 @@
 /*   By: aheister <aheister@student.codam.nl>         +#+                     */
 /*                                                   +#+                      */
 /*   Created: 2022/07/07 13:31:18 by aheister      #+#    #+#                 */
-/*   Updated: 2022/07/15 12:37:32 by aheister      ########   odam.nl         */
+/*   Updated: 2022/07/19 13:19:46 by aheister      ########   odam.nl         */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -23,11 +23,14 @@ public:
 
     int                 getClientSocket(void) const;
     struct sockaddr_in  getClientAddress(void) const;
+    long long           getClientTimeStamp(void) const;
 
     void                setClientSocket(int new_socket);
     void                setClientAddress(struct sockaddr_in new_addr);
+    void                setClientTimeStamp(long long timeStamp);
 
 private:
     int                 _clientSocket;
     struct sockaddr_in 	_clientAddr;
+    long long           _clientTimeStamp;
 };

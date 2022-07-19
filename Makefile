@@ -6,7 +6,7 @@
 #    By: aheister <aheister@student.codam.nl>         +#+                      #
 #                                                    +#+                       #
 #    Created: 2022/07/10 09:01:00 by aheister      #+#    #+#                  #
-#    Updated: 2022/07/11 14:15:28 by aheister      ########   odam.nl          #
+#    Updated: 2022/07/18 14:04:14 by aheister      ########   odam.nl          #
 #                                                                              #
 # **************************************************************************** #
 
@@ -34,7 +34,7 @@ all:				$(NAME)
 
 $(NAME):			$(OBJ_FILES)
 					$(CC) $(CFLAGS) -o $(NAME) $(OBJ_FILES)
-					@echo "\033[38;5;10m'$(NAME)' executable has been created.\n\033[0m"
+					@echo "\033[38;5;10m'$(NAME)' executable has been created\n\033[0m"
 
 $(OBJ_DIR)%.o:		$(SRC_DIR)%.cpp
 					mkdir -p $(OBJ_DIR)
@@ -47,7 +47,7 @@ clean:
 
 fclean: 			clean
 					@$(RM) $(NAME)
-					@echo "\033[38;5;81m'$(NAME)' executable was removed - fclean.\033[0m"
+					@echo "\033[38;5;81m'$(NAME)' executable was removed - fclean\033[0m"
 
 re:
 					$(MAKE) fclean

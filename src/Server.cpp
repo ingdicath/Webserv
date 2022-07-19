@@ -6,7 +6,7 @@
 /*   By: aheister <aheister@student.codam.nl>         +#+                     */
 /*                                                   +#+                      */
 /*   Created: 2022/07/11 15:09:47 by aheister      #+#    #+#                 */
-/*   Updated: 2022/07/16 13:23:56 by aheister      ########   odam.nl         */
+/*   Updated: 2022/07/19 13:20:29 by aheister      ########   odam.nl         */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -17,7 +17,8 @@
 Server::Server(void) :
 	_port(DEFAULT_PORT),
     _serverName(DEFAULT_SERVER_NAME),
-    _errorPage(DEFAULT_ERROR_PAGE) {
+	_errorPage(DEFAULT_ERROR_PAGE),
+    _timeOut(DEFAULT_TIMEOUT) {
 
 	std::cout << "Server created" << std::endl;
 }
@@ -25,7 +26,8 @@ Server::Server(void) :
 Server::Server(int port) :
 	_port(port),
     _serverName(DEFAULT_SERVER_NAME),
-    _errorPage(DEFAULT_ERROR_PAGE) {
+    _errorPage(DEFAULT_ERROR_PAGE), 
+	_timeOut(DEFAULT_TIMEOUT) {
 
 	std::cout << "Server created" << std::endl;
 }
@@ -39,6 +41,7 @@ Server& Server::operator=(const Server & rhs) {
 		_port = rhs._port;
 		_serverName = rhs._serverName;
 		_errorPage = rhs._errorPage;
+		_timeOut = rhs._timeOut;
 	}
 	return *this;
 }
@@ -60,18 +63,22 @@ void	Server::configServer(int port) {
 ** 3. Creates the connection by putting the server in a listening state
 */
 void	Server::setupServer(void) {
-	if ((this->_serverSocket = socket(AF_INET, SOCK_STREAM, 0)) < 0)
+	int iSetOption = 1;
+	if ((this->_serverSocket = socket(AF_INET, SOCK_STREAM, 0)) == -1)
 		throw (std::runtime_error("Socket creation failed"));
     if (fcntl(this->_serverSocket, F_SETFL, O_NONBLOCK) < 0)
 		throw (std::runtime_error("Transforming the socket to non-blocking failed"));
-	
+	// this function sets the sock option "Reuse address" so if a file descriptor is not closed after exiting, 
+	// you can still restart the program without errors
+	setsockopt(this->_serverSocket, SOL_SOCKET, SO_REUSEADDR, (char*)&iSetOption, sizeof(iSetOption));
 	memset(&_serverAddr, 0, sizeof(_serverAddr));
     _serverAddr.sin_family = AF_INET;
     _serverAddr.sin_port = htons(_port);
     _serverAddr.sin_addr.s_addr = htonl(INADDR_ANY);
-    if (bind(this->_serverSocket, (struct sockaddr *)&_serverAddr, sizeof(_serverAddr)) < 0)
+    if (bind(this->_serverSocket, (struct sockaddr *)&_serverAddr, sizeof(_serverAddr)) == -1) {
+		std::cout << this->_serverSocket << " " << strerror(errno) << std::endl;
 		throw (std::runtime_error("Binding of the socket failed"));
-
+	}
 	if (listen(this->_serverSocket, DEFAULT_BACKLOG) < 0)
 		throw (std::runtime_error("Listen failed"));
 
@@ -88,37 +95,38 @@ int Server::acceptConnection(void) {
 	struct	sockaddr_in clientAddr;
 	int		clientAddrlen = sizeof(clientAddr);
 
-	if ((newSocket = accept(this->_serverSocket, (struct sockaddr *)&clientAddr, (socklen_t*)&clientAddrlen)) < 0) {
+	if ((newSocket = accept(this->_serverSocket, (struct sockaddr *)&clientAddr, (socklen_t*)&clientAddrlen)) == -1) {
 		throw (std::runtime_error("Accept incoming connection failed"));
+		//std::cerr << RED "Accept incoming connection failed" RESET << std::endl;
 	}
-	this->addClient(newSocket, clientAddr);
+	else {
+		this->addClient(newSocket, clientAddr);
+	}
 	return newSocket;
 }
 
 void	Server::addClient(int newSocket, struct	sockaddr_in clientAddr) {
 	Client	client;
+	struct	timeval tv;
 
 	client.setClientAddress(clientAddr);
 	std::cout << "Client: " << inet_ntoa(clientAddr.sin_addr) << std::endl; // test: delete later
 	client.setClientSocket(newSocket);
+	gettimeofday(&tv, NULL);
+	client.setClientTimeStamp(tv.tv_sec);
 	_clients.push_back(client);
 	std::cout << "Client accepted: " << newSocket << std::endl; // test: delete later
-
 }
 
 void	Server::removeClient(int thisSocket) {
 	for (std::vector<Client>::iterator it = _clients.begin(); it < _clients.end(); it++) {
-		if (it->getClientSocket() == thisSocket)
+		if (it->getClientSocket() == thisSocket) {
+			std::cout << "Client " << it->getClientSocket() << " removed" << std::endl; // test: delete later
+			close(it->getClientSocket());
 			_clients.erase(it);
+		}
 	}
-	std::cout << "Current clients: ";
-	for (std::vector<Client>::iterator it = _clients.begin(); it < _clients.end(); it++) {
-		std::cout << it->getClientSocket() << ", ";
-	}
-	std::cout << "..." << std::endl;
 }
-
-
 
 /*
 ** GET functions
@@ -133,6 +141,10 @@ int		Server::getPort(void) const {
 
 std::vector<Client>	Server::getClients(void) const {
 	return _clients;
+}
+
+long long Server::getTimeout(void) const {
+	return _timeOut;
 }
 
 
