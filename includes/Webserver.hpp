@@ -24,10 +24,10 @@ public:
 
 private:
 	int						_maxSocket;
+	int						_activeClients;
 	fd_set					_currentSockets;
 	fd_set					_readyRead;
 	fd_set					_readyWrite;
 	std::vector<Server>		_servers;
-
 };
 

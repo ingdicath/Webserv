@@ -39,7 +39,7 @@
 #define DEFAULT_SERVER_NAME ""
 #define DEFAULT_ERROR_PAGE 404
 #define DEFAULT_BACKLOG 1000 // added: don't know if this is the right place / amount
-#define DEFAULT_TIMEOUT 10 // added
+#define DEFAULT_TIMEOUT 10 // added: 60 seconds is default nginx timeout
 #define MIN_PORT_NUMBER 1
 #define MAX_PORT_NUMBER 65535
 #define SERVER "server"

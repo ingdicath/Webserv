@@ -6,7 +6,7 @@
 /*   By: aheister <aheister@student.codam.nl>         +#+                     */
 /*                                                   +#+                      */
 /*   Created: 2022/07/11 15:09:47 by aheister      #+#    #+#                 */
-/*   Updated: 2022/07/19 13:20:29 by aheister      ########   odam.nl         */
+/*   Updated: 2022/07/20 16:44:51 by aheister      ########   odam.nl         */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -97,7 +97,6 @@ int Server::acceptConnection(void) {
 
 	if ((newSocket = accept(this->_serverSocket, (struct sockaddr *)&clientAddr, (socklen_t*)&clientAddrlen)) == -1) {
 		throw (std::runtime_error("Accept incoming connection failed"));
-		//std::cerr << RED "Accept incoming connection failed" RESET << std::endl;
 	}
 	else {
 		this->addClient(newSocket, clientAddr);
@@ -107,13 +106,11 @@ int Server::acceptConnection(void) {
 
 void	Server::addClient(int newSocket, struct	sockaddr_in clientAddr) {
 	Client	client;
-	struct	timeval tv;
 
 	client.setClientAddress(clientAddr);
 	std::cout << "Client: " << inet_ntoa(clientAddr.sin_addr) << std::endl; // test: delete later
 	client.setClientSocket(newSocket);
-	gettimeofday(&tv, NULL);
-	client.setClientTimeStamp(tv.tv_sec);
+	client.setClientTimeStamp();
 	_clients.push_back(client);
 	std::cout << "Client accepted: " << newSocket << std::endl; // test: delete later
 }

@@ -6,7 +6,7 @@
 /*   By: aheister <aheister@student.codam.nl>         +#+                     */
 /*                                                   +#+                      */
 /*   Created: 2022/07/07 13:40:13 by aheister      #+#    #+#                 */
-/*   Updated: 2022/07/19 13:34:23 by aheister      ########   odam.nl         */
+/*   Updated: 2022/07/20 16:19:52 by aheister      ########   odam.nl         */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -59,6 +59,9 @@ void Client::setClientAddress(struct sockaddr_in newAddr) {
 	_clientAddr = newAddr;
 }
 
-void Client::setClientTimeStamp(long long newTimeStamp) {
-	_clientTimeStamp = newTimeStamp;
+void Client::setClientTimeStamp(void) {
+	struct	timeval tv;
+
+	gettimeofday(&tv, NULL);
+	_clientTimeStamp = tv.tv_sec;
 }

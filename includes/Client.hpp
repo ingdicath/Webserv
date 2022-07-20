@@ -6,13 +6,14 @@
 /*   By: aheister <aheister@student.codam.nl>         +#+                     */
 /*                                                   +#+                      */
 /*   Created: 2022/07/07 13:31:18 by aheister      #+#    #+#                 */
-/*   Updated: 2022/07/19 13:19:46 by aheister      ########   odam.nl         */
+/*   Updated: 2022/07/20 16:00:00 by aheister      ########   odam.nl         */
 /*                                                                            */
 /* ************************************************************************** */
 
 #pragma once
 
 #include <netinet/in.h>
+#include <sys/time.h>
 
 class Client {
 public:
@@ -27,7 +28,7 @@ public:
 
     void                setClientSocket(int new_socket);
     void                setClientAddress(struct sockaddr_in new_addr);
-    void                setClientTimeStamp(long long timeStamp);
+    void                setClientTimeStamp(void);
 
 private:
     int                 _clientSocket;
