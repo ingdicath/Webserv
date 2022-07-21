@@ -2,20 +2,19 @@
 // Created by Diani on 20/06/2022, last update by Anna 08/07/2022.
 //
 
-// TODO: A server can listen multiple ports, each port has its own socket and connected clients
-//		 Two options: 1. define each socket as a separate server (rest of server information is the same)
-//					  2. make it possible to have multiple tcp_sockets for 1 server, each with his own clients
-//						 last one is more difficult in looping through sockets and servers
-// TODO: Find out what to do with location / location block: what is the job of the server there?
+// TODO: Add descriptions to all functions
 // TODO: Update max_socket fd after removing a client
 // TODO: Add a writing part to running function
+// TODO: Improve casting from std::string to <char *> better in server.cpp
+// TODO: Rewrite the stuff in order to use threads for each client socket
 
 #include "settings.hpp"
 #include "Webserver.hpp"
 
 Webserver::Webserver(void)
 	: 	_maxSocket(0),
-		_activeClients(0) {
+		_activeClients(0),
+		_activeServers(0) {
 	FD_ZERO(&_currentSockets);
 }
 
@@ -29,6 +28,7 @@ Webserver& Webserver::operator=(const Webserver & rhs) {
 	if (this != & rhs) {
 		_maxSocket = rhs._maxSocket;
 		_activeClients = rhs._activeClients;
+		_activeServers = rhs._activeServers;
 		_currentSockets = rhs._currentSockets;
 		_servers = rhs._servers;
 	}
@@ -36,21 +36,25 @@ Webserver& Webserver::operator=(const Webserver & rhs) {
 }
 
 Webserver::~Webserver(void) {
-	std::cout << "Webserver destroyed" << std::endl;
+	std::cout << RED "Webserver is destroyed" RESET << std::endl;
 	return;
 }
 
 /*
-** Function that creates the servers from the configuration file and add them to the <vector> _servers
+** DESCRIPTION
+** Function that creates the servers from the configuration file and adds them to the <vector> _servers
+** JOBS
+** 1. follows...
 */
 void    Webserver::loadConfiguration(void) {
-	Server     newServer(85);
+	Server     newServer(80);
 	_servers.push_back(newServer);
-	Server     newServer2(80);
+	Server     newServer2(81);
 	_servers.push_back(newServer2);
 }
 
 /*
+** DESCRIPTION
 ** Function that loops through all servers to create a connection and put them in listening state
 ** JOBS
 ** 1. Initialisation of fd_set with current sockets
@@ -61,12 +65,20 @@ void    Webserver::createConnection(void) {
 	FD_ZERO(&_currentSockets);
 
 	for (std::vector<Server>::iterator it = _servers.begin(); it < _servers.end(); it++) {
-		it->setupServer();
-		FD_SET(it->getServerSocket(), &_currentSockets);
-		updateMaxSocket(it->getServerSocket());
+		if (it->setupServer() == EXIT_FAILURE) {
+			_servers.erase(it--);
+		}
+		else {
+			FD_SET(it->getServerSocket(), &_currentSockets);
+			updateMaxSocket(it->getServerSocket());
+			_activeServers++;
+		}
 	}
+	if (_activeServers < 1)
+		throw (std::logic_error("There are no active servers"));
 }
 
+// ADD DESCRIPTION
 // The webserver runs through all the fd's of all the servers to find sockets that are ready to read or write
 void    Webserver::runWebserver(void) {
 	int 			running = 1;
@@ -97,7 +109,7 @@ void    Webserver::runWebserver(void) {
 					if (FD_ISSET(i, &_readyRead)) {
 						// new connection
 						if (i == itServer->getServerSocket()) {
-							std::cout << "new connection of socket " << i << std::endl; // test: delete later
+							//std::cout << "new connection of socket " << i << std::endl; // test: delete later
 							int newSocket = itServer->acceptConnection();
 							// new client is added to set of _current_sockets
 							FD_SET(newSocket, &_currentSockets);
@@ -110,7 +122,7 @@ void    Webserver::runWebserver(void) {
 							std::vector<Client> clients = itServer->getClients();
 							for (std::vector<Client>::iterator itClient = clients.begin(); itClient < clients.end(); itClient++) {
 								if (i == itClient->getClientSocket()) {
-									std::cout << "existing connection of socket " << i << std::endl; // test: delete later
+									//std::cout << "existing connection of socket " << i << std::endl; // test: delete later
 									// handling connection: could be replaced to class Request (HTTP)
 									memset(recvline, 0, MAXLINE);
 									// read the clients message
@@ -138,6 +150,7 @@ void    Webserver::runWebserver(void) {
 }
 
 /*
+** DESCRIPTION
 ** Function that updates the fd_sets _readyRead and _readyWrite
 */
 int	Webserver::updateReadySockets(struct timeval timeout) {
@@ -147,6 +160,7 @@ int	Webserver::updateReadySockets(struct timeval timeout) {
 	FD_ZERO(&_readyWrite);
 	_readyRead = _currentSockets;
 	ready = select(_maxSocket + 1, &_readyRead, &_readyWrite, NULL, &timeout);
+	// FOUTMELDING VOOR SELECT TOEVOEGEN??
 	checkTimeout();
 	return ready;
 }
@@ -162,12 +176,12 @@ void Webserver::clear(void) {
 	for (std::vector<Server>::iterator itServer = _servers.begin(); itServer < _servers.end(); itServer++) {
 		std::cout << itServer->getServerSocket() << " closed" << std::endl; // test: delete later
 		close(itServer->getServerSocket());
-
 		_servers.erase(itServer);
 	}
 }
 
 /*
+** DESCRIPTION
 ** Function that checks for every server if there are clients that have a connection but are not responding anymore.
 ** The function compares the timestamp of the clients connection with the current time. If that's more than the servers 
 ** time_out the client's socket is closed and the client is removed from the list of clients.
@@ -187,10 +201,9 @@ void Webserver::checkTimeout(void) {
 			gettimeofday(&tv, NULL);
 			seconds = tv.tv_sec - itClient->getClientTimeStamp();
 			if (seconds >= itServer->getTimeout()) {
-				std::cout << "Client " << itClient->getClientSocket() << " timed out: " << seconds << " seconds" << std::endl; // test: delete later
+				std::cout << RED "Client " << itClient->getClientSocket() << " timed out: " << seconds << " seconds" RESET << std::endl; // test: delete later
 				FD_CLR(itClient->getClientSocket(), &_currentSockets);
 				itServer->removeClient(itClient->getClientSocket());
-				// test if this is the right place
 				_activeClients--;
 			}
 		}

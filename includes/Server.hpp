@@ -35,10 +35,15 @@ public:
 	void	configServer(int port);
 
 	//Socket functions
-	void	setupServer(void);
+	int		setupServer(void);
 	int		acceptConnection(void);
 	void	addClient(int newSocket, struct	sockaddr_in clientAddr);
 	void	removeClient(int thisSocket);
+
+	class setupException : public std::exception {
+	public:
+		virtual const char *what() const throw();
+	};
 
 	//Get functions
 	int					getServerSocket(void) const;
@@ -50,7 +55,7 @@ public:
 private:
 	//Configuration
 	int										_port;
-	//std::string 							_host;					// Format??
+	std::string 							_host;
     std::string								_serverName;
     int										_errorPage;				// Explore how this works
 	int										_timeOut;

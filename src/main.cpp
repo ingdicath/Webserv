@@ -33,5 +33,5 @@ int     main(int argc, char* argv[]) {
 			webserver.clear();
 		}
 	}
-	return 0;
+	return EXIT_SUCCESS;
 }

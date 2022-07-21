@@ -25,6 +25,7 @@ public:
 private:
 	int						_maxSocket;
 	int						_activeClients;
+	int						_activeServers;
 	fd_set					_currentSockets;
 	fd_set					_readyRead;
 	fd_set					_readyWrite;

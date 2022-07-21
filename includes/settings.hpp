@@ -34,12 +34,13 @@
 /** Default server values **/
 #define DEFAULT_CLIENT_MAX_BODY_SIZE 10000000 // (in B), 10000KB, 10MB, 0.01GB
 #define DEFAULT_PORT 80
-#define DEFAULT_ADDRESS "0.0.0.0"
+#define DEFAULT_HOST "0.0.0.0"
+#define DEFAULT_ADDRESS "0.0.0.0" // check if this one is the same as host
 #define DEFAULT_ROOT "/www"
 #define DEFAULT_SERVER_NAME ""
 #define DEFAULT_ERROR_PAGE 404
-#define DEFAULT_BACKLOG 1000 // added: don't know if this is the right place / amount
-#define DEFAULT_TIMEOUT 10 // added: 60 seconds is default nginx timeout
+#define DEFAULT_BACKLOG 1000
+#define DEFAULT_TIMEOUT 10 // added: 60 seconds is default nginx timeout: change later
 #define MIN_PORT_NUMBER 1
 #define MAX_PORT_NUMBER 65535
 #define SERVER "server"

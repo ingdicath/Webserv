@@ -6,7 +6,7 @@
 /*   By: aheister <aheister@student.codam.nl>         +#+                     */
 /*                                                   +#+                      */
 /*   Created: 2022/07/11 15:09:47 by aheister      #+#    #+#                 */
-/*   Updated: 2022/07/20 16:44:51 by aheister      ########   odam.nl         */
+/*   Updated: 2022/07/21 15:50:38 by aheister      ########   odam.nl         */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -16,20 +16,21 @@
 
 Server::Server(void) :
 	_port(DEFAULT_PORT),
+	_host(DEFAULT_HOST),
     _serverName(DEFAULT_SERVER_NAME),
 	_errorPage(DEFAULT_ERROR_PAGE),
-    _timeOut(DEFAULT_TIMEOUT) {
-
-	std::cout << "Server created" << std::endl;
+    _timeOut(DEFAULT_TIMEOUT),
+	_serverSocket(-1) {
 }
 
+// REMOVE THIS ONE LATER: ONLY FOR TESTING PURPOSES
 Server::Server(int port) :
 	_port(port),
+	_host(DEFAULT_HOST),
     _serverName(DEFAULT_SERVER_NAME),
     _errorPage(DEFAULT_ERROR_PAGE), 
-	_timeOut(DEFAULT_TIMEOUT) {
-
-	std::cout << "Server created" << std::endl;
+	_timeOut(DEFAULT_TIMEOUT),
+	_serverSocket(-1) {
 }
 
 Server::Server(const Server & src) {
@@ -39,9 +40,11 @@ Server::Server(const Server & src) {
 Server& Server::operator=(const Server & rhs) {
 	if (this != & rhs) {
 		_port = rhs._port;
+		_host = rhs._host;
 		_serverName = rhs._serverName;
 		_errorPage = rhs._errorPage;
 		_timeOut = rhs._timeOut;
+		_serverSocket = rhs._serverSocket;
 	}
 	return *this;
 }
@@ -57,33 +60,54 @@ void	Server::configServer(int port) {
 	return;
 }
 
-/*
-** 1. Creates the server_fd (= socket) and makes it non-blocking
-** 2. Names (binds) the socket
-** 3. Creates the connection by putting the server in a listening state
-*/
-void	Server::setupServer(void) {
-	int iSetOption = 1;
-	if ((this->_serverSocket = socket(AF_INET, SOCK_STREAM, 0)) == -1)
-		throw (std::runtime_error("Socket creation failed"));
-    if (fcntl(this->_serverSocket, F_SETFL, O_NONBLOCK) < 0)
-		throw (std::runtime_error("Transforming the socket to non-blocking failed"));
-	// this function sets the sock option "Reuse address" so if a file descriptor is not closed after exiting, 
-	// you can still restart the program without errors
-	setsockopt(this->_serverSocket, SOL_SOCKET, SO_REUSEADDR, (char*)&iSetOption, sizeof(iSetOption));
-	memset(&_serverAddr, 0, sizeof(_serverAddr));
-    _serverAddr.sin_family = AF_INET;
-    _serverAddr.sin_port = htons(_port);
-    _serverAddr.sin_addr.s_addr = htonl(INADDR_ANY);
-    if (bind(this->_serverSocket, (struct sockaddr *)&_serverAddr, sizeof(_serverAddr)) == -1) {
-		std::cout << this->_serverSocket << " " << strerror(errno) << std::endl;
-		throw (std::runtime_error("Binding of the socket failed"));
-	}
-	if (listen(this->_serverSocket, DEFAULT_BACKLOG) < 0)
-		throw (std::runtime_error("Listen failed"));
+const char *Server::setupException::what() const throw() {
+	return "Setup failed\n";
+}
 
-	//test
-	std::cout << "Socket listening" << std::endl;
+/*
+** DESCRIPTION
+** This function does the setup of a server using its _host and _port
+** JOBS
+** 1. Creates the server_fd (= socket) 
+** 2. Makes the socket non-blocking
+** 3. Sets the FLAG "REUSE_ADDRESS" on the socket in order to avoid errors in restarting the program 
+**    if file descriptors are not closed after exiting.
+** 4. Names (binds) the socket
+** 5. Creates the connection by putting the server in a listening state
+** 6. If either one of these jobs fail, the function returns with EXIT_FAILURE 
+*/
+int	Server::setupServer(void) {
+	int iSetOption = 1;
+
+	try {
+		if ((_serverSocket = socket(AF_INET, SOCK_STREAM, 0)) == -1) {
+			throw setupException();
+		}
+		if (fcntl(_serverSocket, F_SETFL, O_NONBLOCK) == -1) {
+			throw setupException();
+		}
+		setsockopt(this->_serverSocket, SOL_SOCKET, SO_REUSEADDR, (char*)&iSetOption, sizeof(iSetOption));
+		memset(&_serverAddr, 0, sizeof(_serverAddr));
+		_serverAddr.sin_family = AF_INET;
+		_serverAddr.sin_port = htons(_port);
+		char* host = const_cast<char*>(_host.c_str());	// TODO: put this in configuration part
+		_serverAddr.sin_addr.s_addr = inet_addr(host);
+		if (bind(_serverSocket, (struct sockaddr *)&_serverAddr, sizeof(_serverAddr)) == -1) {
+			throw setupException();
+		}
+		if (listen(_serverSocket, DEFAULT_BACKLOG) == -1) {
+			throw setupException();
+		}
+	}
+	catch (setupException& e) {
+		std::cout << RED << e.what();
+		std::cout << "Server IP: " << _host << " port: " << _port << std::endl;
+		std::cout << "Error: " << strerror(errno) << "\n" << RESET << std::endl;
+		if (_serverSocket != -1) 
+			close(_serverSocket);
+		return EXIT_FAILURE;
+	}
+	return EXIT_SUCCESS;
 }
 
 /*
@@ -118,7 +142,7 @@ void	Server::addClient(int newSocket, struct	sockaddr_in clientAddr) {
 void	Server::removeClient(int thisSocket) {
 	for (std::vector<Client>::iterator it = _clients.begin(); it < _clients.end(); it++) {
 		if (it->getClientSocket() == thisSocket) {
-			std::cout << "Client " << it->getClientSocket() << " removed" << std::endl; // test: delete later
+			std::cout << RED "Client " << it->getClientSocket() << " removed" RESET << std::endl; // test: delete later
 			close(it->getClientSocket());
 			_clients.erase(it);
 		}
