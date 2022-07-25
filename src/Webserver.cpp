@@ -3,9 +3,6 @@
 //
 
 // TODO: Add descriptions to all functions
-// TODO: Update max_socket fd after removing a client
-// TODO: Add a writing part to running function
-// TODO: Improve casting from std::string to <char *> better in server.cpp
 
 #include "settings.hpp"
 #include "Webserver.hpp"
@@ -72,7 +69,7 @@ void    Webserver::createConnection(void) {
 		}
 		else {
 			FD_SET(it->getServerSocket(), &_currentSockets);
-			updateMaxSocket(it->getServerSocket());
+			updateMaxSocket(it->getServerSocket(), ADD);
 			_activeServers++;
 		}
 	}
@@ -115,7 +112,7 @@ void    Webserver::runWebserver(void) {
 							int newSocket = itServer->acceptConnection();
 							// new client is added to set of _current_sockets
 							FD_SET(newSocket, &_currentSockets);
-							updateMaxSocket(newSocket);
+							updateMaxSocket(newSocket, ADD);
 							_activeClients++;
 							// TODO: check if this is the right place
 							ready = updateReadySockets(timeout);
@@ -125,7 +122,7 @@ void    Webserver::runWebserver(void) {
 							for (std::vector<Client>::iterator itClient = clients.begin(); itClient < clients.end(); itClient++) {
 								if (i == itClient->getClientSocket()) {
 									//std::cout << "existing connection of socket " << i << std::endl; // test: delete later
-									// handling connection: could be replaced to class Request (HTTP)
+									// handling connection: could be replaced to class Request
 									memset(recvline, 0, MAXLINE);
 									// read the clients message
 									while ((ret = read(i, recvline, MAXLINE - 1)) > 0) {
@@ -133,10 +130,11 @@ void    Webserver::runWebserver(void) {
 										if (recvline[ret - 1] == '\n') {
 											break;
 										}
+										// renew the timestamp of the client in order to track it's timeout
 										itClient->setClientTimeStamp();
 										memset(recvline, 0, MAXLINE);
 									}
-									// write an answer to the client
+									// write an answer to the client: could be replaced to class Response
 									snprintf((char*)buff, sizeof(buff), "HTTP/1.1 200 OK\r\n\r\n<HTML>Hello</HTML>");
 									write(i, (char*)buff, strlen((char*)buff));
 									FD_CLR(i, &_currentSockets);
@@ -168,9 +166,24 @@ int	Webserver::updateReadySockets(struct timeval timeout) {
 }
 
 // ADD DESCRIPTION
-void Webserver::updateMaxSocket(int newSocket) {
-	if (newSocket > _maxSocket)
-		_maxSocket = newSocket;
+void Webserver::updateMaxSocket(int socket, int type) {
+	if (type == ADD && socket > _maxSocket) {
+		_maxSocket = socket;
+	}
+	else if (type == REMOVE && socket == _maxSocket) {
+		int tempMaxSocket = 0;
+		for (std::vector<Server>::iterator itServer = _servers.begin(); itServer < _servers.end(); itServer++) {
+			if (itServer->getServerSocket() > tempMaxSocket)
+				tempMaxSocket = itServer->getServerSocket();
+			std::vector<Client> clients = itServer->getClients();
+			for (std::vector<Client>::iterator itClient = clients.begin(); itClient < clients.end(); itClient++) {
+				if (itClient->getClientSocket() > tempMaxSocket)
+					tempMaxSocket = itClient->getClientSocket();
+			}
+		}
+		_maxSocket = tempMaxSocket;	
+	}
+	std::cout << "maxSocket = " << _maxSocket << std::endl; // test:delete later
 }
 
 // ADD DESCRIPTION
@@ -204,8 +217,9 @@ void Webserver::checkTimeout(void) {
 			seconds = tv.tv_sec - itClient->getClientTimeStamp();
 			if (seconds >= itServer->getTimeout()) {
 				std::cout << RED "Client " << itClient->getClientSocket() << " timed out: " << seconds << " seconds" RESET << std::endl; // test: delete later
-				FD_CLR(itClient->getClientSocket(), &_currentSockets);
+				FD_CLR(itClient->getClientSocket(), &_currentSockets);	
 				itServer->removeClient(itClient->getClientSocket());
+				updateMaxSocket(itClient->getClientSocket(), REMOVE);
 				_activeClients--;
 			}
 		}

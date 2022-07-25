@@ -7,6 +7,12 @@
 #include "Server.hpp"
 #include <vector>
 
+typedef enum e_typeMax
+{
+	ADD,
+	REMOVE,
+}	t_typeMax;
+
 class Webserver {
 public:
 	Webserver(void);
@@ -18,7 +24,7 @@ public:
 	void	createConnection(void);
 	void	runWebserver(void);
 	int		updateReadySockets(struct timeval timeout);
-	void	updateMaxSocket(int new_socket);
+	void	updateMaxSocket(int socket, int type);
 	void	checkTimeout(void);
 	void	clear(void);
 
