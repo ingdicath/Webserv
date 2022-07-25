@@ -41,7 +41,7 @@ Webserver::~Webserver(void) {
 ** 1. follows...
 */
 void	Webserver::loadConfiguration(std::string configFile) {
-	_servers = config::loadConfiguration(configFile);	
+//	_servers = config::loadConfiguration(configFile);
 	std::cout << configFile << std::endl;	// test: delete later
 	// Diana: in this spot you can add a function in which you send the configFile to the Configurator.cpp file
 	// and do your stuff. After you finished, we can create servers based on your configuration
