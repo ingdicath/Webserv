@@ -12,8 +12,6 @@
 #include <sys/types.h>
 #include <sys/time.h>
 #include <arpa/inet.h>
-#include <netinet/in.h>
-#include <netinet/ip.h>
 #include <fcntl.h>
 
 #include <vector>
@@ -32,7 +30,7 @@ public:
 	virtual ~Server(void);
 
 	//Configuration functions
-	void	configServer(int port);
+	void	configServer(void);
 
 	//Socket functions
 	int		setupServer(void);
@@ -64,9 +62,9 @@ private:
 	//std::size_t							_clientMaxBodySize;		// WHAT IS THIS?
 
 	//Connection
-	int					_serverSocket;
-	struct sockaddr_in 	_serverAddr;
-	std::vector<Client> _clients;
+	int						_serverSocket;
+	struct sockaddr_in 		_serverAddr;
+	std::vector<Client> 	_clients;
 
 };
 

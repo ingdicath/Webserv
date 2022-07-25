@@ -6,7 +6,7 @@
 /*   By: aheister <aheister@student.codam.nl>         +#+                     */
 /*                                                   +#+                      */
 /*   Created: 2022/07/11 15:09:47 by aheister      #+#    #+#                 */
-/*   Updated: 2022/07/25 11:34:24 by aheister      ########   odam.nl         */
+/*   Updated: 2022/07/25 13:59:07 by aheister      ########   odam.nl         */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -53,15 +53,15 @@ Server::~Server(void) {
 	return;
 }
 
+const char *Server::setupException::what() const throw() {
+	return "Setup failed\n";
+}
+
 /*
 ** Configuration of the server 
 */
-void	Server::configServer(int port) {
+void	Server::configServer(void) {
 	return;
-}
-
-const char *Server::setupException::what() const throw() {
-	return "Setup failed\n";
 }
 
 /*
@@ -111,7 +111,9 @@ int	Server::setupServer(void) {
 }
 
 /*
-** Accepts an incoming connection from a client. In the struct _client_address, the IP address and port of the client is stored.
+** DESCRIPTION
+** Function that accepts an incoming connection from a client. In the struct _client_address, 
+** the IP address and port of the client is stored.
 */
 int Server::acceptConnection(void) {
 
@@ -128,6 +130,10 @@ int Server::acceptConnection(void) {
 	return newSocket;
 }
 
+/*
+** DESCRIPTION
+** Function to create a new client object and add it to the back of the vector of clients of a server
+*/
 void	Server::addClient(int newSocket, struct	sockaddr_in clientAddr) {
 	Client	client;
 
@@ -139,6 +145,10 @@ void	Server::addClient(int newSocket, struct	sockaddr_in clientAddr) {
 	std::cout << "Client accepted: " << newSocket << std::endl; // test: delete later
 }
 
+/*
+** DESCRIPTION
+** Function to remove a client from the vector of clients of a server
+*/
 void	Server::removeClient(int thisSocket) {
 	for (std::vector<Client>::iterator it = _clients.begin(); it < _clients.end(); it++) {
 		if (it->getClientSocket() == thisSocket) {
