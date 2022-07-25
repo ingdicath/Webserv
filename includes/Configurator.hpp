@@ -9,34 +9,39 @@
 #include <set>
 #include "Server.hpp"
 
+class Server;
+
 struct Directive {
 	std::string key;
 	std::vector<std::string> value;
 };
 
-class Configurator {
-public:
-	Configurator();
+namespace config {
 
-	virtual ~Configurator();
-
-	static Directive splitDirective(std::string &input);
+	Directive splitDirective(std::string &input);
 
 
 /** listen */
 
-	static bool _isValidPortRange(const std::string &port);
+	bool _isValidPortRange(const std::string &port);
 
-	static bool _isValidIpv4Address(const std::string &ipAddress);
+	bool _isValidIpv4Address(const std::string &ipAddress);
 
-	static bool _isValidIpPort(const std::string &listenValue);
+	bool _isValidIpPort(const std::string &listenValue);
 
-	static bool _isValidListenValues(std::vector<std::string> values);
+	bool _isValidListenValues(std::vector<std::string> values);
+
+
+/** server names */
+
+	bool _isValidServerName(const std::string &serverName);
+
+	bool _isValidServerNames(std::vector<std::string> serverNames);
 
 
 /** error codes and error page */
 
-	static bool _isValidErrorPageConfig(std::vector<std::string> values);
+	bool _isValidErrorPageConfig(std::vector<std::string> values);
 
 	static bool _isValidPath(const std::string &path);
 
@@ -45,29 +50,43 @@ public:
 
 /** client max body size */
 
-	static bool _isValidBodySize(std::vector<std::string> values);
+	//static bool _isValidBodySize(std::vector<std::string> values);
 
-	static bool _isValidRoot(std::vector<std::string> values);
+	//static bool _isValidRoot(std::vector<std::string> values);
 
 
 /** allowed methods */
 
-	static bool _isValidAllowedMethod(std::vector<std::string> values);
+	//static bool _isValidAllowedMethod(std::vector<std::string> values);
 
 
 /** index */
-	static bool _isValidIndex(std::vector<std::string> values);
+	//static bool _isValidIndex(std::vector<std::string> values);
 
 
 /** autoindex */
-	static bool _isValidAutoIndex(std::vector<std::string> values);
+	//static bool _isValidAutoIndex(std::vector<std::string> values);
 
 /** cgi */
 	bool _isValidCGI(std::vector<std::string> values);
 
 	void _checkServerName(const std::string &port);
 
-//TODO variables: make private later
+/** config utils */
+	bool isEmptyFile(std::ifstream &inputFile);
+
+	void openFile(std::ifstream &file, const std::string &filePath);
+
+	void validarYAlmacenar(const Directive &directive, std::string &block, std::vector<Server> servers);
+
+	std::vector<Server> loadConfiguration(const std::string &configFile);
+
+	void almacenarDirectivaEnServer(const Directive &directive, Server *server);
+
+	//void loadConfiguration(const std::string &configFile);
+
+
+	//TODO variables: make private later
 	enum eDirectives {
 		LISTEN,
 		SERVER_NAME,
@@ -89,15 +108,14 @@ public:
 		LOCATION_
 	};
 
-	std::set<std::string> _listen;
-	bool _autoindex;
+	// std::set<std::string> _listen;
+	// bool _autoindex;
 
 
-	static eDirectives resolveDirective(const std::string &input);
+	eDirectives resolveDirective(const std::string &input);
 
 	void setServerDirectives(const std::string &rawInput, Server *server);
 
-	static void setLocationDirectives(const std::string &input);
+	//static void setLocationDirectives(const std::string &input);
 
-};
-
+}
