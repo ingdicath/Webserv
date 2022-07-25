@@ -43,9 +43,9 @@ namespace config {
 
 	bool _isValidErrorPageConfig(std::vector<std::string> values);
 
-	static bool _isValidPath(const std::string &path);
-
-	static bool _isValidErrorCode(const std::string &string);
+//	static bool _isValidPath(const std::string &path);
+//
+//	static bool _isValidErrorCode(const std::string &string);
 
 
 /** client max body size */

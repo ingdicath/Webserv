@@ -159,49 +159,49 @@ namespace config {
  * ERROR PAGES
  */
 
-	bool _isValidErrorPageConfig(std::vector<std::string> values) {
-		if (values.size() != 2) {
-			throw std::runtime_error("Config error: invalid args for error pages directive.");
-		}
-		if (!_isValidErrorCode(values[0])) {
-			throw std::runtime_error("Config error: invalid error code.");
-		}
-		if (!_isValidPath(values[1])) {
-			throw std::runtime_error("Config error: invalid path.");
-		}
-		std::set<std::string> mySet;
-		for (size_t i = 0; i < values.size(); ++i) {
-			if (!mySet.insert(values[i]).second) {
-				throw std::runtime_error("Config error: duplicate value in Error page.");
-			}
-		}
-		// printSet(mySet); //delete
-		return true;
-	}
+//	bool _isValidErrorPageConfig(std::vector<std::string> values) {
+//		if (values.size() != 2) {
+//			throw std::runtime_error("Config error: invalid args for error pages directive.");
+//		}
+//		if (!_isValidErrorCode(values[0])) {
+//			throw std::runtime_error("Config error: invalid error code.");
+//		}
+//		if (!_isValidPath(values[1])) {
+//			throw std::runtime_error("Config error: invalid path.");
+//		}
+//		std::set<std::string> mySet;
+//		for (size_t i = 0; i < values.size(); ++i) {
+//			if (!mySet.insert(values[i]).second) {
+//				throw std::runtime_error("Config error: duplicate value in Error page.");
+//			}
+//		}
+//		// printSet(mySet); //delete
+//		return true;
+//	}
 
+//
+//// check if this validation is necessary
+//	bool _isValidPath(const std::string &path) {
+//		if (path[0] != '/') {
+//			return false;
+//		}
+//		if (path.find_last_of('/') == path.size() - 1 && path.size() != 1) {
+//			throw std::runtime_error("Config error: path can't be a directory.");
+//		}
+//		return true;
+//	}
 
-// check if this validation is necessary
-	bool _isValidPath(const std::string &path) {
-		if (path[0] != '/') {
-			return false;
-		}
-		if (path.find_last_of('/') == path.size() - 1 && path.size() != 1) {
-			throw std::runtime_error("Config error: path can't be a directory.");
-		}
-		return true;
-	}
-
-// max possible error code is 505
-	bool _isValidErrorCode(const std::string &string) {
-		if (!utils::isPositiveNumber(string)) {
-			return false;
-		}
-		size_t errorCode = utils::stringToPositiveNum(string);
-		if (errorCode < 300 || errorCode > 506) {
-			throw std::runtime_error("Config error: Invalid error code.");
-		}
-		return true;
-	}
+//// max possible error code is 505
+//	bool _isValidErrorCode(const std::string &string) {
+//		if (!utils::isPositiveNumber(string)) {
+//			return false;
+//		}
+//		size_t errorCode = utils::stringToPositiveNum(string);
+//		if (errorCode < 300 || errorCode > 506) {
+//			throw std::runtime_error("Config error: Invalid error code.");
+//		}
+//		return true;
+//	}
 
 
 /**
