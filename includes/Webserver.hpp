@@ -6,12 +6,13 @@
 
 #include "Server.hpp"
 #include <vector>
+#include <algorithm>
 
-typedef enum e_typeMax
+enum e_typeMax
 {
 	ADD,
 	REMOVE,
-}	t_typeMax;
+};
 
 class Webserver {
 public:
@@ -30,6 +31,7 @@ public:
 
 private:
 	int						_maxSocket;
+	std::vector<int>		_allSockets;
 	int						_activeClients;
 	int						_activeServers;
 	fd_set					_currentSockets;

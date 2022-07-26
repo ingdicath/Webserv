@@ -2,6 +2,8 @@
 // Created by Diani on 20/06/2022, last update by Anna 08/07/2022.
 //
 
+// TODO: Keep aware of all 'new' objects added to servers or locations. These should be deleted in order to avoid memory leaks
+
 #include <cstring>
 #include <cstdlib>
 #include <cstdio>
@@ -45,15 +47,12 @@ Webserver::~Webserver(void) {
 */
 void	Webserver::loadConfiguration(std::string configFile) {
 	_servers = config::loadConfiguration(configFile);
-	std::cout << _servers.size() << std::endl;
-	std::cout << configFile << std::endl;	// test: delete later
 	// Diana: in this spot you can add a function in which you send the configFile to the Configurator.cpp file
 	// and do your stuff. After you finished, we can create servers based on your configuration
 	Server     newServer(80);				// test: delete later
 	_servers.push_back(newServer);			// test: delete later
 	Server     newServer2(81);				// test: delete later
 	_servers.push_back(newServer2);			// test: delete later
-	std::cout << _servers.size() << std::endl;
 }
 
 /*
@@ -186,29 +185,19 @@ int	Webserver::updateReadySockets(struct timeval timeout) {
 ** Function that updates the highest (max) used file descriptor (socket) in the program to be used in the select function
 ** to check the 'readyness' of all file descriptors (sockets) until the given max has reached
 ** JOBS
-** 1. When a new socket is opened in the programm (type = ADD) the value of _maxSocket is compared to the newSocket.
-**    the highest value is stored 
-** 2. When a socket is removed, the function checks if the socket equals the max. Only if it does, the function checks
-**    every client of every server to find the new max socket
+** 1. When a new socket is opened in the programm (type = ADD) the value of the new socket is added to the vector of allSockets
+** 2. When a socket is removed (type = REMOVED), the function finds the socket in the vector, erases it and the max value is retrieved
 **
 */
 void Webserver::updateMaxSocket(int socket, int type) {
-	if (type == ADD && socket > _maxSocket) {
-		_maxSocket = socket;
+	if (type == ADD) {
+		_allSockets.push_back(socket);
 	}
-	else if (type == REMOVE && socket == _maxSocket) {
-		int tempMaxSocket = 0;
-		for (std::vector<Server>::iterator itServer = _servers.begin(); itServer < _servers.end(); itServer++) {
-			if (itServer->getServerSocket() > tempMaxSocket)
-				tempMaxSocket = itServer->getServerSocket();
-			std::vector<Client> clients = itServer->getClients();
-			for (std::vector<Client>::iterator itClient = clients.begin(); itClient < clients.end(); itClient++) {
-				if (itClient->getClientSocket() > tempMaxSocket)
-					tempMaxSocket = itClient->getClientSocket();
-			}
-		}
-		_maxSocket = tempMaxSocket;	
+	else {
+		std::vector<int>::iterator it = std::find(_allSockets.begin(), _allSockets.end(), socket);
+		_allSockets.erase(it);
 	}
+	_maxSocket = *std::max_element(_allSockets.begin() + 1, _allSockets.end());
 }
 
 /*
