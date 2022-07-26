@@ -6,7 +6,7 @@
 #    By: aheister <aheister@student.codam.nl>         +#+                      #
 #                                                    +#+                       #
 #    Created: 2022/07/10 09:01:00 by aheister      #+#    #+#                  #
-#    Updated: 2022/07/25 16:15:58 by aheister      ########   odam.nl          #
+#    Updated: 2022/07/26 21:56:58 by hlin          ########   odam.nl          #
 #                                                                              #
 # **************************************************************************** #
 
@@ -27,6 +27,7 @@ SRC				=	main.cpp\
 					utils.cpp\
 					Configurator.cpp\
 					Location.cpp\
+					Request.cpp\
 
 SRC_PATH		=	$(addprefix $(SRC_DIR), $(SRC))
 OBJ_FILES		=	$(SRC_PATH:$(SRC_DIR)%.cpp=$(OBJ_DIR)%.o)

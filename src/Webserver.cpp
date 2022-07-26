@@ -9,6 +9,7 @@
 #include <cstdio>
 #include "settings.hpp"
 #include "Webserver.hpp"
+#include "Request.hpp"
 
 Webserver::Webserver(void)
 	: 	_maxSocket(0),
@@ -81,6 +82,37 @@ void    Webserver::createConnection(void) {
 }
 
 /*
+** Parse the HTTP request
+** Handle the request (to do)
+** Send the response HTTP back to client (to do)
+*/
+static void	takeRequest(int clientFD) {
+	char	recvline[MAXLINE + 1];
+
+	memset(recvline, 0, MAXLINE);
+	// read the clients message
+	int	bytesRead = recv(clientFD, recvline, MAXLINE - 1, 0);
+	if (bytesRead > 0) {
+		std::cout << "Has read: " << bytesRead << std::endl;
+	} //need remove client when bytesRead <= 0 ???
+
+	//request parsing part
+	Request request;
+	request.parseRequest(recvline, bytesRead);
+	memset(recvline, 0, MAXLINE);
+
+	// print out info in the object for testing, delete later
+	std::cout << request << std::endl;
+}
+
+static void	writeResponse(int clientFD) {
+	char	buff[MAXLINE + 1];
+
+	snprintf((char*)buff, sizeof(buff), "HTTP/1.1 200 OK\r\n\r\n<HTML>Hello</HTML>");
+	write(clientFD, (char*)buff, strlen((char*)buff));
+}
+
+/*
 ** DESCRIPTION
 ** Function that in a loop checks the select function to find sockets that are ready to read or write. When there is one
 ** (or more) ready sockets then the function runs through all the servers and their clients to handle the requests.
@@ -93,13 +125,8 @@ void    Webserver::createConnection(void) {
 */
 void    Webserver::runWebserver(void) {
 	int 			running = 1;
-	int				ret = 0;
 	int				ready = 0;
 	struct timeval	timeout;
-	
-	// temp as long as Request class isn't ready
-	uint8_t			buff[MAXLINE + 1];
-	uint8_t			recvline[MAXLINE + 1];
 
 	std::cout << GREEN "Webserver running" RESET << std::endl;
 	while (running) {
@@ -132,21 +159,10 @@ void    Webserver::runWebserver(void) {
 							std::vector<Client> clients = itServer->getClients();
 							for (std::vector<Client>::iterator itClient = clients.begin(); itClient < clients.end(); itClient++) {
 								if (i == itClient->getClientSocket()) {
-									// handling connection: could be replaced to class Request
-									memset(recvline, 0, MAXLINE);
-									// read the clients message
-									while ((ret = read(i, recvline, MAXLINE - 1)) > 0) {
-										std::cout << recvline << std::endl;
-										if (recvline[ret - 1] == '\n') {
-											break;
-										}
-										// renew the timestamp of the client in order to track it's timeout
-										itClient->setClientTimeStamp();
-										memset(recvline, 0, MAXLINE);
-									}
-									// write an answer to the client: could be replaced to class Response
-									snprintf((char*)buff, sizeof(buff), "HTTP/1.1 200 OK\r\n\r\n<HTML>Hello</HTML>");
-									write(i, (char*)buff, strlen((char*)buff));
+									std::cout << "existing connection of socket " << i << std::endl; // test: delete later
+									itClient->setClientTimeStamp();
+									takeRequest(i);
+									writeResponse(i);
 									FD_CLR(i, &_currentSockets);
 									ready = updateReadySockets(timeout);
 								}

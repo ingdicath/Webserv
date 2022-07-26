@@ -1,33 +1,132 @@
-/* ************************************************************************** */
-/*                                                                            */
-/*                                                        ::::::::            */
-/*   Request.hpp                                        :+:    :+:            */
-/*                                                     +:+                    */
-/*   By: aheister <aheister@student.codam.nl>         +#+                     */
-/*                                                   +#+                      */
-/*   Created: 2022/06/30 12:34:28 by aheister      #+#    #+#                 */
-/*   Updated: 2022/06/30 12:34:33 by aheister      ########   odam.nl         */
-/*                                                                            */
-/* ************************************************************************** */
+//
+// Created by Hz Lin on 18/07/2022.
+//
 
-#ifndef WEBSERV_REQUEST_H
-#define WEBSERV_REQUEST_H
+#pragma once
+
+#include <iostream>
+#include <string>
+#include <vector>
+#include <map>
+#include <cstdlib>
+#include <sstream>
+
+#define TRANSFER_ENCODING "transfer-encoding"
+#define CONTENT_LENGTH "content-length"
+#define HOST "host"
 
 class Request {
 public:
-	Request(void);
-	Request(Request const & src);
-	Request& operator=(Request const & rhs);
-	virtual ~Request(void);
+    enum method {
+        GET, POST, DELETE
+    };
 
-	//Configuration functions
-	void	config_request(void);
-	
 private:
-	
+    std::string _rawRequest;
+    bool _headersDone;
+    long _contentLength;
+    bool _chunked;
+    bool _chunkedComplete;
+    bool _chunkedEndHex;
+    bool _chunkedEndSeparatedCRLF;
+    long _remainder;
 
+    method  _method;
+    std::vector<std::string> _path;
+    std::string _httpVersion;
+    std::map<std::string, std::string>  _headers;
+	std::string _host;
+    std::string _body;
+
+	void    parseMethod(std::stringstream &ss);
+    void	setPath(std::string line);
+	void    parsePath(std::stringstream &ss);
+	void    parseVersion(std::stringstream &ss);
+	void    parseHeaders(std::stringstream &ss);
+
+    // void appendBody(const char *body, long len);
+
+public:
+    Request();
+    virtual ~Request();
+
+    Request(const Request &obj);
+    Request &operator=(const Request &obj);
+
+    //getters
+    method  getMethod() const;
+    std::vector<std::string>    getPath() const;
+	std::string	getVersion() const;
+	std::map<std::string, std::string>	getHeaders() const;
+    std::string getHost() const;
+    std::string getBody() const;
+    std::string getRawRequest() const;
+
+	void	parseRequest(char rawRequest[], int bytesRead);
+
+    class   HeadersIncorrectException : public std::exception {
+    public:
+        const char *what() const throw() {
+            return "Incorrect HTTP headers";
+        }
+    };
+
+    class   MethodInvalidException : public std::exception {
+    public:
+        const char *what() const throw() {
+            return "Invalid method";
+        }
+    };
+
+    class   MethodNotSupportedException : public std::exception {
+    public:
+        const char *what() const throw() {
+            return "This method is not supported";
+        }
+    };
+
+    class   VersionInvalidException : public std::exception {
+    public:
+        const char *what() const throw() {
+            return "Invalid HTTP version";
+        }
+    };
+
+    class   VersionNotSupportedException : public std::exception {
+    public:
+        const char *what() const throw() {
+            return "This HTTP version is not supported";
+        }
+    };
+
+    class   UriInvalidException : public std::exception {
+    public:
+        const char *what() const throw() {
+            return "URI format invalid";
+        }
+    };
+
+    class   UriTooLongException : public std::exception {
+    public:
+        const char *what() const throw() {
+            return "URI too long";
+        }
+    };
+
+    class   MaxClientBodyException : public std::exception {
+    public:
+        const char *what() const throw() {
+            return "Exceeded max client body";
+        }
+    };
+
+    class   BodyLengthIncorrectException : public std::exception {
+    public:
+        const char *what() const throw() {
+            return "Body length does not match content length";
+        }
+    };
 };
 
-
-
-#endif //WEBSERV_REQUEST_H
+// for testing delete later
+std::ostream	&operator<<(std::ostream &os, const Request &request);
