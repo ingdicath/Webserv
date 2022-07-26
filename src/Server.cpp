@@ -10,10 +10,13 @@
 /*                                                                            */
 /* ************************************************************************** */
 
+#include <cstring>
+#include <cerrno>
 #include "Server.hpp"
 #include <algorithm> //testing purpose, delete
 #include <iostream> //testing purpose, delete
 #include <iterator> //testing purpose, delete
+
 
 Server::Server(void) :
 	_port(DEFAULT_PORT),

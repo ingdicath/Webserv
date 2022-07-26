@@ -2,6 +2,9 @@
 // Created by Diani on 20/06/2022, last update by Anna 08/07/2022.
 //
 
+#include <cstring>
+#include <cstdlib>
+#include <cstdio>
 #include "settings.hpp"
 #include "Webserver.hpp"
 

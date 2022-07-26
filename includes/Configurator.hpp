@@ -36,7 +36,7 @@ namespace config {
 
 	bool _isValidServerName(const std::string &serverName);
 
-	bool _isValidServerNames(std::vector<std::string> serverNames);
+	bool _isValidServerNames(const std::vector<std::string>& serverNames);
 
 
 /** error codes and error page */
@@ -68,7 +68,7 @@ namespace config {
 	//static bool _isValidAutoIndex(std::vector<std::string> values);
 
 /** cgi */
-	bool _isValidCGI(std::vector<std::string> values);
+	bool _isValidCGI(const std::vector<std::string>& values);
 
 	void _checkServerName(const std::string &port);
 
@@ -77,11 +77,11 @@ namespace config {
 
 	void openFile(std::ifstream &file, const std::string &filePath);
 
-	void validarYAlmacenar(const Directive &directive, std::string &block, std::vector<Server> servers);
+	void validateAndStore(const Directive &directive, std::string &block, std::vector<Server> servers);
 
 	std::vector<Server> loadConfiguration(const std::string &configFile);
 
-	void almacenarDirectivaEnServer(const Directive &directive, Server *server);
+	void storeDirectiveInServer(const Directive &directive, Server *server);
 
 	//void loadConfiguration(const std::string &configFile);
 

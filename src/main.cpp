@@ -1,4 +1,7 @@
 
+#include <csignal>
+#include <cstdlib>
+
 #include "Webserver.hpp"
 #include "settings.hpp"
 

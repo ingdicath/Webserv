@@ -52,7 +52,7 @@ namespace config {
 	//delete, used for testing purposes
 	// void printSet(const std::set<std::string> mySet) {
 	// 	std::cout << "my set contains:";
-		//	std::set<int>::iterator it;
+	//	std::set<int>::iterator it;
 	// 	for (auto it = mySet.begin(); it != mySet.end(); ++it) {
 	// 		std::cout << ' ' << *it;
 	// 	}
@@ -142,13 +142,14 @@ namespace config {
 	}
 
 
-	bool _isValidServerNames(std::vector<std::string> serverNames) {
+	bool _isValidServerNames(const std::vector<std::string> &serverNames) {
 		if (serverNames.size() < 1) {
 			throw std::runtime_error("Config error: missing argument for server name. ");
 		}
 		for (size_t i = 0; i < serverNames.size(); i++) {
 			if (!&_isValidServerName) {
-				throw std::runtime_error("Config error: wrong syntax in server name.");
+				return false;
+//				throw std::runtime_error("Config error: wrong syntax in server name.");
 			}
 		}
 		return true;
@@ -326,13 +327,6 @@ namespace config {
 		if (values[0] != ON && values[0] != OFF) {
 			throw std::runtime_error("Config error: invalid value in autoindex directive. '" + values[0] + "'");
 		}
-//	if (values[0] == "on") {
-//		_autoindex = true;
-//	} else if (values[0] == "off") {
-//		_autoindex = false;
-//	} else {
-//		throw std::runtime_error("Config error: invalid value in autoindex directive. '" + values[0] + "'");
-//	}
 		return true;
 	}
 
@@ -341,7 +335,7 @@ namespace config {
  * CGI, We have to manage only one extension. For bonus part, multiple extensions
  */
 
-	bool _isValidCGI(std::vector<std::string> values) {
+	bool _isValidCGI(const std::vector<std::string>& values) {
 		if (values.size() != 2) {
 			throw std::runtime_error("Config error: invalid args for cgi directive.");
 		}
@@ -389,16 +383,14 @@ namespace config {
 //	file.close(); // dont forget to close
 	}
 
-	//change name to English
-	void validarYAlmacenar(const Directive &directive, std::string &block, std::vector<Server> servers) {
+	void validateAndStore(const Directive &directive, std::string &block, std::vector<Server> servers) {
 		if (block == "server") {
-			almacenarDirectivaEnServer(directive, &servers.back());
+			storeDirectiveInServer(directive, &servers.back());
 		}
 	}
 
 
-//change name to English
-	void almacenarDirectivaEnServer(const Directive &directive, Server *server) {
+	void storeDirectiveInServer(const Directive &directive, Server *server) {
 		switch (config::resolveDirective(directive.key)) {
 			case config::LISTEN:
 				server->validateAndSetListen(directive.value);
@@ -449,7 +441,7 @@ namespace config {
 		config::openFile(file, configFile); // adjust this to
 		std::string line;
 		std::vector<Server> servers;
-		//Webserver webserver; // destructor debe liberar recursos - delete
+		//Webserver webserver; // destructor must clean resources- delete
 
 		std::string command;
 		char c;
@@ -463,17 +455,18 @@ namespace config {
 					if (!comment) {
 						std::cout << "curly: " << command << std::endl;
 						command = utils::trim(command);
-						if (command == SERVER) { 					// See if it is better define as enum
-							servers.push_back(new Server());		// BE CAREFULL: if you use 'new' you should delete as well
+						if (command == SERVER) {                    // See if it is better define as enum
+							servers.push_back(
+									new Server());        // BE CAREFULL: if you use 'new' you should delete as well
 						}
 						// TODO extraer location
 						size_t postPath = command.find_first_of('/'); //what does happen if there is no '/'??
 						std::string cmdLocation = command.substr(0, postPath);
-//						std::string locationPath = command.substr(postPath, command.size()-1);
 
 						if (cmdLocation == LOCATION) {
 							Server &server = servers.back();
-							server.getLocations().push_back(new Location());	// BE CAREFULL: if you use 'new' you should delete as well
+							server.getLocations().push_back(
+									new Location());    // BE CAREFULL: if you use 'new' you should delete as well
 						}
 						block.push(command); // validar location antes del push
 						command = "";
@@ -481,9 +474,9 @@ namespace config {
 					break;
 				case ';':
 					if (!comment) {
-						std::cout << "linea que se valida: " << command << std::endl;
+						std::cout << "line that is validated: " << command << std::endl;
 						Directive directive = config::splitDirective(command);
-						config::validarYAlmacenar(directive, block.top(), servers); // WATCH OUT! CHECK THIS
+						config::validateAndStore(directive, block.top(), servers); // WATCH OUT! CHECK THIS
 						command = "";
 					}
 					break;
