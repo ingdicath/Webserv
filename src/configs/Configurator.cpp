@@ -11,9 +11,9 @@
 #include <fstream>
 #include <stack>
 #include "Configurator.hpp"
-#include "Server.hpp"
-#include "settings.hpp"
-#include "utils.hpp"
+#include "../webserver/Server.hpp"
+#include "../utils/settings.hpp"
+#include "../utils/utils.hpp"
 
 
 namespace config {

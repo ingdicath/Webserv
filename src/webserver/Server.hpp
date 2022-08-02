@@ -6,8 +6,8 @@
 
 #include "Location.hpp"
 #include "Client.hpp"
-#include "Configurator.hpp"
-#include "settings.hpp"
+#include "../configs/Configurator.hpp"
+#include "../utils/settings.hpp"
 
 #include <sys/socket.h>
 #include <sys/select.h>

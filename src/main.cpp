@@ -2,8 +2,8 @@
 #include <csignal>
 #include <cstdlib>
 
-#include "Webserver.hpp"
-#include "settings.hpp"
+#include "webserver/Webserver.hpp"
+#include "utils/settings.hpp"
 
 void	signal_handler(int signal)
 {

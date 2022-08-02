@@ -5,7 +5,8 @@
 //TODO: parse the body part when it is chunked
 
 #include "Request.hpp"
-#include "settings.hpp"
+#include "../utils/settings.hpp"
+#include "../utils/utils.hpp"
 
 Request::Request() {
     _headersDone = false;
@@ -181,7 +182,7 @@ void    Request::parseHeaders(std::stringstream &ss) {
         _contentLength = 0;
     }
     else {
-        _contentLength = std::stol(_headers[CONTENT_LENGTH]);
+        _contentLength = utils::strToLong(_headers[CONTENT_LENGTH].c_str()); // write my own stol
     }
 
     if (_headers.find(HOST) == _headers.end()) {

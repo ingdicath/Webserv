@@ -34,4 +34,6 @@ namespace utils {
 
 	std::string stringToLower(std::string oString);
 
+	// added by lin for parsing HTTP
+	long	strToLong(const char *str);
 }

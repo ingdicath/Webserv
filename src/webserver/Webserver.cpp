@@ -7,9 +7,9 @@
 #include <cstring>
 #include <cstdlib>
 #include <cstdio>
-#include "settings.hpp"
+#include "../utils/settings.hpp"
 #include "Webserver.hpp"
-#include "Request.hpp"
+#include "../http/Request.hpp"
 
 Webserver::Webserver(void)
 	: 	_maxSocket(0),
