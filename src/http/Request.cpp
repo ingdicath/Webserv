@@ -182,7 +182,7 @@ void    Request::parseHeaders(std::stringstream &ss) {
         _contentLength = 0;
     }
     else {
-        _contentLength = utils::strToLong(_headers[CONTENT_LENGTH].c_str()); // write my own stol
+        _contentLength = utils::strToLong(_headers[CONTENT_LENGTH].c_str());
     }
 
     if (_headers.find(HOST) == _headers.end()) {
