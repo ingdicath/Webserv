@@ -88,6 +88,8 @@ void    Webserver::createConnection(void) {
 */
 static void	takeRequest(int clientFD) {
 	char	recvline[MAXLINE + 1];
+    // this is a static placeholder, change to a variable when the config parsing is done
+    long    maxClientBody = 6000;
 
 	memset(recvline, 0, MAXLINE);
 	// read the clients message
@@ -97,7 +99,7 @@ static void	takeRequest(int clientFD) {
 	} //need remove client when bytesRead <= 0 ???
 
 	//request parsing part
-	Request request;
+	Request request(maxClientBody);
 	request.parseRequest(recvline, bytesRead);
 	memset(recvline, 0, MAXLINE);
 

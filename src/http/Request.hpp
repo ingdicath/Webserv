@@ -23,16 +23,17 @@ public:
 
 private:
     std::string _rawRequest;
-    bool _headersDone;
-    long _contentLength;
-    bool _chunked;
-    bool _chunkedComplete;
-    bool _chunkedEndHex;
-    bool _chunkedEndSeparatedCRLF;
-    long _remainder;
+    long    _maxClientBody;
+    bool    _headersDone;
+    long    _contentLength;
+    bool    _chunked;
+    bool    _chunkedComplete;
+    bool    _chunkedEndHex;
+    bool    _chunkedEndSeparatedCRLF;
+    long     _remainder;
 
     method  _method;
-    std::vector<std::string> _path;
+    std::vector<std::string>    _path;
     std::string _httpVersion;
     std::map<std::string, std::string>  _headers;
 	std::string _host;
@@ -43,11 +44,12 @@ private:
 	void    parsePath(std::stringstream &ss);
 	void    parseVersion(std::stringstream &ss);
 	void    parseHeaders(std::stringstream &ss);
-
+    void    parseBody(std::stringstream &ss);
     // void appendBody(const char *body, long len);
 
 public:
     Request();
+    Request(long maxClientBody);
     virtual ~Request();
 
     Request(const Request &obj);

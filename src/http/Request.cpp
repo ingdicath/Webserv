@@ -15,6 +15,14 @@ Request::Request() {
     _remainder = 0;
 }
 
+Request::Request(long maxClientBody) {
+    _maxClientBody = maxClientBody;
+    _headersDone = false;
+    _chunkedEndHex = false;
+    _chunkedEndSeparatedCRLF = false;
+    _remainder = 0;
+}
+
 Request::Request(const Request &obj) {
     *this = obj;
 }
@@ -193,6 +201,19 @@ void    Request::parseHeaders(std::stringstream &ss) {
     }
 }
 
+void    Request::parseBody(std::stringstream &ss) {
+    int	currentPos = ss.tellg();
+    std::string	body = _rawRequest.substr(currentPos, _rawRequest.size() - currentPos);
+    //parseBody(body.c_str(), body,size()) //TODO
+    _body = body; // for testing
+    if (_contentLength != 0 && _contentLength > _maxClientBody) {
+        throw MaxClientBodyException();
+    }
+    if (!_chunked && _body.size() > _contentLength) {
+        throw BodyLengthIncorrectException();
+    }
+}
+
 void    Request::parseRequest(char rawRequest[], int bytesRead) {
     for (int i = 0; i  <bytesRead; i++) {
         _rawRequest += rawRequest[i];
@@ -221,10 +242,13 @@ void    Request::parseRequest(char rawRequest[], int bytesRead) {
 			std::cout << e.what() << std::endl;
         }
 
-		int	currentPos = ss.tellg();
-		std::string	body = _rawRequest.substr(currentPos, _rawRequest.size() - currentPos);
-		//parseBody(body.c_str(), body,size()) //TODO
-		_body = body; // for testing
+        try {
+            parseBody(ss);
+        }
+        catch (std::exception &e) {
+            std::cout << e.what() << std::endl;
+        }
+
 		_headersDone = true;
     }
 }
