@@ -28,15 +28,15 @@ public:
     void    basicPOSTRequest(int &sock);
 
     // basic invalid request tests
-//    void    uriTooLarge(int &sock);
-//    void    headersTooLarge(int &sock);
-//    void    invalidMethod(int &sock);
-//    void    invalidVersion(int &sock);
+    void    invalidMethod(int &sock);
+    void    uriTooLong(int &sock);
+    void    invalidVersion(int &sock);
+    void    headersTooLarge(int &sock); //bugs, check later
 
     // chunked, with content length
     void    chunkedRequest(int &sock);
-    void    chunkedRequestTooSmall(int &sock);
-    void    chunkedRequestTooLarge(int &sock);
+//    void    chunkedRequestTooSmall(int &sock);
+//    void    chunkedRequestTooLarge(int &sock);
 };
 
 #endif //WEBSERV_REQUESTTESTER_HPP

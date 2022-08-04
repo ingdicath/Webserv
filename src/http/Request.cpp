@@ -138,7 +138,6 @@ void    Request::parsePath(std::stringstream &ss) {
         }
         requestPath.replace(pos, 3, " ");
     }
-    std::cout << "Raw Path: " << requestPath << std::endl;
 
     setPath(requestPath);
     if (_path[0] != "/") {
@@ -206,9 +205,9 @@ void    Request::parseBody(std::stringstream &ss) {
     std::string	body = _rawRequest.substr(currentPos, _rawRequest.size() - currentPos);
     //parseBody(body.c_str(), body,size()) //TODO
     _body = body; // for testing
-    if (_contentLength != 0 && _contentLength > _maxClientBody) {
-        throw MaxClientBodyException();
-    }
+//    if (_contentLength != 0 && _contentLength > _maxClientBody) {
+//        throw MaxClientBodyException();
+//    }
     if (!_chunked && _body.size() > _contentLength) {
         throw BodyLengthIncorrectException();
     }
@@ -229,27 +228,14 @@ void    Request::parseRequest(char rawRequest[], int bytesRead) {
             parseMethod(ss);
             parsePath(ss);
             parseVersion(ss);
-        }
-        catch (std::exception &e) {
-			std::cout << e.what() << std::endl;
-        }
-        ss.ignore(2); // skip the \r\n
-
-        try {
+            ss.ignore(2); // skip the \r\n
             parseHeaders(ss);
-        }
-        catch (std::exception &e) {
-			std::cout << e.what() << std::endl;
-        }
-
-        try {
             parseBody(ss);
         }
         catch (std::exception &e) {
-            std::cout << e.what() << std::endl;
+			std::cout << e.what() << std::endl;
         }
-
-		_headersDone = true;
+		_headersDone = true; //have to put it to the right place
     }
 }
 

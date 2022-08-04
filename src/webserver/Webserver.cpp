@@ -89,7 +89,7 @@ void    Webserver::createConnection(void) {
 static void	takeRequest(int clientFD) {
 	char	recvline[MAXLINE + 1];
     // this is a static placeholder, change to a variable when the config parsing is done
-    long    maxClientBody = 6000;
+    long    maxClientBody = 2147483647;
 
 	memset(recvline, 0, MAXLINE);
 	// read the clients message
