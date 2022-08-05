@@ -211,6 +211,7 @@ namespace config {
  * Is 0 a valid value for body size?
  * Will we predefine a max body size client?
  * Remove or not remove last character here? Put another validation??
+ * 	# client_max_body_size may have to be long
  */
 
 	bool _isValidBodySize(std::vector<std::string> values) {
