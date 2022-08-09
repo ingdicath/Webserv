@@ -217,7 +217,6 @@ void    Request::parseRequest(char rawRequest[], int bytesRead) {
     for (int i = 0; i  <bytesRead; i++) {
         _rawRequest += rawRequest[i];
     }
-    // std::cout << _rawRequest << std::endl;
 
     if (_rawRequest.find("\r\n\r\n") != std::string::npos && !_headersDone) {
         std::stringstream   ss(_rawRequest);
