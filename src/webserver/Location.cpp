@@ -17,6 +17,10 @@ Location::Location(Location *pLocation) {
 
 }
 
+void Location::setPathLocation(const std::string &pathLocation) {
+	_pathLocation = pathLocation;
+}
+
 //Location::Location(bool autoindex) : _autoindex() {
 //
 //}

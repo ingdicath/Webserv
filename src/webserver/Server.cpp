@@ -17,12 +17,11 @@
 #include <iostream> //testing purpose, delete
 #include <iterator> //testing purpose, delete
 
-
 Server::Server(void) :
 	_port(DEFAULT_PORT),
 	_host(DEFAULT_HOST),
-    _serverName(DEFAULT_SERVER_NAME),
-	_errorPage(DEFAULT_ERROR_PAGE),
+//  _serverName(DEFAULT_SERVER_NAME),
+//	_errorPage(DEFAULT_ERROR_PAGE),
     _timeOut(DEFAULT_TIMEOUT),
 	_serverSocket(-1) {
 }
@@ -31,14 +30,10 @@ Server::Server(void) :
 Server::Server(int port) :
 	_port(port),
 	_host(DEFAULT_HOST),
-    _serverName(DEFAULT_SERVER_NAME),
-    _errorPage(DEFAULT_ERROR_PAGE), 
+//    _serverName(DEFAULT_SERVER_NAME),
+//    _errorPage(DEFAULT_ERROR_PAGE),
 	_timeOut(DEFAULT_TIMEOUT),
 	_serverSocket(-1) {
-}
-
-Server::Server(Server *pServer) {
-	return;
 }
 
 Server::Server(const Server & src) {
@@ -72,52 +67,6 @@ void	Server::configServer(void) {
 	return;
 }
 
-/**
- * Functions to validate and set parameters, as an input for running the webserver
-*/
-
-//TODO: Anna is using port as a number, transform this in server, create a function. Not in parsing
-//TODO: Move this to config namespace
-
-// ADD DESCRIPTION
-void Server::validateAndSetListen(std::vector<std::string> values) {
-	std::pair<std::set<std::string>::iterator, bool> ret;
-
-	//std::set<std::string>::iterator it = _listen.begin();
-
-	for (size_t i = 0; i < values.size(); i++) {
-		if (!config::_isValidIpPort(values[i])) {
-			throw std::runtime_error("Config error: invalid listen values.");
-		}
-		ret = _listen.insert(values[i]);
-		if (!ret.second) {
-			throw std::runtime_error("Config error: duplicate value in listen.");
-		}
-	}
-
-	// delete this, testing
-	// for (auto it = _listen.begin(); it != _listen.end(); it++) {
-	// 	std::cout << *it << " ";
-	// }
-	// std::cout << std::endl;
-}
-
-// ADD DESCRIPTION
-void Server::validateAndSetServerNames(std::vector<std::string> values) {
-	if (config::_isValidServerNames(values)) {
-		std::vector<std::string> myVector; // ana is using port as a number, check if we need to use atoi
-		for (size_t i = 0; i < values.size(); i++) {
-			myVector.push_back(values[i]);
-		}
-		_server_name = myVector;
-
-		// delete this, testing
-		// for (auto it = _server_name.begin(); it != _server_name.end(); it++) {
-		// 	std::cout << *it << " ";
-		// }
-		//std::cout << std::endl;
-	}
-}
 
 /*
 ** DESCRIPTION

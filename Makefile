@@ -16,7 +16,7 @@ NAME		=	webserv
 CFLAGS		=	-Wall -Werror -Iincludes -std=c++98
 CC			=	c++
 
-SRC_DIR		=	src/
+SRC_DIR		=	src
 OBJ_DIR 	=	obj/
 
 SRC			=	main.cpp \
@@ -26,7 +26,9 @@ SRC			=	main.cpp \
 				Server.cpp \
 				Webserver.cpp \
 				Location.cpp \
-				Request.cpp
+				Request.cpp\
+				Parser.cpp\
+				FileUtils.cpp
 
 # SRC_PATH	=	$(addprefix $(SRC_DIR), $(SRC))
 # OBJ_FILES	=	$(SRC_PATH:$(SRC_DIR)%.cpp=$(OBJ_DIR)%.o)
@@ -34,20 +36,24 @@ OBJ_FILES	=	$(addprefix $(OBJ_DIR), $(notdir $(SRC:%.cpp=%.o)))
 VPATH 		=	$(subst $(space),:,$(shell find $(SRC_DIR) -type d))
 OBJ_FILES	=	$(addprefix $(OBJ_DIR), $(SRC:.cpp=.o))
 
-
 RM			=	/bin/rm -rf
+
+GREEN		=	\033[38;5;10m
+RESET		=	\033[0m
+CYAN		=	\033[38;5;81m
+YELLOW		=	\033[33;3;8m
 
 all:			$(NAME)
 
 $(NAME):		$(OBJ_FILES)
 				$(CC) $(CFLAGS) -o $(NAME) $(OBJ_FILES)
-				@echo "\033[38;5;10m'$(NAME)' executable has been created\n\033[0m"
+				@echo "'$(GREEN)$(NAME)' executable has been created\n$(RESET)"
 
 # $(SRC_DIR)%.cpp
 $(OBJ_DIR)%.o:	$(notdir %.cpp)
-				mkdir -p $(OBJ_DIR)
-				$(CC) -c $(CFLAGS) -o $@ $<
-				@echo "Objects are created"
+				@mkdir -p $(OBJ_DIR)
+				@echo "$(YELLOW)Creating objects for: $<$(RESET)"
+				@$(CC) -c $(CFLAGS) -o $@ $<
 
 clean:
 				@$(RM) $(OBJ_DIR)
@@ -55,7 +61,7 @@ clean:
 
 fclean: 		clean
 				@$(RM) $(NAME)
-				@echo "\033[38;5;81m'$(NAME)' executable was removed - fclean\033[0m"
+				@echo "$(CYAN)'$(NAME)' executable was removed - fclean.$(RESET)"
 
 re:
 				$(MAKE) fclean

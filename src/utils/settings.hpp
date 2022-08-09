@@ -42,8 +42,6 @@
 #define DEFAULT_TIMEOUT 10 // added: 60 seconds is default nginx timeout: change later
 #define MIN_PORT_NUMBER 1
 #define MAX_PORT_NUMBER 65535
-#define SERVER "server"
-#define LOCATION "location"
 #define OFF "off"
 #define ON "on"
 

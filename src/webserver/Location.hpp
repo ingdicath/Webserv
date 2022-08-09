@@ -19,14 +19,15 @@ public:
 
 	virtual ~Location();
 
+	void setPathLocation(const std::string &pathLocation);
+
 private:
-	std::string _locationPath;
-	std::string _root;
+	std::string _pathLocation;
 	std::set<std::string> _accepted_methods;
-	std::vector<std::string> _index;
+	std::map<int, std::string> _return;
+	std::string _root;
 	bool _autoindex;
-	std::map<std::string, std::string> _cgi; // in case we decide accept other formats than .py, could be php?
+	std::pair<int, std::string> _cgi;
 	std::string _upload;
-	std::map<int, std::string> _redirection;
 };
 

@@ -29,7 +29,6 @@ class Server {
 public:
 	Server(void);
 	Server(int port);
-	Server(Server *pServer);
 	Server(Server const & src);
 	Server& operator=(Server const & rhs);
 	virtual ~Server(void);
@@ -37,9 +36,9 @@ public:
 	//Configuration functions
 	void	configServer(void);
 
-	// Move to configurator later: functions to validate input from config file
-	void validateAndSetListen(std::vector<std::string> values);
-	void validateAndSetServerNames(std::vector<std::string> values);
+//	// Move to configurator later: functions to validate input from config file
+//	void validateAndSetListen(std::vector<std::string> values);
+//	void validateAndSetServerNames(std::vector<std::string> values);
 
 	//Socket functions
 	int		setupServer(void);
@@ -58,21 +57,20 @@ public:
 	std::vector<Client>		getClients(void) const;
 	long long				getTimeout(void) const;
 	std::vector<Location>	getLocations();
-	
+
 private:
-	//Configuration
-	std::set<std::string> 					_listen;				// Temp for Diana: probably replaced to Configurator
-	std::vector<std::string> 				_server_name;			// Temp for Diana: probably replaced to Configurator
-	std::map<std::size_t, std::string> 		_error_page; 
+// Configuration
+	int							_port;
+	std::string					_host;
+	std::vector<std::string>	_serverName;
+	std::string					_index;
+	std::map<int, std::string>	_errorPage;					// Explore how this works
+//	long						_clientMaxBodySize;
+	std::vector<Location>		_locations;				// Explore how this works
 
-	int										_port;
-	std::string 							_host;
-    std::string								_serverName;
-    int										_errorPage;				// Explore how this works
+
+
 	int										_timeOut;
-	std::vector<Location>					_locations;				// Explore how this works
-	//std::size_t								_clientMaxBodySize;		
-
 	//Connection
 	int						_serverSocket;
 	struct sockaddr_in 		_serverAddr;

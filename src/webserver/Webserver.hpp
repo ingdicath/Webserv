@@ -21,7 +21,7 @@ public:
 	Webserver& operator=(Webserver const & rhs);
 	virtual ~Webserver(void);
 
-	void	loadConfiguration(std::string configFile);
+	void	loadConfiguration(const std::string& configFile);
 	void	createConnection(void);
 	void	runWebserver(void);
 	int		updateReadySockets(struct timeval timeout);

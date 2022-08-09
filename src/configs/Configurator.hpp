@@ -83,7 +83,7 @@ namespace config {
 
 	void storeDirectiveInServer(const Directive &directive, Server *server);
 
-	//void loadConfiguration(const std::string &configFile);
+	//void validateConfiguration(const std::string &configFile);
 
 
 	//TODO variables: make private later
@@ -102,15 +102,6 @@ namespace config {
 		REDIRECTION,
 		INVALID
 	};
-
-	enum eBlocks {
-		SERVER_,
-		LOCATION_
-	};
-
-	// std::set<std::string> _listen;
-	// bool _autoindex;
-
 
 	eDirectives resolveDirective(const std::string &input);
 
