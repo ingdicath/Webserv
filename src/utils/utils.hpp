@@ -36,4 +36,7 @@ namespace utils {
 
 	// added by lin for parsing HTTP
 	long	strToLong(const char *str);
+
+	// added by diana for parsing config file
+	int strToInt(std::string input);
 }

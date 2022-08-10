@@ -84,10 +84,10 @@ namespace utils {
 	}
 
 	// added by lin for http
-	long	strToLong(const char *str) {
-		int	i = 0;
-		int	sign = 1;
-		unsigned long	res = 0;
+	long strToLong(const char *str) {
+		int i = 0;
+		int sign = 1;
+		unsigned long res = 0;
 
 		while (str[i] == ' ' || (str[i] >= 9 && str[i] <= 13)) {
 			i++;
@@ -109,6 +109,16 @@ namespace utils {
 			i++;
 		}
 		return (static_cast<long>(res) * sign);
+	}
+
+	// added by diana for parsing config file
+	int strToInt(std::string input) {
+		int res;
+		std::istringstream convert(input);
+		if (!(convert >> res)) {
+			res = 0;
+		}
+		return res;
 	}
 
 } // end namespace utils

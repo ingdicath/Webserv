@@ -20,9 +20,7 @@
 Server::Server(void) :
 	_port(DEFAULT_PORT),
 	_host(DEFAULT_HOST),
-//  _serverName(DEFAULT_SERVER_NAME),
-//	_errorPage(DEFAULT_ERROR_PAGE),
-    _timeOut(DEFAULT_TIMEOUT),
+	_timeOut(DEFAULT_TIMEOUT),
 	_serverSocket(-1) {
 }
 
@@ -30,8 +28,6 @@ Server::Server(void) :
 Server::Server(int port) :
 	_port(port),
 	_host(DEFAULT_HOST),
-//    _serverName(DEFAULT_SERVER_NAME),
-//    _errorPage(DEFAULT_ERROR_PAGE),
 	_timeOut(DEFAULT_TIMEOUT),
 	_serverSocket(-1) {
 }
@@ -167,16 +163,20 @@ void	Server::removeClient(int thisSocket) {
 ** GET functions
 */
 
+int		Server::getPort(void) const {
+	return _port;
+}
+const std::string &Server::getHost() const {
+	return _host;
+}
+
 std::vector<Location> Server::getLocations(void) {		// check if const is possible later
 	return _locations;
 }
 
+
 int		Server::getServerSocket(void) const {
 	return _serverSocket;
-}
-
-int		Server::getPort(void) const {
-	return _port;
 }
 
 std::vector<Client>	Server::getClients(void) const {
@@ -185,4 +185,13 @@ std::vector<Client>	Server::getClients(void) const {
 
 long long Server::getTimeout(void) const {
 	return _timeOut;
+}
+
+/**
+ *
+ * Setters
+ */
+
+void Server::setPort(int port) {
+	_port = port;
 }

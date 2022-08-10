@@ -3,35 +3,42 @@
 //
 
 #include <iostream>
+#include <algorithm>
 #include "Parser.hpp"
 #include "FileUtils.hpp"
 #include "../utils/utils.hpp"
 
+Parser::Parser() {}
+
+Parser::~Parser() {}
+
+
 /**
- * Load the file and validate char by char.
+ * Load the file and validate it char by char.
  */
 std::vector<Server> Parser::validateConfiguration(const std::string &configFile) {
-	FileUtils fileUtils;
-	fileUtils.openFile(_file, configFile);
-
 	std::vector<Server> servers;
 	std::string line;
 	char currentChar;
 	bool isComment = false;
 	int curlyCounter = 0;
+	FileUtils fileUtils;
+	fileUtils.openFile(_file, configFile);
 
 	while (_file.get(currentChar)) {
 		switch (currentChar) {
 			case '{':
-				checkOpenCurly(servers, isComment, line, &curlyCounter);
+				checkOpenCurly(isComment, &curlyCounter, &servers, line);
+				std::cout << "Open curly are: " << curlyCounter << std::endl; //test, delete
 				line = "";
 				break;
 			case ';':
-				checkSemiColon(line, isComment, servers);
+				checkSemiColon(isComment, &servers, line);
 				line = "";
 				break;
 			case '}':
-				checkCloseCurly(isComment, &curlyCounter, servers);
+				checkCloseCurly(isComment, &curlyCounter, &servers);
+				std::cout << "Close curly are: " << curlyCounter << std::endl; //test, delete
 				break;
 			case '#':
 				isComment = true;
@@ -49,61 +56,72 @@ std::vector<Server> Parser::validateConfiguration(const std::string &configFile)
 	return servers;
 }
 
-void Parser::checkOpenCurly(std::vector<Server> serverBlocks, bool isComment, std::string line, int *curlyCounter) {
+void Parser::checkOpenCurly(bool isComment, int *curlyCounter, std::vector<Server> *serverBlocks, std::string line) {
 	if (!isComment) {
 		*curlyCounter += 1;
 		if (*curlyCounter > 2) {
 			//TODO: create function clean and throw error
-			cleanServerBlocks(serverBlocks);
-			throw std::runtime_error("Config error: unbalanced curly braces.");
+			cleanServerBlocks(*serverBlocks);
+			throw std::runtime_error("Config error: open unbalanced curly braces.");
 		}
-		std::cout << "curly: " << line << std::endl;
 		line = utils::trim(line);
+		std::cout << "curly: " << line << std::endl;
+		// TODO: put extra condition in case key is no server or location
+//		if (line != "server" || line != "location") {
+//			std::cout << "word different: " << std::endl; //delete thiss
+//			cleanServerBlocks(serverBlocks); // check this
+//			throw std::runtime_error("No server or location detected."); // doesnt show this exception, check
+//		}
+
 		if (line == "server") {                    // See if it is better define as enum
-			serverBlocks.push_back(*new Server());        // BE CAREFULL: if you use 'new' you should delete as well
+			serverBlocks->push_back(*new Server());        // BE CAREFULL: if you use 'new' you should delete as well
 			return;
 		}
+
 		// TODO extraer location
 		size_t postPath = line.find_first_of('/'); //what does happen if there is no '/'??
 		std::string cmdLocation = line.substr(0, postPath);
 		std::string pathLocation = line.substr(postPath - 1, line.size());
 
 		if (cmdLocation == "location") {
-			Server &server = serverBlocks.back();  //brings last server to create new location
+			Server &server = serverBlocks->back();  //brings last server to create new location
 			Location location = new Location(); // BE CAREFULL: if you use 'new' you should delete as well
 			location.setPathLocation(pathLocation);
 			server.getLocations().push_back(location);
 			return;
 		}
-		//TODO:
-		std::cout << "here" << std::endl; //delete thiss
-		cleanServerBlocks(serverBlocks); // check this
+		//TODO: create function clean and throw error
+		std::cout << "here" << std::endl; //test, delete
+		cleanServerBlocks(*serverBlocks); // check this
 //		throw std::runtime_error("No server or location detected."); // update later
 	}
 }
 
-void Parser::checkSemiColon(std::string line, bool isComment, std::vector<Server> serverBlocks) {
+void Parser::checkSemiColon(bool isComment, std::vector<Server> *serverBlocks, std::string line) {
 	if (!isComment) {
-		std::cout << "line that is validated: " << line << std::endl;
+		line = utils::trim(line);
+		std::cout << "line that is validated: " << line << std::endl; //test, delete
 		Directive directive = Parser::splitDirective(line);
-		storeDirective(directive, &serverBlocks.back()); // WATCH OUT! CHECK THIS
+		storeDirective(directive, &serverBlocks->back()); // WATCH OUT! CHECK THIS
 	}
 }
 
-void Parser::checkCloseCurly(bool isComment, int *pInt, std::vector<Server> serverBlocks) {
+void Parser::checkCloseCurly(bool isComment, int *curlyCounter, std::vector<Server> *serverBlocks) {
 	if (!isComment) {
-		*pInt -= 1;
-		if (*pInt < 0) {
-			throw std::runtime_error("Config error: unbalanced curly braces.");
+		*curlyCounter -= 1;
+		if (*curlyCounter < 0) {
+			throw std::runtime_error("Config error: unbalanced closed curly braces.");
 		}
 	}
 }
 
 void Parser::storeDirective(Directive directive, Server *server) {
-
+	int temp;
 	switch (Parser::resolveDirective(directive._key)) {
 		case PORT:
-			std::cout << "hello port" << std::endl;
+			temp = validateAndSetPort(directive._value[0]);
+			std::cout << "hello port" << temp << std::endl;
+			server->setPort(temp);
 //			server->validateAndSetListen(directive._value);
 			break;
 //		case HOST_:
@@ -199,12 +217,14 @@ Parser::Directive Parser::splitDirective(std::string &input) {
 }
 
 bool Parser::_isValidPortRange(const std::string &port) {
+	bool res = true;
 	size_t portNumber = utils::stringToPositiveNum(port);
 	if (portNumber < MIN_PORT_NUMBER || portNumber > MAX_PORT_NUMBER) {
-		throw InvalidPortRangeException();
+		res = false;
+//		throw InvalidPortRangeException();
 //		throw std::runtime_error("Config error: invalid port value: '" + port + "'");
 	}
-	return true;
+	return res;
 }
 
 
@@ -240,15 +260,35 @@ bool Parser::_isValidServerName(const std::string &serverName) {
 	return true;
 }
 
-
+//TODO: complete this function
 void Parser::cleanServerBlocks(std::vector<Server> serverBlocks) {
 	std::vector<Server>::iterator it = serverBlocks.begin();
-	for (; it != serverBlocks.end(); it++) {
+	for (; it < serverBlocks.end(); it++) {
 		std::cout << "Element " << it->getPort() << " erased" << std::endl; // test: delete later
 		it = serverBlocks.erase(it);
 	}
-	serverBlocks.erase(it, serverBlocks.end());
+//	serverBlocks.erase(it, serverBlocks.end());
 }
+
+//TODO: complete this function
+void Parser::cleanLocationBlocks(std::vector<Location> locationBlocks) {
+	std::vector<Location>::iterator it = locationBlocks.begin();
+	for (; it != locationBlocks.end(); it++) {
+		it = locationBlocks.erase(it);
+	}
+	locationBlocks.erase(it, locationBlocks.end());
+}
+
+int Parser::validateAndSetPort(const std::string &port) {
+	if (!Parser::_isValidPortRange(port)) {
+		throw std::invalid_argument("Config error: invalid port value: '" + port + "'");
+	}
+	return utils::strToInt(port);
+}
+
+
+
+
 
 
 //TODO: Anna is using port as a number, transform this in server, create a function. Not in parsing
@@ -256,7 +296,7 @@ void Parser::cleanServerBlocks(std::vector<Server> serverBlocks) {
 
 /*
 // ADD DESCRIPTION
-void Server::validateAndSetListen(std::vector<std::string> values) {
+void Server::validateAndSetPort(std::vector<std::string> values) {
 	std::pair<std::set<std::string>::iterator, bool> ret;
 
 	//std::set<std::string>::iterator it = _listen.begin();

@@ -9,10 +9,15 @@
 
 class Parser {
 public:
+	Parser();
+
+	virtual ~Parser();
 
 	std::vector<Server> validateConfiguration(const std::string &configFile);
 
 	void cleanServerBlocks(std::vector<Server>);
+
+	void cleanLocationBlocks(std::vector<Location>);
 
 	class InvalidPortRangeException : public std::exception {
 	public:
@@ -46,11 +51,11 @@ private:
 		INVALID
 	};
 
-	void checkSemiColon(std::string line, bool isComment, std::vector<Server> serverBlocks);
+	void checkSemiColon(bool isComment, std::vector<Server> *serverBlocks, std::string line);
 
-	void checkCloseCurly(bool isComment, int *pInt, std::vector<Server> serverBlocks);
+	void checkCloseCurly(bool isComment, int *curlyCounter, std::vector<Server> *serverBlocks);
 
-	void checkOpenCurly(std::vector<Server> serverBlocks, bool isComment, std::string line, int *curlyCounter);
+	void checkOpenCurly(bool isComment, int *curlyCounter, std::vector<Server> *serverBlocks, std::string line);
 
 	void storeDirective(Directive directive, Server *server);
 
@@ -63,6 +68,8 @@ private:
 	bool _isValidIpv4Address(const std::string &ipAddress);
 
 	bool _isValidServerName(const std::string &serverName);
+
+	int validateAndSetPort(const std::string& port);
 };
 
 

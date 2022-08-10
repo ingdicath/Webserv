@@ -52,11 +52,18 @@ public:
 	};
 
 	//Get functions
-	int						getServerSocket(void) const;
 	int						getPort(void) const;
+	const std::string		&getHost() const;
+	std::vector<Location>	getLocations();
+
+	//Set functions
+	void setPort(int port);
+
+
+	int						getServerSocket(void) const;
 	std::vector<Client>		getClients(void) const;
 	long long				getTimeout(void) const;
-	std::vector<Location>	getLocations();
+
 
 private:
 // Configuration
