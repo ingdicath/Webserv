@@ -205,9 +205,9 @@ void    Request::parseBody(std::stringstream &ss) {
     std::string	body = _rawRequest.substr(currentPos, _rawRequest.size() - currentPos);
     //parseBody(body.c_str(), body,size()) //TODO
     _body = body; // for testing
-//    if (_contentLength != 0 && _contentLength > _maxClientBody) {
-//        throw MaxClientBodyException();
-//    }
+    if (_contentLength != 0 && _contentLength > _maxClientBody) {
+        throw MaxClientBodyException();
+    }
     if (!_chunked && _body.size() > _contentLength) {
         throw BodyLengthIncorrectException();
     }

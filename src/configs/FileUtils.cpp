@@ -13,10 +13,10 @@ void FileUtils::openFile(std::ifstream &file, const std::string &filePath) {
 
 	file.open(filePath.c_str(), std::ifstream::in);
 	if (!file.is_open()) {
-		throw std::runtime_error("Config error: Configuration file failed to open.");
+		throw std::runtime_error("[ERROR] Config error: Configuration file failed to open.");
 	}
 	if (isEmptyFile(file)) {
-		throw std::runtime_error("Config error: Empty file.");
+		throw std::runtime_error("[ERROR] Config error: Empty file.");
 	}
 //	file.close(); // dont forget to close
 }

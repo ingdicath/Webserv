@@ -38,5 +38,5 @@ namespace utils {
 	long	strToLong(const char *str);
 
 	// added by diana for parsing config file
-	int strToInt(std::string input);
+	int strToInt(const std::string& input);
 }

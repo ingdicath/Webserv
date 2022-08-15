@@ -5,6 +5,7 @@
 #include <string>
 #include <vector>
 #include <algorithm>
+#include <climits>
 #include "utils.hpp"
 
 namespace utils {
@@ -112,11 +113,11 @@ namespace utils {
 	}
 
 	// added by diana for parsing config file
-	int strToInt(std::string input) {
+	int strToInt(const std::string& input) {
 		int res;
 		std::istringstream convert(input);
 		if (!(convert >> res)) {
-			res = 0;
+			res = -1;
 		}
 		return res;
 	}

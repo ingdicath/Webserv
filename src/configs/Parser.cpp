@@ -91,8 +91,8 @@ void Parser::checkOpenCurly(bool isComment, int *curlyCounter, std::vector<Serve
 			return;
 		}
 		//TODO: create function clean and throw error
-		std::cout << "here" << std::endl; //test, delete
-		cleanServerBlocks(*serverBlocks); // check this
+//		std::cout << "here" << std::endl; //test, delete
+//		cleanServerBlocks(*serverBlocks); // check this
 //		throw std::runtime_error("No server or location detected."); // update later
 	}
 }
@@ -120,14 +120,13 @@ void Parser::storeDirective(Directive directive, Server *server) {
 	switch (Parser::resolveDirective(directive._key)) {
 		case PORT:
 			temp = validateAndSetPort(directive._value[0]);
-			std::cout << "hello port" << temp << std::endl;
+			std::cout << "hello port" << temp << std::endl; //test, delete
 			server->setPort(temp);
+			break;
+		case HOST_:
+			std::cout << "hello host" << std::endl;
 //			server->validateAndSetListen(directive._value);
 			break;
-//		case HOST_:
-//			std::cout << "hello host" << std::endl;
-//			server->validateAndSetListen(directive._value);
-//			break;
 //		case SERVER_NAME:
 //			std::cout << "hello server name" << std::endl;
 //			server->validateAndSetServerNames(directive._value);
@@ -221,8 +220,6 @@ bool Parser::_isValidPortRange(const std::string &port) {
 	size_t portNumber = utils::stringToPositiveNum(port);
 	if (portNumber < MIN_PORT_NUMBER || portNumber > MAX_PORT_NUMBER) {
 		res = false;
-//		throw InvalidPortRangeException();
-//		throw std::runtime_error("Config error: invalid port value: '" + port + "'");
 	}
 	return res;
 }
@@ -263,6 +260,7 @@ bool Parser::_isValidServerName(const std::string &serverName) {
 //TODO: complete this function
 void Parser::cleanServerBlocks(std::vector<Server> serverBlocks) {
 	std::vector<Server>::iterator it = serverBlocks.begin();
+	std::cout << "hello it's hot" << std::endl;
 	for (; it < serverBlocks.end(); it++) {
 		std::cout << "Element " << it->getPort() << " erased" << std::endl; // test: delete later
 		it = serverBlocks.erase(it);
@@ -281,10 +279,12 @@ void Parser::cleanLocationBlocks(std::vector<Location> locationBlocks) {
 
 int Parser::validateAndSetPort(const std::string &port) {
 	if (!Parser::_isValidPortRange(port)) {
+		throw InvalidPortRangeException();
 		throw std::invalid_argument("Config error: invalid port value: '" + port + "'");
 	}
 	return utils::strToInt(port);
 }
+
 
 
 

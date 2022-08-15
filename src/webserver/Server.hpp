@@ -36,10 +36,6 @@ public:
 	//Configuration functions
 	void	configServer(void);
 
-//	// Move to configurator later: functions to validate input from config file
-//	void validateAndSetListen(std::vector<std::string> values);
-//	void validateAndSetServerNames(std::vector<std::string> values);
-
 	//Socket functions
 	int		setupServer(void);
 	int		acceptConnection(void);
@@ -76,11 +72,9 @@ private:
 	std::vector<Location>		_locations;				// Explore how this works
 
 
-
 	int										_timeOut;
 	//Connection
 	int						_serverSocket;
 	struct sockaddr_in 		_serverAddr;
 	std::vector<Client> 	_clients;
-
 };
