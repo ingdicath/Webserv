@@ -13,9 +13,9 @@ class Location {
 public:
 	Location();
 
-	explicit Location(bool autoindex);
+	Location(Location const &obj);
 
-	Location(Location *pLocation);
+	Location &operator=(Location const &obj);
 
 	virtual ~Location();
 

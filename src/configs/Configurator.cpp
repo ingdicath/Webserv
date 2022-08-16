@@ -16,7 +16,7 @@
 //
 //namespace config {
 //
-//	Directive splitDirective(std::string &input) {
+//	Directive _splitDirective(std::string &input) {
 //		std::string cleanInput = utils::trim(input);
 //		size_t splitPos = cleanInput.find_first_of(WHITESPACES);
 //
@@ -343,7 +343,7 @@
 //	}
 //
 //	// Translate strings to enums to allow work with switch case
-//	eDirectives resolveDirective(const std::string &input) {
+//	eDirectives _resolveDirective(const std::string &input) {
 //		if (input == "listen") return LISTEN;
 //		if (input == "server_name") return SERVER_NAME;
 //		if (input == "error_page") return ERROR_PAGE;
@@ -390,7 +390,7 @@
 //
 //
 //	void storeDirectiveInServer(const Directive &directive, Server *server) {
-//		switch (config::resolveDirective(directive.key)) {
+//		switch (config::_resolveDirective(directive.key)) {
 //			case config::LISTEN:
 ////				server->validateAndSetListen(directive.value);
 //				break;
@@ -474,7 +474,7 @@
 //				case ';':
 //					if (!comment) {
 //						std::cout << "line that is validated: " << command << std::endl;
-//						Directive directive = config::splitDirective(command);
+//						Directive directive = config::_splitDirective(command);
 //						config::validateAndStore(directive, block.top(), servers); // WATCH OUT! CHECK THIS
 //						command = "";
 //					}

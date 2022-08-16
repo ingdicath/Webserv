@@ -15,15 +15,21 @@ public:
 
 	std::vector<Server> validateConfiguration(const std::string &configFile);
 
-	void cleanServerBlocks(std::vector<Server>);
+	void cleanServerBlocks(std::vector<Server> *);
 
-	void cleanLocationBlocks(std::vector<Location>);
+	void cleanLocationBlocks(std::vector<Location> *);
 
-	class InvalidPortRangeException : public std::exception {
+
+	class ConfigFileException : public std::exception {
 	public:
-		const char *what() const throw() {
-			return "Config error: invalid port value: '";
-		}
+		explicit ConfigFileException(const std::string &message);
+
+		~ConfigFileException() throw();
+
+		virtual const char *what() const throw();
+
+	private:
+		std::string msg_;
 	};
 
 private:
@@ -51,17 +57,21 @@ private:
 		INVALID
 	};
 
-	void checkSemiColon(bool isComment, std::vector<Server> *serverBlocks, std::string line);
+	void _checkSemiColon(bool isComment, std::vector<Server> *serverBlocks, std::string line);
 
-	void checkCloseCurly(bool isComment, int *curlyCounter, std::vector<Server> *serverBlocks);
+	void _checkCloseCurly(bool isComment, std::stack<std::string> *sectionBlock);
 
-	void checkOpenCurly(bool isComment, int *curlyCounter, std::vector<Server> *serverBlocks, std::string line);
+	void _checkOpenCurly(bool isComment, std::stack<std::string> *sectionBlock, std::vector<Server> *serverBlocks,
+						 std::string line);
 
-	void storeDirective(Directive directive, Server *server);
+	void _storeDirective(Directive directive, Server *server);
 
-	eDirectives resolveDirective(const std::string &input);
+	eDirectives _resolveDirective(const std::string &input);
 
-	Directive splitDirective(std::string &input);
+	Directive _splitDirective(std::string &input);
+
+
+	/** Functions to check parameters inside config file **/
 
 	bool _isValidPortRange(const std::string &port);
 
@@ -69,8 +79,7 @@ private:
 
 	bool _isValidServerName(const std::string &serverName);
 
-	int validateAndSetPort(const std::string& port);
+	int _checkPort(const std::string &port);
+
+	std::string _checkHost(const std::string &host);
 };
-
-
-

@@ -14,31 +14,32 @@ Parser::~Parser() {}
 
 
 /**
- * Load the file and validate it char by char.
+ * In this function we are loading the configuration file and validate it char by char.
+ * @param configFile is the path where is located the configuration file.
  */
+
+// TODO: Check if is possible to create server and location without using keyword new
 std::vector<Server> Parser::validateConfiguration(const std::string &configFile) {
 	std::vector<Server> servers;
 	std::string line;
 	char currentChar;
 	bool isComment = false;
-	int curlyCounter = 0;
+	std::stack<std::string> sectionBlock; //to validate server and location keyword
 	FileUtils fileUtils;
 	fileUtils.openFile(_file, configFile);
 
 	while (_file.get(currentChar)) {
 		switch (currentChar) {
 			case '{':
-				checkOpenCurly(isComment, &curlyCounter, &servers, line);
-				std::cout << "Open curly are: " << curlyCounter << std::endl; //test, delete
+				_checkOpenCurly(isComment, &sectionBlock, &servers, line);
 				line = "";
 				break;
 			case ';':
-				checkSemiColon(isComment, &servers, line);
+				_checkSemiColon(isComment, &servers, line);
 				line = "";
 				break;
 			case '}':
-				checkCloseCurly(isComment, &curlyCounter, &servers);
-				std::cout << "Close curly are: " << curlyCounter << std::endl; //test, delete
+				_checkCloseCurly(isComment, &sectionBlock);
 				break;
 			case '#':
 				isComment = true;
@@ -52,80 +53,107 @@ std::vector<Server> Parser::validateConfiguration(const std::string &configFile)
 				break;
 		}
 	}
+	if (!sectionBlock.empty()) {
+		//TODO: fix cleanServerBlocks to avoid memory leaks
+		cleanServerBlocks(&servers);
+		throw ConfigFileException("open unbalanced curly braces.");
+	}
 	fileUtils.closeFile(_file);
 	return servers;
 }
 
-void Parser::checkOpenCurly(bool isComment, int *curlyCounter, std::vector<Server> *serverBlocks, std::string line) {
+/**
+ *
+ * @param isComment validates if a line is a comment or not.
+ * @param sectionBlock allow to store keyword server and location in a stack.
+ * @param serverBlocks is the vector where we are adding server set up in the config file.
+ * @param line is the line we are reading.
+ */
+void Parser::_checkOpenCurly(bool isComment, std::stack<std::string> *sectionBlock,
+							 std::vector<Server> *serverBlocks,
+							 std::string line) {
 	if (!isComment) {
-		*curlyCounter += 1;
-		if (*curlyCounter > 2) {
-			//TODO: create function clean and throw error
-			cleanServerBlocks(*serverBlocks);
-			throw std::runtime_error("Config error: open unbalanced curly braces.");
-		}
 		line = utils::trim(line);
-		std::cout << "curly: " << line << std::endl;
-		// TODO: put extra condition in case key is no server or location
-//		if (line != "server" || line != "location") {
-//			std::cout << "word different: " << std::endl; //delete thiss
-//			cleanServerBlocks(serverBlocks); // check this
-//			throw std::runtime_error("No server or location detected."); // doesnt show this exception, check
-//		}
+		int postPath = static_cast<int>(line.find_first_of('/'));
+		std::string command = line.substr(0, postPath);
+		command = utils::trim(command);
 
-		if (line == "server") {                    // See if it is better define as enum
+		if (sectionBlock->empty() && line == "server") {    // See if it is better define as enum
 			serverBlocks->push_back(*new Server());        // BE CAREFULL: if you use 'new' you should delete as well
-			return;
-		}
-
-		// TODO extraer location
-		size_t postPath = line.find_first_of('/'); //what does happen if there is no '/'??
-		std::string cmdLocation = line.substr(0, postPath);
-		std::string pathLocation = line.substr(postPath - 1, line.size());
-
-		if (cmdLocation == "location") {
+		} else if (sectionBlock->empty() && command == "location") {
+			//TODO: fix cleanServerBlocks to avoid memory leaks
+			cleanServerBlocks(serverBlocks);
+//			while (1) {}; //delete, just testing for memory leaks
+			throw ConfigFileException("location block found outside server block.");
+			throw std::runtime_error("Config error: location block found outside server block.");
+		} else if (sectionBlock->top() == "server" && command == "location" && postPath != -1) {
+			std::string pathLocation = line.substr(postPath - 1, line.size());
+			pathLocation = utils::trim(pathLocation);
 			Server &server = serverBlocks->back();  //brings last server to create new location
-			Location location = new Location(); // BE CAREFULL: if you use 'new' you should delete as well
+			Location location = *new Location(); // BE CAREFULL: if you use 'new' you should delete as well
 			location.setPathLocation(pathLocation);
-			server.getLocations().push_back(location);
-			return;
+			server.addLocation(location);
+		} else if (sectionBlock->top() == "location" && command == "location") {
+			//TODO: fix cleanServerBlocks to avoid memory leaks
+			cleanServerBlocks(serverBlocks);
+//			while (1) {}; //delete, just testing for memory leaks
+			throw ConfigFileException("location block unclosed.");
+		} else {
+//			//TODO: fix cleanServerBlocks to avoid memory leaks
+			cleanServerBlocks(serverBlocks);
+			throw ConfigFileException("invalid value, no server or location detected in open block.");
 		}
-		//TODO: create function clean and throw error
-//		std::cout << "here" << std::endl; //test, delete
-//		cleanServerBlocks(*serverBlocks); // check this
-//		throw std::runtime_error("No server or location detected."); // update later
+		sectionBlock->push(command);
+		std::cout << "curly: " << sectionBlock->top() << std::endl;
 	}
 }
 
-void Parser::checkSemiColon(bool isComment, std::vector<Server> *serverBlocks, std::string line) {
+/**
+ * When the line reaches a semicolon (;), it is stored in a directive data structure
+ * composed by two parts: key and value(e.g. key-> port, value-> 80).
+ * Then, this directive is stored in the last server added in the vector of servers.
+ */
+void Parser::_checkSemiColon(bool isComment, std::vector<Server> *serverBlocks, std::string line) {
 	if (!isComment) {
 		line = utils::trim(line);
 		std::cout << "line that is validated: " << line << std::endl; //test, delete
-		Directive directive = Parser::splitDirective(line);
-		storeDirective(directive, &serverBlocks->back()); // WATCH OUT! CHECK THIS
+		Directive directive = Parser::_splitDirective(line);
+		_storeDirective(directive, &serverBlocks->back());
 	}
 }
 
-void Parser::checkCloseCurly(bool isComment, int *curlyCounter, std::vector<Server> *serverBlocks) {
+/**
+ * When the line reaches a close curly brace, it is verified if there is a server
+ * or location block opened.
+ */
+void Parser::_checkCloseCurly(bool isComment, std::stack<std::string> *sectionBlock) {
 	if (!isComment) {
-		*curlyCounter -= 1;
-		if (*curlyCounter < 0) {
-			throw std::runtime_error("Config error: unbalanced closed curly braces.");
+		if (sectionBlock->empty()) {
+			throw ConfigFileException("unbalanced curly braces.");
 		}
+		sectionBlock->pop();
 	}
 }
 
-void Parser::storeDirective(Directive directive, Server *server) {
+/**
+ * When it is found a key that corresponds to a valid parameter, it will be validated
+ * and stored in the Server or in the location class parameters.
+ * @param directive
+ * @param server
+ */
+void Parser::_storeDirective(Directive directive, Server *server) {
 	int temp;
-	switch (Parser::resolveDirective(directive._key)) {
+	std::string temp1;
+	switch (Parser::_resolveDirective(directive._key)) {
 		case PORT:
-			temp = validateAndSetPort(directive._value[0]);
-			std::cout << "hello port" << temp << std::endl; //test, delete
+			temp = _checkPort(directive._value[0]);
+			std::cout << "hello port " << temp << std::endl; //test, delete
 			server->setPort(temp);
 			break;
 		case HOST_:
-			std::cout << "hello host" << std::endl;
-//			server->validateAndSetListen(directive._value);
+			temp1 = _checkHost(directive._value[0]);
+			std::cout << "hello host " << temp1 << std::endl; //test, delete
+			server->setHost(temp1);
 			break;
 //		case SERVER_NAME:
 //			std::cout << "hello server name" << std::endl;
@@ -171,7 +199,7 @@ void Parser::storeDirective(Directive directive, Server *server) {
 /**
  * Translate strings to enums to allow work with switch case
  */
-Parser::eDirectives Parser::resolveDirective(const std::string &input) {
+Parser::eDirectives Parser::_resolveDirective(const std::string &input) {
 	if (input == "port") return Parser::PORT;
 	if (input == "host") return Parser::HOST_;
 	if (input == "server_name") return Parser::SERVER_NAME;
@@ -188,13 +216,18 @@ Parser::eDirectives Parser::resolveDirective(const std::string &input) {
 	return Parser::INVALID;
 }
 
-Parser::Directive Parser::splitDirective(std::string &input) {
+/**
+ *
+ * @param input Refers to the line that contains keyword (e.g. port) and
+ * its value (e.g. 80)
+ */
+Parser::Directive Parser::_splitDirective(std::string &input) {
 	std::string cleanInput = utils::trim(input);
 	size_t splitPos = cleanInput.find_first_of(WHITESPACES);
 
 	// check if key and value exists
 	if (splitPos > input.size()) {
-		throw std::runtime_error("Config error: unbalanced directive Key.");
+		throw ConfigFileException("unbalanced directive Key.");
 	}
 	std::string directiveKey = cleanInput.substr(0, splitPos);
 	std::string directiveValue = cleanInput.substr(splitPos, cleanInput.size());
@@ -224,9 +257,8 @@ bool Parser::_isValidPortRange(const std::string &port) {
 	return res;
 }
 
-
 /**
- * Functions to validate parameters in config file
+ * A valid value for port can be localhost or an address like 127.0.0.0
  */
 bool Parser::_isValidIpv4Address(const std::string &ipAddress) {
 	if (ipAddress == "localhost") {
@@ -249,75 +281,52 @@ bool Parser::_isValidIpv4Address(const std::string &ipAddress) {
 
 bool Parser::_isValidServerName(const std::string &serverName) {
 	if (serverName[0] == '/' || serverName[0] == '*') {
-		throw std::runtime_error("Config error: path can't be a directory or use wildcard *. ");
+		throw ConfigFileException("path can't be a directory or use wildcard *. ");
 	}
 	if (serverName.find_last_of('/') == serverName.size() - 1 && serverName.size() != 1) {
-		throw std::runtime_error("Config error: path can't be a directory.");
+		throw ConfigFileException("path can't be a directory.");
 	}
 	return true;
 }
 
 //TODO: complete this function
-void Parser::cleanServerBlocks(std::vector<Server> serverBlocks) {
-	std::vector<Server>::iterator it = serverBlocks.begin();
-	std::cout << "hello it's hot" << std::endl;
-	for (; it < serverBlocks.end(); it++) {
-		std::cout << "Element " << it->getPort() << " erased" << std::endl; // test: delete later
-		it = serverBlocks.erase(it);
+void Parser::cleanServerBlocks(std::vector<Server> *serverBlocks) {
+	std::vector<Server>::iterator serverIt = serverBlocks->begin();
+	for (; serverIt < serverBlocks->end(); serverIt++) {
+		cleanLocationBlocks(serverIt->getLocations());
+		std::cout << "Element " << serverIt->getPort() << " erased" << std::endl; // test: delete later
+		serverIt = serverBlocks->erase(serverIt);
 	}
-//	serverBlocks.erase(it, serverBlocks.end());
 }
 
 //TODO: complete this function
-void Parser::cleanLocationBlocks(std::vector<Location> locationBlocks) {
-	std::vector<Location>::iterator it = locationBlocks.begin();
-	for (; it != locationBlocks.end(); it++) {
-		it = locationBlocks.erase(it);
+void Parser::cleanLocationBlocks(std::vector<Location> *locationBlocks) {
+	std::vector<Location>::iterator locationIt = locationBlocks->begin();
+	for (; locationIt < locationBlocks->end(); locationIt++) {
+		locationIt = locationBlocks->erase(locationIt);
 	}
-	locationBlocks.erase(it, locationBlocks.end());
 }
 
-int Parser::validateAndSetPort(const std::string &port) {
+int Parser::_checkPort(const std::string &port) {
 	if (!Parser::_isValidPortRange(port)) {
-		throw InvalidPortRangeException();
-		throw std::invalid_argument("Config error: invalid port value: '" + port + "'");
+		throw ConfigFileException("invalid port value: '" + port + "'");
 	}
 	return utils::strToInt(port);
 }
 
-
-
-
-
-
-
-//TODO: Anna is using port as a number, transform this in server, create a function. Not in parsing
-//TODO: Move this to config namespace
-
-/*
-// ADD DESCRIPTION
-void Server::validateAndSetPort(std::vector<std::string> values) {
-	std::pair<std::set<std::string>::iterator, bool> ret;
-
-	//std::set<std::string>::iterator it = _listen.begin();
-
-	for (size_t i = 0; i < values.size(); i++) {
-		if (!config::_isValidIpPort(values[i])) {
-			throw std::runtime_error("Config error: invalid listen values.");
-		}
-		ret = _listen.insert(values[i]);
-		if (!ret.second) {
-			throw std::runtime_error("Config error: duplicate value in listen.");
-		}
+std::string Parser::_checkHost(const std::string &host) {
+	std::string res = host;
+	if (!Parser::_isValidIpv4Address(host)) {
+		throw ConfigFileException("invalid host value: '" + host + "'");
 	}
-
-	// delete this, testing
-	// for (auto it = _listen.begin(); it != _listen.end(); it++) {
-	// 	std::cout << *it << " ";
-	// }
-	// std::cout << std::endl;
+	if (host == "localhost") {
+		res = "127.0.0.1";
+	}
+	return res;
 }
 
+
+/*
 // ADD DESCRIPTION
 void Server::validateAndSetServerNames(std::vector<std::string> values) {
 	if (config::_isValidServerNames(values)) {
@@ -335,3 +344,15 @@ void Server::validateAndSetServerNames(std::vector<std::string> values) {
 	}
 }
  */
+
+/**
+ * This is a custom exception to show error messages when the configuration file is processed.
+ */
+Parser::ConfigFileException::ConfigFileException(const std::string &message)
+		: msg_("Config error: " + message) {}
+
+Parser::ConfigFileException::~ConfigFileException() throw() {}
+
+const char *Parser::ConfigFileException::what() const throw() {
+	return msg_.c_str();
+}

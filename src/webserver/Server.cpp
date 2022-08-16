@@ -170,9 +170,11 @@ const std::string &Server::getHost() const {
 	return _host;
 }
 
-std::vector<Location> Server::getLocations(void) {		// check if const is possible later
-	return _locations;
+std::vector<Location> *Server::getLocations(void) {		// check if const is possible later
+	return &_locations;
 }
+
+
 
 
 int		Server::getServerSocket(void) const {
@@ -194,4 +196,12 @@ long long Server::getTimeout(void) const {
 
 void Server::setPort(int port) {
 	_port = port;
+}
+
+void Server::setHost(std::string host) {
+	_host = host;
+}
+
+void Server::addLocation(Location location) {
+	_locations.push_back(location);
 }

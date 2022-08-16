@@ -26,8 +26,6 @@ namespace utils {
 
 	std::string &trim(std::string &str);
 
-	bool validateIpAddress(const std::string &ipAddress);
-
 	std::string deleteLastOf(char toSearch, std::string str);
 
 	std::string stringToUpper(std::string oString);

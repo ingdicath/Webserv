@@ -5,8 +5,9 @@
 #include <string>
 #include <vector>
 #include <algorithm>
-#include <climits>
+#include <iostream>
 #include "utils.hpp"
+#include "settings.hpp"
 
 namespace utils {
 
@@ -36,8 +37,9 @@ namespace utils {
 
 	size_t stringToPositiveNum(const std::string &input) {
 		size_t res;
-		if (!isPositiveNumber(input))
-			throw std::runtime_error("Invalid input for positive number.");
+		if (!isPositiveNumber(input)) {
+			std::cerr << RED "Invalid input for positive number." RESET << std::endl;
+		}
 		std::stringstream ss(input);
 		ss >> res;
 		return res;
@@ -113,7 +115,7 @@ namespace utils {
 	}
 
 	// added by diana for parsing config file
-	int strToInt(const std::string& input) {
+	int strToInt(const std::string &input) {
 		int res;
 		std::istringstream convert(input);
 		if (!(convert >> res)) {

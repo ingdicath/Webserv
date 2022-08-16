@@ -50,16 +50,19 @@ public:
 	//Get functions
 	int						getPort(void) const;
 	const std::string		&getHost() const;
-	std::vector<Location>	getLocations();
+	std::vector<Location>	*getLocations();
 
 	//Set functions
 	void setPort(int port);
+	void setHost(std::string host);
 
 
 	int						getServerSocket(void) const;
 	std::vector<Client>		getClients(void) const;
 	long long				getTimeout(void) const;
 
+
+	void addLocation(Location location);
 
 private:
 // Configuration
