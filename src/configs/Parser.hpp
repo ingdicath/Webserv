@@ -77,9 +77,14 @@ private:
 
 	bool _isValidIpv4Address(const std::string &ipAddress);
 
-	bool _isValidServerName(const std::string &serverName);
+	bool _isValidServerName(std::string serverName);
+
+	bool _isValidServerNames(const std::vector<std::string> &serverNames);
 
 	int _checkPort(const std::string &port);
 
-	std::string _checkHost(const std::string &host);
+	std::string _checkHost(std::string host);
+
+	std::vector<std::string> _checkServerNames(std::vector<std::string> serverNames);
+
 };

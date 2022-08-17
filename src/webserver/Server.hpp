@@ -53,9 +53,9 @@ public:
 	std::vector<Location>	*getLocations();
 
 	//Set functions
-	void setPort(int port);
-	void setHost(std::string host);
-
+	void					setPort(int port);
+	void					setHost(std::string host);
+	void					setServerName(const std::vector<std::string> &serverName);
 
 	int						getServerSocket(void) const;
 	std::vector<Client>		getClients(void) const;
@@ -75,9 +75,9 @@ private:
 	std::vector<Location>		_locations;				// Explore how this works
 
 
-	int										_timeOut;
+	int							_timeOut;
 	//Connection
-	int						_serverSocket;
-	struct sockaddr_in 		_serverAddr;
-	std::vector<Client> 	_clients;
+	int							_serverSocket;
+	struct sockaddr_in			_serverAddr;
+	std::vector<Client>			_clients;
 };

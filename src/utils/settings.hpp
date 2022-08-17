@@ -37,7 +37,8 @@
 #define DEFAULT_HOST "0.0.0.0"
 #define DEFAULT_ROOT "/www"
 #define DEFAULT_SERVER_NAME ""
-#define DEFAULT_ERROR_PAGE 404
+#define DEFAULT_ERROR_PAGE_NUM 404
+#define DEFAULT_ERROR_PAGE_URL "./404.html"
 #define DEFAULT_BACKLOG 1000
 #define DEFAULT_TIMEOUT 10 // added: 60 seconds is default nginx timeout: change later
 #define MIN_PORT_NUMBER 1

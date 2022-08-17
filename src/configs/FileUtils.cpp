@@ -5,6 +5,10 @@
 #include <fstream>
 #include "FileUtils.hpp"
 
+FileUtils::FileUtils() {}
+
+FileUtils::~FileUtils() {}
+
 bool FileUtils::isEmptyFile(std::ifstream &inputFile) {
 	return inputFile.peek() == std::ifstream::traits_type::eof();
 }
@@ -18,13 +22,7 @@ void FileUtils::openFile(std::ifstream &file, const std::string &filePath) {
 	if (isEmptyFile(file)) {
 		throw std::runtime_error("[ERROR] Config error: Empty file.");
 	}
-//	file.close(); // dont forget to close
 }
-
-
-FileUtils::FileUtils() {}
-
-FileUtils::~FileUtils() {}
 
 void FileUtils::closeFile(std::ifstream &file) {
 	if (file.is_open()) {

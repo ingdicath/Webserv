@@ -85,7 +85,6 @@ void Parser::_checkOpenCurly(bool isComment, std::stack<std::string> *sectionBlo
 			cleanServerBlocks(serverBlocks);
 //			while (1) {}; //delete, just testing for memory leaks
 			throw ConfigFileException("location block found outside server block.");
-			throw std::runtime_error("Config error: location block found outside server block.");
 		} else if (sectionBlock->top() == "server" && command == "location" && postPath != -1) {
 			std::string pathLocation = line.substr(postPath - 1, line.size());
 			pathLocation = utils::trim(pathLocation);
@@ -142,22 +141,15 @@ void Parser::_checkCloseCurly(bool isComment, std::stack<std::string> *sectionBl
  * @param server
  */
 void Parser::_storeDirective(Directive directive, Server *server) {
-	int temp;
-	std::string temp1;
 	switch (Parser::_resolveDirective(directive._key)) {
 		case PORT:
-			temp = _checkPort(directive._value[0]);
-			std::cout << "hello port " << temp << std::endl; //test, delete
-			server->setPort(temp);
+			server->setPort(_checkPort(directive._value[0]));
 			break;
 		case HOST_:
-			temp1 = _checkHost(directive._value[0]);
-			std::cout << "hello host " << temp1 << std::endl; //test, delete
-			server->setHost(temp1);
+			server->setHost(_checkHost(directive._value[0]));
 			break;
-//		case SERVER_NAME:
-//			std::cout << "hello server name" << std::endl;
-//			server->validateAndSetServerNames(directive._value);
+		case SERVER_NAME:
+			server->setServerName(_checkServerNames(directive._value));
 			break;
 //		case ERROR_PAGE:
 //		server->validateAndSetErrorPages(directive.value);
@@ -258,7 +250,7 @@ bool Parser::_isValidPortRange(const std::string &port) {
 }
 
 /**
- * A valid value for port can be localhost or an address like 127.0.0.0
+ * A valid value for port can be 'localhost' or an ip4 address like '127.0.0.0'
  */
 bool Parser::_isValidIpv4Address(const std::string &ipAddress) {
 	if (ipAddress == "localhost") {
@@ -279,12 +271,35 @@ bool Parser::_isValidIpv4Address(const std::string &ipAddress) {
 	return true;
 }
 
-bool Parser::_isValidServerName(const std::string &serverName) {
+/**
+ * @param serverName One server name to be validated.
+ */
+bool Parser::_isValidServerName(std::string serverName) {
+	serverName = utils::trim(serverName);
 	if (serverName[0] == '/' || serverName[0] == '*') {
-		throw ConfigFileException("path can't be a directory or use wildcard *. ");
+		std::cerr << RED "Path can't be a directory or use wildcard *. " RESET << std::endl;
+		return false;
 	}
 	if (serverName.find_last_of('/') == serverName.size() - 1 && serverName.size() != 1) {
-		throw ConfigFileException("path can't be a directory.");
+		std::cerr << RED "Path can't be a directory." RESET << std::endl;
+		return false;
+	}
+	return true;
+}
+
+/**
+ * @param serverNames vector of server names to be evaluated.
+ */
+bool Parser::_isValidServerNames(const std::vector<std::string> &serverNames) {
+	if (serverNames.empty()) {
+		std::cerr << RED "missing argument for server name. " RESET << std::endl;
+		return false;
+	}
+	for (size_t i = 0; i < serverNames.size(); i++) {
+		if (!_isValidServerName(serverNames.at(i))) {
+			std::cerr << RED "wrong syntax in server name." RESET << std::endl;
+			return false;
+		}
 	}
 	return true;
 }
@@ -307,6 +322,7 @@ void Parser::cleanLocationBlocks(std::vector<Location> *locationBlocks) {
 	}
 }
 
+
 int Parser::_checkPort(const std::string &port) {
 	if (!Parser::_isValidPortRange(port)) {
 		throw ConfigFileException("invalid port value: '" + port + "'");
@@ -314,16 +330,28 @@ int Parser::_checkPort(const std::string &port) {
 	return utils::strToInt(port);
 }
 
-std::string Parser::_checkHost(const std::string &host) {
-	std::string res = host;
+std::string Parser::_checkHost(std::string host) {
 	if (!Parser::_isValidIpv4Address(host)) {
 		throw ConfigFileException("invalid host value: '" + host + "'");
 	}
 	if (host == "localhost") {
-		res = "127.0.0.1";
+		host = "127.0.0.1";
 	}
-	return res;
+	return host;
 }
+
+std::vector<std::string> Parser::_checkServerNames(std::vector<std::string> serverNames) {
+	if (!_isValidServerNames(serverNames)) {
+		throw ConfigFileException("invalid server name value(s)");
+	}
+	std::vector<std::string> myVector;
+	for (size_t i = 0; i < serverNames.size(); i++) {
+		myVector.push_back(serverNames[i]);
+	}
+	return myVector;
+}
+
+
 
 
 /*

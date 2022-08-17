@@ -18,10 +18,13 @@
 #include <iterator> //testing purpose, delete
 
 Server::Server(void) :
-	_port(DEFAULT_PORT),
-	_host(DEFAULT_HOST),
-	_timeOut(DEFAULT_TIMEOUT),
-	_serverSocket(-1) {
+		_port(DEFAULT_PORT),
+		_host(DEFAULT_HOST),
+		_timeOut(DEFAULT_TIMEOUT),
+		_serverSocket(-1) {
+	_serverName.push_back(DEFAULT_SERVER_NAME);
+	_errorPage.insert(std::pair<int, std::string>(DEFAULT_ERROR_PAGE_NUM,
+												  DEFAULT_ERROR_PAGE_URL));
 }
 
 // REMOVE THIS ONE LATER: ONLY FOR TESTING PURPOSES
@@ -103,7 +106,7 @@ int	Server::setupServer(void) {
 		std::cout << RED << e.what();
 		std::cout << "Server IP: " << _host << " port: " << _port << std::endl;
 		std::cout << "Error: " << strerror(errno) << "\n" << RESET << std::endl;
-		if (_serverSocket != -1) 
+		if (_serverSocket != -1)
 			close(_serverSocket);
 		return EXIT_FAILURE;
 	}
@@ -200,6 +203,10 @@ void Server::setPort(int port) {
 
 void Server::setHost(std::string host) {
 	_host = host;
+}
+
+void Server::setServerName(const std::vector<std::string> &serverName) {
+	_serverName = serverName;
 }
 
 void Server::addLocation(Location location) {
