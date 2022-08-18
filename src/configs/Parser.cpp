@@ -290,7 +290,7 @@ bool Parser::_isValidServerName(std::string serverName) {
 /**
  * @param serverNames vector of server names to be evaluated.
  */
-bool Parser::_isValidServerNames(const std::vector<std::string> &serverNames) {
+bool Parser::_areValidServerNames(const std::vector<std::string> &serverNames) {
 	if (serverNames.empty()) {
 		std::cerr << RED "missing argument for server name. " RESET << std::endl;
 		return false;
@@ -304,7 +304,62 @@ bool Parser::_isValidServerNames(const std::vector<std::string> &serverNames) {
 	return true;
 }
 
-//TODO: complete this function
+/**
+ * Max possible error code is 505
+ * @param string is the error code to validate
+ */
+bool Parser::_isValidErrorCode(const std::string &string) {
+	if (!utils::isPositiveNumber(string)) {
+		return false;
+	}
+	size_t errorCode = utils::stringToPositiveNum(string);
+	if (errorCode < 300 || errorCode > 506) {
+		std::cerr << RED " Invalid error code." RESET << std::endl;
+		return false;
+	}
+	return true;
+}
+
+
+/**
+ * It is checking if the url is valid for error pages.
+ */
+bool Parser::_isValidErrorPageUrl(const std::string &urlPath) {
+	if (urlPath[0] != '/') {
+		return false;
+	}
+	if (urlPath.find_last_of('/') == urlPath.size() - 1 && urlPath.size() != 1) {
+		std::cerr << RED " Path can't be a directory." RESET << std::endl;
+		return false;
+	}
+	return true;
+}
+
+bool Parser::_isValidErrorPageConfig(std::vector<std::string> values) {
+	if (values.size() != 2) {
+		std::cerr << RED "Invalid args for error pages directive." RESET << std::endl;
+		return false;
+	}
+	if (!_isValidErrorCode(values[0])) {
+		std::cerr << RED "Invalid error code." RESET << std::endl;
+		return false;
+	}
+	if (!_isValidErrorPageUrl(values[1])) {
+		std::cerr << RED "Invalid path." RESET << std::endl;
+		return false;
+	}
+	std::set<std::string> mySet;
+	for (size_t i = 0; i < values.size(); ++i) {
+		if (!mySet.insert(values[i]).second) {
+			std::cerr << RED "duplicate value in Error page." RESET << std::endl;
+			return false;
+		}
+	}
+	return true;
+}
+
+
+//TODO: complete this function, possibly move to another cpp file
 void Parser::cleanServerBlocks(std::vector<Server> *serverBlocks) {
 	std::vector<Server>::iterator serverIt = serverBlocks->begin();
 	for (; serverIt < serverBlocks->end(); serverIt++) {
@@ -314,7 +369,7 @@ void Parser::cleanServerBlocks(std::vector<Server> *serverBlocks) {
 	}
 }
 
-//TODO: complete this function
+//TODO: complete this function, possibly move to another cpp file
 void Parser::cleanLocationBlocks(std::vector<Location> *locationBlocks) {
 	std::vector<Location>::iterator locationIt = locationBlocks->begin();
 	for (; locationIt < locationBlocks->end(); locationIt++) {
@@ -322,6 +377,9 @@ void Parser::cleanLocationBlocks(std::vector<Location> *locationBlocks) {
 	}
 }
 
+/************************************************************************************
+* 							Functions to check parameters							*
+************************************************************************************/
 
 int Parser::_checkPort(const std::string &port) {
 	if (!Parser::_isValidPortRange(port)) {
@@ -341,7 +399,7 @@ std::string Parser::_checkHost(std::string host) {
 }
 
 std::vector<std::string> Parser::_checkServerNames(std::vector<std::string> serverNames) {
-	if (!_isValidServerNames(serverNames)) {
+	if (!_areValidServerNames(serverNames)) {
 		throw ConfigFileException("invalid server name value(s)");
 	}
 	std::vector<std::string> myVector;
@@ -351,27 +409,17 @@ std::vector<std::string> Parser::_checkServerNames(std::vector<std::string> serv
 	return myVector;
 }
 
-
-
-
-/*
-// ADD DESCRIPTION
-void Server::validateAndSetServerNames(std::vector<std::string> values) {
-	if (config::_isValidServerNames(values)) {
-		std::vector<std::string> myVector; // ana is using port as a number, check if we need to use atoi
-		for (size_t i = 0; i < values.size(); i++) {
-			myVector.push_back(values[i]);
-		}
-		_server_name = myVector;
-
-		// delete this, testing
-		// for (auto it = _server_name.begin(); it != _server_name.end(); it++) {
-		// 	std::cout << *it << " ";
-		// }
-		//std::cout << std::endl;
-	}
-}
- */
+//std::map<int, std::string> Parser::_checkErrorPage(std::vector<std::string> errorPage) {
+//	if (!_isValidErrorPageConfig(errorPage)){
+//		throw ConfigFileException("invalid value for error page.");
+//	}
+//	std::map<int, std::string> res;
+//	for (size_t i = 0; i < errorPage.size(); i++) {
+//		res.insert(errorPage[i]);
+//	}
+//
+//	return res;
+//}
 
 /**
  * This is a custom exception to show error messages when the configuration file is processed.

@@ -140,7 +140,7 @@
 //	}
 //
 //
-//	bool _isValidServerNames(const std::vector<std::string> &serverNames) {
+//	bool _areValidServerNames(const std::vector<std::string> &serverNames) {
 //		if (serverNames.size() < 1) {
 //			throw std::runtime_error("Config error: missing argument for server name. ");
 //		}

@@ -208,9 +208,9 @@ void    Request::parseBody(std::stringstream &ss) {
     if (_contentLength != 0 && _contentLength > _maxClientBody) {
         throw MaxClientBodyException();
     }
-    if (!_chunked && _body.size() > _contentLength) {
-        throw BodyLengthIncorrectException();
-    }
+//    if (!_chunked && _body.size() > _contentLength) {
+//        throw BodyLengthIncorrectException();
+//    }
 }
 
 void    Request::parseRequest(char rawRequest[], int bytesRead) {
@@ -255,9 +255,9 @@ std::ostream	&operator<<(std::ostream &os, const Request &request) {
 	
 	std::vector<std::string>	path = request.getPath();
  	os << "Path: ";
-    for (int i = 0; i < path.size(); i++) {
-        os << path[i] << " ";
-    }
+//    for (int i = 0; i < path.size(); i++) {
+//        os << path[i] << " ";
+//    }
 	os << std::endl;
 
 	os << "HTTP Version: " << request.getVersion() << std::endl;

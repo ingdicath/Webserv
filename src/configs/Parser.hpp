@@ -5,7 +5,9 @@
 #pragma once
 
 #include <fstream>
+#include <stack>
 #include "../webserver/Server.hpp"
+
 
 class Parser {
 public:
@@ -79,12 +81,26 @@ private:
 
 	bool _isValidServerName(std::string serverName);
 
-	bool _isValidServerNames(const std::vector<std::string> &serverNames);
+	bool _areValidServerNames(const std::vector<std::string> &serverNames);
+
+	bool _isValidErrorCode(const std::string &string);
+
+	bool _isValidErrorPageUrl(const std::string &urlPath);
+
+	bool _isValidErrorPageConfig(std::vector<std::string> values);
+
+
 
 	int _checkPort(const std::string &port);
 
 	std::string _checkHost(std::string host);
 
 	std::vector<std::string> _checkServerNames(std::vector<std::string> serverNames);
+
+	std::map<int, std::string>_checkErrorPage(std::vector<std::string> errorPage);
+
+
+
+
 
 };
