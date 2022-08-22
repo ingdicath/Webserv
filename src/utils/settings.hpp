@@ -10,18 +10,18 @@
 
 /** colors **/
 #define RESET   "\033[0m"
+#define RED     "\033[31m"
+#define GREEN   "\033[32m"
+#define BLUE    "\033[34m"
+#define CYAN    "\033[36m"
 #define ITALIC  "\033[3m"
 #define GREEN_2 "\033[38;5;10m"
 #define BLACK   "\033[30m"
 #define CYAN_L  "\033[0;36m"
-#define RED     "\033[31m"
 #define ORANGE "\033[38;5;172m"
 #define PURPLE "\033[35;5;95m"
-#define GREEN   "\033[32m"
 #define YELLOW  "\033[33m"
-#define BLUE    "\033[34m"
 #define MAGENTA "\033[35m"
-#define CYAN    "\033[36m"
 #define WHITE   "\033[37m"
 #define BOLDBLACK   "\033[1m\033[30m"
 #define BOLDRED     "\033[1m\033[31m"
@@ -32,19 +32,22 @@
 #define BOLDCYAN    "\033[1m\033[36m"
 #define BOLDWHITE   "\033[1m\033[37m"
 
-/** Default server values **/
-#define DEFAULT_CLIENT_MAX_BODY_SIZE 10000000 // (in B), 10000KB, 10MB, 0.01GB
-#define DEFAULT_PORT 80
-#define DEFAULT_HOST "0.0.0.0"
-#define DEFAULT_ROOT "/www"
-#define DEFAULT_SERVER_NAME ""
-#define DEFAULT_ERROR_PAGE_NUM 404
-#define DEFAULT_ERROR_PAGE_URL "/404.html"
-#define DEFAULT_BACKLOG 1000
-#define DEFAULT_TIMEOUT 10 // added: 60 seconds is default nginx timeout: change later
+/** Default range port values **/
 #define MIN_PORT_NUMBER 1
 #define MAX_PORT_NUMBER 65535
-#define OFF "off"
-#define ON "on"
+
+/** Default server values **/
+#define DEFAULT_PORT 80
+#define DEFAULT_HOST "0.0.0.0"
+#define DEFAULT_CLIENT_MAX_BODY_SIZE UINT64_C(16000000) // (in B), 10000KB, 10MB, 0.01GB //TODO: check why is not working for long
+#define DEFAULT_ROOT "www"
+#define DEFAULT_SERVER_NAME ""
+#define DEFAULT_ERROR_PAGE_NUM 404
+#define DEFAULT_ERROR_PAGE_URL "/errors/404.html"
+#define DEFAULT_REDIRECTION_NUM 301
+#define DEFAULT_REDIRECTION_PAGE "/redirection/301.html"
+
+#define DEFAULT_BACKLOG 1000
+#define DEFAULT_TIMEOUT 10 // added: 60 seconds is default nginx timeout: change later
 
 #define MAXLINE 4096

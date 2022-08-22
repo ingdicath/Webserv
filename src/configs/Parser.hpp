@@ -8,7 +8,6 @@
 #include <stack>
 #include "../webserver/Server.hpp"
 
-
 class Parser {
 public:
 	Parser();
@@ -92,6 +91,8 @@ private:
 	bool _isValidIndex(const std::string &index);
 
 	bool _isValidBodySize(std::string bodySize);
+
+	bool _isValidPathLocation(const std::string &path);
 
 
 	int _checkPort(std::vector<std::string> port);

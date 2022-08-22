@@ -20,6 +20,7 @@
 Server::Server(void) :
 		_port(DEFAULT_PORT),
 		_host(DEFAULT_HOST),
+		_clientMaxBodySize(DEFAULT_CLIENT_MAX_BODY_SIZE), //TODO: is not initialize default value
 		_timeOut(DEFAULT_TIMEOUT),
 		_serverSocket(-1) {
 	_serverName.push_back(DEFAULT_SERVER_NAME);
