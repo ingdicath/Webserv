@@ -6,6 +6,7 @@
 
 /** configuration file path **/
 #define DEFAULT_CONFIG_FILE "config_files/default.conf"
+#define ERROR "[ERROR]"
 
 /** colors **/
 #define RESET   "\033[0m"

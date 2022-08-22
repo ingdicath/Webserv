@@ -193,7 +193,6 @@ long long Server::getTimeout(void) const {
 }
 
 /**
- *
  * Setters
  */
 
@@ -209,6 +208,18 @@ void Server::setServerName(const std::vector<std::string> &serverName) {
 	_serverName = serverName;
 }
 
+void Server::setErrorPage(const std::map<int, std::string> &errorPage) {
+	_errorPage = errorPage;
+}
+
 void Server::addLocation(Location location) {
 	_locations.push_back(location);
+}
+
+void Server::setIndex(const std::string &index) {
+	_index = index;
+}
+
+void Server::setClientMaxBodySize(long clientMaxBodySize) {
+	_clientMaxBodySize = clientMaxBodySize;
 }

@@ -38,7 +38,7 @@ namespace utils {
 	size_t stringToPositiveNum(const std::string &input) {
 		size_t res;
 		if (!isPositiveNumber(input)) {
-			std::cerr << RED "Invalid input for positive number." RESET << std::endl;
+			std::cerr << RED ERROR " Invalid input for positive number: '" + input + "'" RESET << std::endl;
 		}
 		std::stringstream ss(input);
 		ss >> res;
@@ -122,6 +122,12 @@ namespace utils {
 			res = -1;
 		}
 		return res;
+	}
+
+	std::map<int, std::string> makeMap(int num, std::string string) {
+		std::map<int, std::string> myMap;
+		myMap.insert(std::pair<int, std::string>(num, string));
+		return myMap;
 	}
 
 } // end namespace utils

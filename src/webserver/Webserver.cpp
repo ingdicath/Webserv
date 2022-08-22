@@ -49,13 +49,13 @@ Webserver::~Webserver(void) {
 */
 void	Webserver::loadConfiguration(const std::string& configFile) {
 	Parser parser;
-//	_servers = parser.validateConfiguration(configFile);
+	_servers = parser.validateConfiguration(configFile);
 	// Diana: in this spot you can add a function in which you send the configFile to the Configurator.cpp file
 	// and do your stuff. After you finished, we can create servers based on your configuration
-	Server     newServer(80);				// test: delete later
-	_servers.push_back(newServer);			// test: delete later
-	Server     newServer2(81);				// test: delete later
-	_servers.push_back(newServer2);			// test: delete later
+//	Server     newServer(80);				// test: delete later
+//	_servers.push_back(newServer);			// test: delete later
+//	Server     newServer2(81);				// test: delete later
+//	_servers.push_back(newServer2);			// test: delete later
 }
 
 

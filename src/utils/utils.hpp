@@ -7,6 +7,7 @@
 #include <string>
 #include <sstream>
 #include <vector>
+#include <map>
 
 #define WHITESPACES " \n\t\r\f\v"
 
@@ -33,8 +34,9 @@ namespace utils {
 	std::string stringToLower(std::string oString);
 
 	// added by lin for parsing HTTP
-	long	strToLong(const char *str);
+	long strToLong(const char *str);
 
-	// added by diana for parsing config file
-	int strToInt(const std::string& input);
+	int strToInt(const std::string &input); // added by diana for parsing config file
+
+	std::map<int, std::string> makeMap(int num, std::string string); // added by diana for parsing config file
 }

@@ -56,6 +56,9 @@ public:
 	void					setPort(int port);
 	void					setHost(std::string host);
 	void					setServerName(const std::vector<std::string> &serverName);
+	void					setErrorPage(const std::map<int, std::string> &errorPage);
+	void					setIndex(const std::string &index);
+	void					setClientMaxBodySize(long clientMaxBodySize);
 
 	int						getServerSocket(void) const;
 	std::vector<Client>		getClients(void) const;
@@ -64,19 +67,21 @@ public:
 
 	void addLocation(Location location);
 
+
 private:
-// Configuration
+// Configuration file
 	int							_port;
 	std::string					_host;
 	std::vector<std::string>	_serverName;
 	std::string					_index;
 	std::map<int, std::string>	_errorPage;					// Explore how this works
-//	long						_clientMaxBodySize;
+	long						_clientMaxBodySize;
 	std::vector<Location>		_locations;				// Explore how this works
 
 
 	int							_timeOut;
-	//Connection
+
+// Connection
 	int							_serverSocket;
 	struct sockaddr_in			_serverAddr;
 	std::vector<Client>			_clients;

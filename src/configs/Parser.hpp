@@ -83,24 +83,28 @@ private:
 
 	bool _areValidServerNames(const std::vector<std::string> &serverNames);
 
-	bool _isValidErrorCode(const std::string &string);
+	bool _isValidErrorCode(const std::string &errorCode);
 
 	bool _isValidErrorPageUrl(const std::string &urlPath);
 
 	bool _isValidErrorPageConfig(std::vector<std::string> values);
 
+	bool _isValidIndex(const std::string &index);
+
+	bool _isValidBodySize(std::string bodySize);
 
 
-	int _checkPort(const std::string &port);
+	int _checkPort(std::vector<std::string> port);
 
-	std::string _checkHost(std::string host);
+	std::string _checkHost(std::vector<std::string> host);
 
 	std::vector<std::string> _checkServerNames(std::vector<std::string> serverNames);
 
-	std::map<int, std::string>_checkErrorPage(std::vector<std::string> errorPage);
+	std::map<int, std::string> _checkErrorPage(std::vector<std::string> errorPage);
 
+	std::string _checkIndex(std::vector<std::string> index);
 
-
+	long _checkBodySize(std::vector<std::string> bodySize);
 
 
 };
