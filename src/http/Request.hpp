@@ -24,13 +24,13 @@ public:
 private:
     std::string _rawRequest;
     long    _maxClientBody;
-    bool    _headersDone;
+    bool    _headersComplete;
     long    _contentLength;
     bool    _chunked;
     bool    _chunkedComplete;
-    bool    _chunkedEndHex;
-    bool    _chunkedEndSeparatedCRLF;
-    long     _remainder;
+    bool    _chunkedHex;
+    bool    _chunkedSeparatedCRLF;
+    long     _chunkedLength;
 
     method  _method;
     std::vector<std::string>    _path;
@@ -44,7 +44,7 @@ private:
 	void    parsePath(std::stringstream &ss);
 	void    parseVersion(std::stringstream &ss);
 	void    parseHeaders(std::stringstream &ss);
-    void    parseBody(std::stringstream &ss);
+    void    parseBody(std::string &input, long len);
     // void appendBody(const char *body, long len);
 
 public:
@@ -65,6 +65,7 @@ public:
     std::string getRawRequest() const;
 
 	void	parseRequest(char rawRequest[], int bytesRead);
+    bool    isComplete() const;
 
     class   HeadersIncorrectException : public std::exception {
     public:

@@ -4,7 +4,7 @@
 
 #include "RequestTester.hpp"
 
-#define PORT 80
+#define PORT 8085
 
 int RequestTester::setupSocket(int port) {
     int sock = 0;
@@ -151,6 +151,38 @@ void    RequestTester::chunkedRequest(int &sock) {
     return;
 }
 
+void    RequestTester::chunkedEncoding(int &sock) {
+	std::string rqsFirst =
+        "POST /chunksTest.txt HTTP/1.1\r\n"\
+		"host: localhost\r\n"\
+		"\r\n"\
+		"4\r\nWiki\r\n";
+    std::string rqsSecond = "6\r\npedia \r\n";
+	std::string rqsThird = "6\r\nin \r\n\r\nchunks.\r\n";
+	std::string rqsFinal = "0\r\n\r\n";
+
+    send(sock, rqsFirst.c_str(), strlen(rqsFirst.c_str()), 0);
+    std::cout << "Request with chunked encoding: first chunk sent" << std::endl;
+    sleep(1);
+    send(sock, rqsSecond.c_str(), strlen(rqsSecond.c_str()), 0);
+    std::cout << "Request with chunked encoding: second chunk sent" << std::endl;
+	sleep(1);
+	send(sock, rqsThird.c_str(), strlen(rqsThird.c_str()), 0);
+    std::cout << "Request with chunked encoding: third chunk sent" << std::endl;
+    sleep(1);
+	send(sock, rqsFinal.c_str(), strlen(rqsFinal.c_str()), 0);
+    std::cout << "Request with chunked encoding: final chunk sent" << std::endl;
+
+    int byteRead;
+    char buff[1024] = { 0 };
+    byteRead = read(sock, buff, 1024);
+    if (byteRead != -1) {
+        std::cout << buff << std::endl;
+    }
+    std::cout << "Request with chunked encoding test done" << std::endl;
+    return;
+}
+
 int main(int argc, char **argv) {
     if (argc != 2) {
         std::cout << "pass the indicator of the test as argument" << std::endl;
@@ -161,7 +193,7 @@ int main(int argc, char **argv) {
         std::cout << "5:  Request with invalid HTTP version" << std::endl;
         std::cout << "6:  Request with headers too large" << std::endl;
         std::cout << "7:  Request with chunked body" << std::endl;
-
+		std::cout << "8:  Request with chunked encoding" << std::endl;
         return 1;
     }
 
@@ -191,6 +223,9 @@ int main(int argc, char **argv) {
         }
         else if (std::strcmp(argv[1], "7") == 0) {
             tester.chunkedRequest(sock);
+        }
+		else if (std::strcmp(argv[1], "8") == 0) {
+            tester.chunkedEncoding(sock);
         }
         else {
             std::cout << "Invalid test indicator" << std::endl;

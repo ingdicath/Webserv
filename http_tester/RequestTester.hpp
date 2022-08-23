@@ -35,8 +35,9 @@ public:
 
     // chunked, with content length
     void    chunkedRequest(int &sock);
-//    void    chunkedRequestTooSmall(int &sock);
-//    void    chunkedRequestTooLarge(int &sock);
+
+	// chunked encoding, no content length but with hex num in each chunk
+	void    chunkedEncoding(int &sock);
 };
 
 #endif //WEBSERV_REQUESTTESTER_HPP

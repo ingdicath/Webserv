@@ -95,18 +95,26 @@ static void	takeRequest(int clientFD) {
 	char	recvline[MAXLINE + 1];
     // this is a static placeholder, change to a variable when the config parsing is done
     long    maxClientBody = 2147483647;
+    int     bytesRead;
 
-	memset(recvline, 0, MAXLINE);
-	// read the clients message
-	int	bytesRead = recv(clientFD, recvline, MAXLINE - 1, 0);
-	if (bytesRead > 0) {
-		std::cout << "Has read: " << bytesRead << std::endl;
-	} //need remove client when bytesRead <= 0 ???
+    Request request(maxClientBody);
 
-	//request parsing part
-	Request request(maxClientBody);
-	request.parseRequest(recvline, bytesRead);
-	memset(recvline, 0, MAXLINE);
+    memset(recvline, 0, MAXLINE);
+    //read the clients message, until the connection closed
+    //problem with this, cannot recieved more than one, don't know why
+    do {
+        bytesRead = recv(clientFD, recvline, MAXLINE - 1, 0);
+        if (bytesRead > 0) {
+            std::cout << "Has read: " << bytesRead << std::endl;
+            request.parseRequest(recvline, bytesRead);
+            memset(recvline, 0, MAXLINE);
+        } else if (bytesRead == 0) {
+            std::cout << "Connection closed" << std::endl;
+        } else {
+            std::cout << "recv failed" << std::endl;
+        }
+    } while (bytesRead > 0);
+    memset(recvline, 0, MAXLINE);
 
 	// print out info in the object for testing, delete later
 	std::cout << request << std::endl;

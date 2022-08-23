@@ -9,18 +9,22 @@
 #include "../utils/utils.hpp"
 
 Request::Request() {
-    _headersDone = false;
-    _chunkedEndHex = false;
-    _chunkedEndSeparatedCRLF = false;
-    _remainder = 0;
+    _headersComplete = false;
+    _chunked = false;
+    _chunkedComplete = false;
+    _chunkedHex = false;
+    _chunkedSeparatedCRLF = false;
+    _chunkedLength = 0;
 }
 
 Request::Request(long maxClientBody) {
     _maxClientBody = maxClientBody;
-    _headersDone = false;
-    _chunkedEndHex = false;
-    _chunkedEndSeparatedCRLF = false;
-    _remainder = 0;
+    _headersComplete = false;
+    _chunked = false;
+    _chunkedComplete = false;
+    _chunkedHex = false;
+    _chunkedSeparatedCRLF = false;
+    _chunkedLength = 0;
 }
 
 Request::Request(const Request &obj) {
@@ -29,13 +33,13 @@ Request::Request(const Request &obj) {
 
 Request &Request::operator=(const Request &obj) {
     _rawRequest = obj._rawRequest;
-    _headersDone = obj._headersDone;
+    _headersComplete = obj._headersComplete;
     _contentLength = obj._contentLength;
     _chunked = obj._chunked;
     _chunkedComplete = obj._chunkedComplete;
-    _chunkedEndHex = obj._chunkedEndHex;
-    _chunkedEndSeparatedCRLF = obj._chunkedEndSeparatedCRLF;
-    _remainder = obj._remainder;
+    _chunkedHex = obj._chunkedHex;
+    _chunkedSeparatedCRLF = obj._chunkedSeparatedCRLF;
+    _chunkedLength = obj._chunkedLength;
     _method = obj._method;
     _path = obj._path;
     _httpVersion = obj._httpVersion;
@@ -200,25 +204,72 @@ void    Request::parseHeaders(std::stringstream &ss) {
     }
 }
 
-void    Request::parseBody(std::stringstream &ss) {
-    int	currentPos = ss.tellg();
-    std::string	body = _rawRequest.substr(currentPos, _rawRequest.size() - currentPos);
-    //parseBody(body.c_str(), body,size()) //TODO
-    _body = body; // for testing
-    if (_contentLength != 0 && _contentLength > _maxClientBody) {
-        throw MaxClientBodyException();
+static long getHexNum(char c) {
+    long    res = -1;
+
+    if (c >= '0' && c <= '9') {
+        res = c - '0';
     }
-//    if (!_chunked && _body.size() > _contentLength) {
-//        throw BodyLengthIncorrectException();
+    else if (c >= 'A' && c <= 'F') {
+        res = c - 'A' + 10;
+    }
+    else if (c >= 'a' && c <= 'f') {
+        res = c - 'a' + 10;
+    }
+    return res;
+}
+
+void    Request::parseBody(std::string &input, long len) {
+    if (!_chunked) {
+        _body.append(input.c_str(), len);
+        if (static_cast<long>(_body.size()) > _contentLength) {
+            throw BodyLengthIncorrectException();
+        }
+    }
+    else {
+        long i = 0;
+
+        if (input[i] == '0') {
+            _chunkedComplete = true;
+            return;
+        }
+        while (input[i] != '\r' && getHexNum(input[i]) != -1) {
+            _chunkedLength = _chunkedLength * 16 + getHexNum(input[i]);
+            i++;
+        }
+        i += 2; // skip the \r\n
+
+        std::cout << "chunkedLength: " << _chunkedLength << std::endl;
+
+        if (_chunkedLength != len - i - 2) {
+            throw BodyLengthIncorrectException(); //need check, may be a different exception
+        }
+        else {
+            _body.append(input.substr(i, _chunkedLength));
+            _chunkedLength = 0;
+        }
+    }
+//    if (_contentLength != 0 && _contentLength > _maxClientBody) {
+//        throw MaxClientBodyException();
 //    }
 }
 
 void    Request::parseRequest(char rawRequest[], int bytesRead) {
-    for (int i = 0; i  <bytesRead; i++) {
-        _rawRequest += rawRequest[i];
+    std::cout << "bytesRead: " << bytesRead << std::endl << rawRequest << std::endl;
+    if (_headersComplete) {
+        std::string newInput;
+        for (int i = 0; i  < bytesRead; i++) {
+            newInput += rawRequest[i];
+        }
+        std::cout << "newInput:\n" << newInput << std::endl;
+        parseBody(newInput, bytesRead);
+    }
+    else {
+        _rawRequest.append(rawRequest, bytesRead);
+        std::cout << "rawRequest\n" << _rawRequest << std::endl;
     }
 
-    if (_rawRequest.find("\r\n\r\n") != std::string::npos && !_headersDone) {
+    if (_rawRequest.find("\r\n\r\n") != std::string::npos && !_headersComplete) {
         std::stringstream   ss(_rawRequest);
 
 		// parse the request line: method, URI and HTTP version
@@ -229,13 +280,25 @@ void    Request::parseRequest(char rawRequest[], int bytesRead) {
             parseVersion(ss);
             ss.ignore(2); // skip the \r\n
             parseHeaders(ss);
-            parseBody(ss);
+            int	currentPos = ss.tellg();
+            std::string	restInput = _rawRequest.substr(currentPos, _rawRequest.size() - currentPos);
+            parseBody(restInput, restInput.size());
+            _headersComplete = true;
         }
         catch (std::exception &e) {
 			std::cout << e.what() << std::endl;
         }
-		_headersDone = true; //have to put it to the right place
     }
+}
+
+bool    Request::isComplete() const {
+    if (!_headersComplete) {
+        return false;
+    }
+    if (_chunked) {
+        return (_chunkedComplete);
+    }
+    return (static_cast<long>(_body.size()) >= _contentLength);
 }
 
 // overload function for testing
@@ -255,9 +318,9 @@ std::ostream	&operator<<(std::ostream &os, const Request &request) {
 	
 	std::vector<std::string>	path = request.getPath();
  	os << "Path: ";
-//    for (int i = 0; i < path.size(); i++) {
-//        os << path[i] << " ";
-//    }
+    for (int i = 0; i < path.size(); i++) {
+        os << path[i] << " ";
+    }
 	os << std::endl;
 
 	os << "HTTP Version: " << request.getVersion() << std::endl;
