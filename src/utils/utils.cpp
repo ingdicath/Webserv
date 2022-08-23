@@ -15,7 +15,6 @@ namespace utils {
 		str.erase(std::remove_if(str.begin(), str.end(), ::isspace), str.end());
 	}
 
-// https://stackoverflow.com/questions/10058606/splitting-a-string-by-a-character
 	std::vector<std::string> splitString(const std::string &str, char splitter) {
 		std::vector<std::string> res;
 		std::stringstream line(str);
@@ -61,7 +60,6 @@ namespace utils {
 	std::string &trim(std::string &str) {
 		return lTrim(rTrim(str));
 	}
-
 
 	std::string deleteLastOf(char toSearch, std::string str) {
 		size_t pos = str.find_last_of(toSearch);
@@ -115,7 +113,7 @@ namespace utils {
 	}
 
 	// added by diana for parsing config file
-	int strToInt(const std::string &input) {
+	int stringToInt(const std::string &input) {
 		int res;
 		std::istringstream convert(input);
 		if (!(convert >> res)) {
@@ -124,6 +122,17 @@ namespace utils {
 		return res;
 	}
 
+	// added by diana for parsing config file
+	long stringToLong(const std::string &input) {
+		long res;
+		std::istringstream convert(input);
+		if (!(convert >> res)) {
+			res = -1;
+		}
+		return res;
+	}
+
+	// It makes a map with a pair composed by int and string as an input
 	std::map<int, std::string> makeMap(int num, std::string string) {
 		std::map<int, std::string> myMap;
 		myMap.insert(std::pair<int, std::string>(num, string));

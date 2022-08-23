@@ -12,7 +12,6 @@ Parser::Parser() {}
 
 Parser::~Parser() {}
 
-
 /**
  * In this function we are loading the configuration file and validate it char by char.
  * @param configFile is the path where is located the configuration file.
@@ -73,8 +72,8 @@ void Parser::_checkOpenCurly(bool isComment, std::stack<std::string> *sectionBlo
 							 std::string line) {
 	if (!isComment) {
 		line = utils::trim(line);
-		int postPath = static_cast<int>(line.find_first_of('/'));
-		std::string command = line.substr(0, postPath);
+		int posPath = static_cast<int>(line.find_first_of('/'));
+		std::string command = line.substr(0, posPath);
 		command = utils::trim(command);
 
 		if (sectionBlock->empty() && line == "server") {    // See if it is better define as enum
@@ -84,8 +83,8 @@ void Parser::_checkOpenCurly(bool isComment, std::stack<std::string> *sectionBlo
 			cleanServerBlocks(serverBlocks);
 //			while (1) {}; //delete, just testing for memory leaks
 			throw ConfigFileException("location block found outside server block.");
-		} else if (sectionBlock->top() == "server" && command == "location" && postPath != -1) {
-			std::string pathLocation = line.substr(postPath - 1, line.size());
+		} else if (sectionBlock->top() == "server" && command == "location" && posPath != -1) {
+			std::string pathLocation = line.substr(posPath - 1, line.size());
 			pathLocation = utils::trim(pathLocation);
 			Server &server = serverBlocks->back();  //brings last server to create new location
 			Location location = *new Location(); // BE CAREFULL: if you use 'new' you should delete as well
@@ -102,7 +101,7 @@ void Parser::_checkOpenCurly(bool isComment, std::stack<std::string> *sectionBlo
 			throw ConfigFileException("invalid value, no server or location detected in open block.");
 		}
 		sectionBlock->push(command);
-		std::cout << "curly: " << sectionBlock->top() << std::endl;
+//		std::cout << "curly: " << sectionBlock->top() << std::endl; //test, delete
 	}
 }
 
@@ -114,7 +113,7 @@ void Parser::_checkOpenCurly(bool isComment, std::stack<std::string> *sectionBlo
 void Parser::_checkSemiColon(bool isComment, std::vector<Server> *serverBlocks, std::string line) {
 	if (!isComment) {
 		line = utils::trim(line);
-		std::cout << "line that is validated: " << line << std::endl; //test, delete
+//		std::cout << "line that is validated: " << line << std::endl; //test, delete
 		Directive directive = Parser::_splitDirective(line);
 		_storeDirective(directive, &serverBlocks->back());
 	}
@@ -156,10 +155,11 @@ void Parser::_storeDirective(Directive directive, Server *server) {
 		case INDEX:
 			server->setIndex(_checkIndex(directive._value));
 			break;
-//		case BODY_SIZE:
-//			server->setClientMaxBodySize(_checkBodySize(directive._value));
-//			break;
+		case BODY_SIZE:
+			server->setClientMaxBodySize(_checkBodySize(directive._value));
+			break;
 //		case ROUTE_LOCATION:
+//			server->getLocations()->setPathLocation(_checkpathLocation(directive._value));
 //			//TODO
 //			break;
 //		case ROOT:
@@ -400,11 +400,32 @@ bool Parser::_isValidBodySize(std::string bodySize) {
 	}
 	//TODO: Function that checks for the number
 	std::string bodyNumber = bodySize.substr(bodySize.find_first_of("Mm") + 1);
-	std::cout << "body number is: " << bodyNumber << std::endl;
 	bodySize.at(lastPos) =
 			char(std::toupper(static_cast<unsigned char>(bodySize.at(lastPos))));
+	bodyNumber = utils::deleteLastOf('M', bodySize);
+	if (!utils::isPositiveNumber(bodyNumber)) {
+		std::cerr << RED ERROR " Value must be a positive number followed by 'M' (e.g 100M): '"
+					 + bodySize + "'" RESET << std::endl;
+		return false;
+	}
 	return true;
 }
+
+
+bool Parser::_isValidPathLocation(const std::string &path) {
+	if (path[0] != '/') {
+		std::cerr << RED ERROR " Path for error must be start with '/': '"
+					 + path + "'" RESET << std::endl;
+		return false;
+	}
+	if (path.find_last_of('/') == path.size() - 1 && path.size() != 1) {
+		std::cerr << RED ERROR " Path for error page can't be a directory: '"
+					 + path + "'" RESET << std::endl;
+		return false;
+	}
+	return true;
+}
+
 
 /************************************************************************************
 * 							Functions to check parameters							*
@@ -417,7 +438,7 @@ int Parser::_checkPort(std::vector<std::string> port) {
 	if (!Parser::_isValidPortRange(port[0])) {
 		throw ConfigFileException("Invalid value for port.");
 	}
-	return utils::strToInt(port[0]);
+	return utils::stringToInt(port[0]);
 }
 
 std::string Parser::_checkHost(std::vector<std::string> host) {
@@ -449,7 +470,7 @@ std::map<int, std::string> Parser::_checkErrorPage(std::vector<std::string> erro
 		throw ConfigFileException("Invalid value(s) for error page.");
 	}
 	std::map<int, std::string> res;
-	res = utils::makeMap(utils::strToInt(errorPage[0]), errorPage[1]);
+	res = utils::makeMap(utils::stringToInt(errorPage[0]), errorPage[1]);
 	return res;
 }
 
@@ -463,16 +484,20 @@ std::string Parser::_checkIndex(std::vector<std::string> index) {
 	return index[0];
 }
 
-//long Parser::_checkBodySize(std::vector<std::string> bodySize) {
-//	if (bodySize.size() != 1) {
-//		throw ConfigFileException("Only one argument is allowed for bodySize.");
-//	}
-//	if (!_isValidBodySize(bodySize[0])) {
-//		throw ConfigFileException("Invalid value for body size.");
-//	}
-//	long res;
-//	return res;
-//}
+long Parser::_checkBodySize(std::vector<std::string> bodySize) {
+	if (bodySize.size() != 1) {
+		throw ConfigFileException("Only one argument is allowed for bodySize.");
+	}
+	if (!_isValidBodySize(bodySize[0])) {
+		throw ConfigFileException("Invalid value for body size.");
+	}
+	size_t lastPos = bodySize.size() - 1;
+	bodySize[0].at(lastPos) =
+			char(std::toupper(static_cast<unsigned char>(bodySize[0].at(lastPos))));
+	bodySize[0] = utils::deleteLastOf('M', bodySize[0]);
+	long res = utils::stringToLong(bodySize[0]);
+	return res;
+}
 
 
 /************************************************************************************
@@ -513,3 +538,5 @@ void Parser::cleanLocationBlocks(std::vector<Location> *locationBlocks) {
 		locationIt = locationBlocks->erase(locationIt);
 	}
 }
+
+

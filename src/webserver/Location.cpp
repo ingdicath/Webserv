@@ -4,9 +4,27 @@
 
 #include "Location.hpp"
 
-Location::~Location() {}
+#include "../utils/settings.hpp"
 
-Location::Location() {}
+
+Location::Location() : _pathLocation("/"), _root(DEFAULT_ROOT), _autoindex(false) {
+	_accepted_methods.insert("GET");
+	_accepted_methods.insert("POST");
+	_accepted_methods.insert("DELETE");
+	_redirection.insert(std::pair<int, std::string>(DEFAULT_REDIRECTION_NUM,
+													DEFAULT_REDIRECTION_PAGE));
+}
+
+Location::Location(std::string path) : _pathLocation(path), _root(DEFAULT_ROOT),
+									   _autoindex(false) {
+	_accepted_methods.insert("GET");
+	_accepted_methods.insert("POST");
+	_accepted_methods.insert("DELETE");
+	_redirection.insert(std::pair<int, std::string>(DEFAULT_REDIRECTION_NUM,
+													DEFAULT_REDIRECTION_PAGE));
+}
+
+Location::~Location() {}
 
 Location::Location(const Location &obj) {
 	*this = obj;
@@ -20,7 +38,7 @@ Location &Location::operator=(const Location &obj) {
 	if (this != &obj) {
 		_pathLocation = obj._pathLocation;
 		_accepted_methods = obj._accepted_methods;
-		_return = obj._return;
+		_redirection = obj._redirection;
 		_root = obj._root;
 		_autoindex = obj._autoindex;
 		_cgi = obj._cgi;
@@ -28,3 +46,5 @@ Location &Location::operator=(const Location &obj) {
 	}
 	return *this;
 }
+
+
