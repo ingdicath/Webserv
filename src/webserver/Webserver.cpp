@@ -102,18 +102,15 @@ static void	takeRequest(int clientFD) {
     memset(recvline, 0, MAXLINE);
     //read the clients message, until the connection closed
     //problem with this, cannot recieved more than one, don't know why
+
     do {
         bytesRead = recv(clientFD, recvline, MAXLINE - 1, 0);
         if (bytesRead > 0) {
             std::cout << "Has read: " << bytesRead << std::endl;
             request.parseRequest(recvline, bytesRead);
             memset(recvline, 0, MAXLINE);
-        } else if (bytesRead == 0) {
-            std::cout << "Connection closed" << std::endl;
-        } else {
-            std::cout << "recv failed" << std::endl;
         }
-    } while (bytesRead > 0);
+    } while (request.isComplete() == false);
     memset(recvline, 0, MAXLINE);
 
 	// print out info in the object for testing, delete later

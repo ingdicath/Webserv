@@ -24,13 +24,14 @@ public:
 private:
     std::string _rawRequest;
     long    _maxClientBody;
+//    bool    _requestComplete;
     bool    _headersComplete;
     long    _contentLength;
     bool    _chunked;
     bool    _chunkedComplete;
     bool    _chunkedHex;
     bool    _chunkedSeparatedCRLF;
-    long     _chunkedLength;
+    long    _chunkedLength;
 
     method  _method;
     std::vector<std::string>    _path;

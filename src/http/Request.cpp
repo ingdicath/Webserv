@@ -255,18 +255,15 @@ void    Request::parseBody(std::string &input, long len) {
 }
 
 void    Request::parseRequest(char rawRequest[], int bytesRead) {
-    std::cout << "bytesRead: " << bytesRead << std::endl << rawRequest << std::endl;
     if (_headersComplete) {
         std::string newInput;
         for (int i = 0; i  < bytesRead; i++) {
             newInput += rawRequest[i];
         }
-        std::cout << "newInput:\n" << newInput << std::endl;
         parseBody(newInput, bytesRead);
     }
     else {
         _rawRequest.append(rawRequest, bytesRead);
-        std::cout << "rawRequest\n" << _rawRequest << std::endl;
     }
 
     if (_rawRequest.find("\r\n\r\n") != std::string::npos && !_headersComplete) {

@@ -155,10 +155,11 @@ void    RequestTester::chunkedEncoding(int &sock) {
 	std::string rqsFirst =
         "POST /chunksTest.txt HTTP/1.1\r\n"\
 		"host: localhost\r\n"\
+        "Transfer-Encoding: chunked\r\n"\
 		"\r\n"\
 		"4\r\nWiki\r\n";
     std::string rqsSecond = "6\r\npedia \r\n";
-	std::string rqsThird = "6\r\nin \r\n\r\nchunks.\r\n";
+	std::string rqsThird = "E\r\nin \r\n\r\nchunks.\r\n";
 	std::string rqsFinal = "0\r\n\r\n";
 
     send(sock, rqsFirst.c_str(), strlen(rqsFirst.c_str()), 0);
