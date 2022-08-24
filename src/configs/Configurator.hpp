@@ -45,7 +45,7 @@ namespace config {
 
 //	static bool _isValidPath(const std::string &path);
 //
-//	static bool _isValidErrorCode(const std::string &string);
+//	static bool _isValidStatusCode(const std::string &string);
 
 
 /** client max body size */
@@ -57,7 +57,7 @@ namespace config {
 
 /** allowed methods */
 
-	//static bool _isValidAllowedMethod(std::vector<std::string> values);
+	//static bool _isValidAcceptedMethod(std::vector<std::string> values);
 
 
 /** index */
@@ -65,7 +65,7 @@ namespace config {
 
 
 /** autoindex */
-	//static bool _isValidAutoIndex(std::vector<std::string> values);
+	//static bool _isValidAutoindex(std::vector<std::string> values);
 
 /** cgi */
 	bool _isValidCGI(const std::vector<std::string>& values);

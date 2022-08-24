@@ -45,7 +45,10 @@ Server& Server::operator=(const Server & rhs) {
 		_port = rhs._port;
 		_host = rhs._host;
 		_serverName = rhs._serverName;
+		_index = rhs._index;
 		_errorPage = rhs._errorPage;
+		_clientMaxBodySize = rhs._clientMaxBodySize;
+		_locations = rhs._locations;
 		_timeOut = rhs._timeOut;
 		_serverSocket = rhs._serverSocket;
 	}
@@ -213,7 +216,7 @@ void Server::setErrorPage(const std::map<int, std::string> &errorPage) {
 	_errorPage = errorPage;
 }
 
-void Server::addLocation(Location location) {
+void Server::addLocation(Location &location) {
 	_locations.push_back(location);
 }
 

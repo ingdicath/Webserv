@@ -65,7 +65,7 @@ private:
 	void _checkOpenCurly(bool isComment, std::stack<std::string> *sectionBlock, std::vector<Server> *serverBlocks,
 						 std::string line);
 
-	void _storeDirective(Directive directive, Server *server);
+	void _storeDirective(const Directive& directive, Server *server);
 
 	eDirectives _resolveDirective(const std::string &input);
 
@@ -82,17 +82,25 @@ private:
 
 	bool _areValidServerNames(const std::vector<std::string> &serverNames);
 
-	bool _isValidErrorCode(const std::string &errorCode);
+	bool _isValidStatusCode(const std::string &statusCode, const std::string &directive);
 
-	bool _isValidErrorPageUrl(const std::string &urlPath);
+	bool _isValidPath(std::string path, const std::string &directive);
 
-	bool _isValidErrorPageConfig(std::vector<std::string> values);
+	bool _isValidErrorPage(std::vector<std::string> values);
 
 	bool _isValidIndex(const std::string &index);
 
 	bool _isValidBodySize(std::string bodySize);
 
-	bool _isValidPathLocation(const std::string &path);
+	bool _isValidPathLocation(const std::string &pathLocation); // TODO
+
+	bool _isValidAcceptedMethod(std::vector<std::string> values);
+
+	bool _isValidAutoindex(const std::string& autoindex);
+
+	bool _isValidRoot(const std::string &root);
+
+
 
 
 	int _checkPort(std::vector<std::string> port);
@@ -107,5 +115,17 @@ private:
 
 	long _checkBodySize(std::vector<std::string> bodySize);
 
+	bool _checkAutoindex(std::vector<std::string> autoIndex);
 
+	std::set<std::string> _checkAcceptedMethods(std::vector<std::string> methods);
+
+	std::string _checkRoot(std::vector<std::string> root);
+
+	std::map<int, std::string> _checkRedirection(std::vector<std::string> redir);
+
+	bool _isValidRedirection(std::vector<std::string> redir);
+
+	std::pair<std::string, std::string> _checkCGI(std::vector<std::string> cgi);
+
+	bool _isValidCGI(const std::vector<std::string>& cgi);
 };

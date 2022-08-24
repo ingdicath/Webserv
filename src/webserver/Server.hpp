@@ -65,7 +65,7 @@ public:
 	long long				getTimeout(void) const;
 
 
-	void addLocation(Location location);
+	void addLocation(Location &location);
 
 
 private:

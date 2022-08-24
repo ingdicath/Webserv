@@ -158,11 +158,11 @@
 // * ERROR PAGES
 // */
 //
-////	bool _isValidErrorPageConfig(std::vector<std::string> values) {
+////	bool _isValidErrorPage(std::vector<std::string> values) {
 ////		if (values.size() != 2) {
 ////			throw std::runtime_error("Config error: invalid args for error pages directive.");
 ////		}
-////		if (!_isValidErrorCode(values[0])) {
+////		if (!_isValidStatusCode(values[0])) {
 ////			throw std::runtime_error("Config error: invalid error code.");
 ////		}
 ////		if (!_isValidPath(values[1])) {
@@ -191,7 +191,7 @@
 ////	}
 //
 ////// max possible error code is 505
-////	bool _isValidErrorCode(const std::string &string) {
+////	bool _isValidStatusCode(const std::string &string) {
 ////		if (!utils::isPositiveNumber(string)) {
 ////			return false;
 ////		}
@@ -274,7 +274,7 @@
 // * ALLOWED METHODS
 // */
 //
-//	bool _isValidAllowedMethod(std::vector<std::string> values) {
+//	bool _isValidAcceptedMethod(std::vector<std::string> values) {
 //		std::set<std::string> mySet;
 //		for (size_t i = 0; i < values.size(); i++) {
 //			values[i] = utils::stringToUpper(values.at(i));
@@ -318,7 +318,7 @@
 // * AUTOINDEX
 // */
 //
-//	bool _isValidAutoIndex(std::vector<std::string> values) {
+//	bool _isValidAutoindex(std::vector<std::string> values) {
 //		if (values.size() != 1) {
 //			throw std::runtime_error("Config error: invalid args for autoindex directive.");
 //		}

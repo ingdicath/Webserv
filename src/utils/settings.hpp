@@ -39,8 +39,8 @@
 /** Default server values **/
 #define DEFAULT_PORT 80
 #define DEFAULT_HOST "0.0.0.0"
-#define DEFAULT_CLIENT_MAX_BODY_SIZE UINT64_C(16000000) // (in B), 10000KB, 10MB, 0.01GB //TODO: check why is not working for long
-#define DEFAULT_ROOT "www"
+#define DEFAULT_CLIENT_MAX_BODY_SIZE 10 // in Megabytes
+#define DEFAULT_ROOT "/www"
 #define DEFAULT_SERVER_NAME ""
 #define DEFAULT_ERROR_PAGE_NUM 404
 #define DEFAULT_ERROR_PAGE_URL "/errors/404.html"

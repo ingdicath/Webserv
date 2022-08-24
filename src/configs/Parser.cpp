@@ -47,8 +47,9 @@ std::vector<Server> Parser::validateConfiguration(const std::string &configFile)
 				isComment = false;
 				break;
 			default:
-				if (!isComment)
+				if (!isComment) {
 					line += currentChar;
+				}
 				break;
 		}
 	}
@@ -75,7 +76,6 @@ void Parser::_checkOpenCurly(bool isComment, std::stack<std::string> *sectionBlo
 		int posPath = static_cast<int>(line.find_first_of('/'));
 		std::string command = line.substr(0, posPath);
 		command = utils::trim(command);
-
 		if (sectionBlock->empty() && line == "server") {    // See if it is better define as enum
 			serverBlocks->push_back(*new Server());        // BE CAREFULL: if you use 'new' you should delete as well
 		} else if (sectionBlock->empty() && command == "location") {
@@ -83,7 +83,15 @@ void Parser::_checkOpenCurly(bool isComment, std::stack<std::string> *sectionBlo
 			cleanServerBlocks(serverBlocks);
 //			while (1) {}; //delete, just testing for memory leaks
 			throw ConfigFileException("location block found outside server block.");
-		} else if (sectionBlock->top() == "server" && command == "location" && posPath != -1) {
+
+		}
+		else if (sectionBlock->empty() && command != "location" && command != "server") {
+			//TODO: fix cleanServerBlocks to avoid memory leaks
+			cleanServerBlocks(serverBlocks);
+//			while (1) {}; //delete, just testing for memory leaks
+			throw ConfigFileException("Unbalanced configuration.");
+		}
+		else if (sectionBlock->top() == "server" && command == "location" && posPath != -1) {
 			std::string pathLocation = line.substr(posPath - 1, line.size());
 			pathLocation = utils::trim(pathLocation);
 			Server &server = serverBlocks->back();  //brings last server to create new location
@@ -138,7 +146,7 @@ void Parser::_checkCloseCurly(bool isComment, std::stack<std::string> *sectionBl
  * @param directive
  * @param server
  */
-void Parser::_storeDirective(Directive directive, Server *server) {
+void Parser::_storeDirective(const Directive &directive, Server *server) {
 	switch (Parser::_resolveDirective(directive._key)) {
 		case PORT:
 			server->setPort(_checkPort(directive._value));
@@ -162,26 +170,28 @@ void Parser::_storeDirective(Directive directive, Server *server) {
 //			server->getLocations()->setPathLocation(_checkpathLocation(directive._value));
 //			//TODO
 //			break;
-//		case ROOT:
-//			//TODO
-//			break;
-//		case ACCEPTED_METHODS:
-//			//TODO
-//			break;
-//		case AUTOINDEX:
-//			//TODO
-//			break;
-//		case CGI:
-//			//TODO
-//			break;
+		case ROOT:
+			server->getLocations()->back().setRoot(_checkRoot(directive._value));
+			break;
+		case ACCEPTED_METHODS:
+			server->getLocations()->back().setMethods(_checkAcceptedMethods(directive._value));
+			break;
+		case AUTOINDEX:
+			server->getLocations()->back().setAutoindex(_checkAutoindex(directive._value)); //bring the last location
+			break;
+		case CGI:
+			server->getLocations()->back().setCGI(_checkCGI(directive._value));
+			break;
 //		case UPLOAD:
 //			//TODO
 //			break;
-//		case REDIRECTION:
-//			//TODO
-//			break;
-//		case INVALID:
-//			//TODO, error message
+		case REDIRECTION:
+			server->getLocations()->back().setRedirection(_checkRedirection(directive._value));
+			break;
+		case INVALID:
+			std::cerr << RED ERROR " Invalid directive: '" + directive._key + "'." RESET << std::endl;
+			//TODO: clean servers, maybe not here but take into account this.
+			throw ConfigFileException("Wrong argument for directive.");
 		default:
 			break;
 	}
@@ -243,12 +253,11 @@ Parser::Directive Parser::_splitDirective(std::string &input) {
 ************************************************************************************/
 
 bool Parser::_isValidPortRange(const std::string &port) {
-	bool res = true;
 	size_t portNumber = utils::stringToPositiveNum(port);
 	if (portNumber < MIN_PORT_NUMBER || portNumber > MAX_PORT_NUMBER) {
-		res = false;
+		return false;
 	}
-	return res;
+	return true;
 }
 
 /**
@@ -261,14 +270,14 @@ bool Parser::_isValidIpv4Address(const std::string &ipAddress) {
 	size_t numDots = std::count(ipAddress.begin(), ipAddress.end(), '.');
 	std::vector<std::string> vec = utils::splitString(ipAddress, '.');
 	if (numDots > 3 || vec.size() != 4) {
-		std::cerr << RED ERROR " Wrong syntax for host: '" + ipAddress + "'" RESET << std::endl;
+		std::cerr << RED ERROR " Wrong syntax for 'host': '" + ipAddress + "'" RESET << std::endl;
 		return false;
 	}
 	size_t num;
 	for (size_t i = 0; i < vec.size(); i++) {
 		num = utils::stringToPositiveNum(vec.at(i));
 		if (num > 255) {
-			std::cerr << RED ERROR "Wrong values for ipAddress: '" + ipAddress + "'" RESET << std::endl;
+			std::cerr << RED ERROR "Wrong values for 'host': '" + ipAddress + "'" RESET << std::endl;
 			return false;
 		}
 	}
@@ -295,10 +304,6 @@ bool Parser::_isValidServerName(std::string serverName) {
  * @param serverNames vector of server names to be evaluated.
  */
 bool Parser::_areValidServerNames(const std::vector<std::string> &serverNames) {
-	if (serverNames.empty()) {
-		std::cerr << RED ERROR " Missing argument for server name. " RESET << std::endl;
-		return false;
-	}
 	for (size_t i = 0; i < serverNames.size(); i++) {
 		if (!_isValidServerName(serverNames.at(i))) {
 			std::cerr << RED ERROR " Wrong syntax in server name." RESET << std::endl;
@@ -309,37 +314,45 @@ bool Parser::_areValidServerNames(const std::vector<std::string> &serverNames) {
 }
 
 /**
- * Max possible error code is 505.
- * @param errorCode is the error code to validate.
+ * Max possible error status code is 505 and for redirection is 307.
+ * @param statusCode is the status code to validate.
  */
-bool Parser::_isValidErrorCode(const std::string &errorCode) {
-	if (!utils::isPositiveNumber(errorCode)) {
-		std::cerr << RED ERROR " Error code must be a positive value. '"
-					 + errorCode + "'" RESET << std::endl;
+bool Parser::_isValidStatusCode(const std::string &statusCode, const std::string &directive) {
+	if (!utils::isPositiveNumber(statusCode)) {
+		std::cerr << RED ERROR " Status code must be a positive value: '"
+					 + statusCode + "'." RESET << std::endl;
 		return false;
 	}
-	size_t num = utils::stringToPositiveNum(errorCode);
-	if (num < 300 || num > 506) {
-		std::cerr << RED ERROR " Error code value must be between 300 and 506. '"
-					 + errorCode + "'" RESET << std::endl;
-		return false;
+	size_t num = utils::stringToPositiveNum(statusCode);
+	if (directive == "error_page") {
+		if (num < 400 || num > 505) {
+			std::cerr << RED ERROR " Status code must be between 400 and 506: '"
+						 + statusCode + "'" RESET << std::endl;
+			return false;
+		}
+	} else if (directive == "redirection") {
+		if (num < 300 || num > 307) { //TODO: Check if we need use all codes or just 301
+			std::cerr << RED ERROR " Status code must be between 300 and 307: '"
+						 + statusCode + "'" RESET << std::endl;
+			return false;
+		}
 	}
 	return true;
 }
 
-
 /**
- * It is checking if the url is valid for error pages.
+ * It is checking if the url is a valid path.
  */
-bool Parser::_isValidErrorPageUrl(const std::string &urlPath) {
-	if (urlPath[0] != '/') {
-		std::cerr << RED ERROR " Path for error must be start with '/': '"
-					 + urlPath + "'" RESET << std::endl;
+bool Parser::_isValidPath(std::string path, const std::string &directive) {
+	if (path[0] != '/') {
+		std::cerr << RED ERROR " Path for '" + directive + "' must be start with '/': '"
+					 + path + "'." RESET << std::endl;
 		return false;
 	}
-	if (urlPath.find_last_of('/') == urlPath.size() - 1 && urlPath.size() != 1) {
-		std::cerr << RED ERROR " Path for error page can't be a directory: '"
-					 + urlPath + "'" RESET << std::endl;
+	if (path.find_last_of('/') == path.size() - 1 && path.size() != 1) {
+		std::cerr << RED ERROR " Path for " + directive +
+					 " can't be a directory, remove the last '/': '"
+					 + path + "'." RESET << std::endl;
 		return false;
 	}
 	return true;
@@ -349,15 +362,9 @@ bool Parser::_isValidErrorPageUrl(const std::string &urlPath) {
  * @param values represents the error code (at vector position 0)
  * and the url path (at vector position 1).
  */
-bool Parser::_isValidErrorPageConfig(std::vector<std::string> values) {
-	if (values.size() != 2) {
-		std::cerr << RED ERROR " Missing arguments for error pages directive." RESET << std::endl;
-		return false;
-	}
-	if (!_isValidErrorCode(values[0])) {
-		return false;
-	}
-	if (!_isValidErrorPageUrl(values[1])) {
+bool Parser::_isValidErrorPage(std::vector<std::string> values) {
+	if (values.size() != 2 || !_isValidStatusCode(values[0], "error_page")
+		|| !_isValidPath(values[1], "error_page")) {
 		return false;
 	}
 //	std::set<std::string> mySet; //check this
@@ -377,15 +384,15 @@ bool Parser::_isValidErrorPageConfig(std::vector<std::string> values) {
 bool Parser::_isValidIndex(const std::string &index) {
 	size_t lastPos = index.size() - 1;
 	if (index.find_last_of('/') == lastPos && index.size() != 1) {
-		std::cerr << RED ERROR " Index can't be a directory: '" + index
-					 + "'" RESET << std::endl;
+		std::cerr << RED ERROR " 'index' can't be a directory: '" + index
+					 + "'." RESET << std::endl;
 		return false;
 	}
 	std::string extension = index.substr(index.find_last_of('.') + 1);
 	extension = utils::stringToLower(extension);
 	if (extension != "html") {
-		std::cerr << RED ERROR " Index can only have html extension: '" + index
-					 + "'" RESET << std::endl;
+		std::cerr << RED ERROR " 'index' can only have html extension: '" + index
+					 + "'." RESET << std::endl;
 		return false;
 	}
 	return true;
@@ -395,32 +402,70 @@ bool Parser::_isValidBodySize(std::string bodySize) {
 	size_t lastPos = bodySize.size() - 1;
 	if (bodySize.find_first_of("Mm") != lastPos) {
 		std::cerr << RED ERROR " Only megabytes (M or m) measure is allowed "
-					 "for body_size directive: '" + bodySize + "'" RESET << std::endl;
+					 "for 'body_size' directive: '" + bodySize + "'" RESET << std::endl;
 		return false;
 	}
-	//TODO: Function that checks for the number
 	std::string bodyNumber = bodySize.substr(bodySize.find_first_of("Mm") + 1);
 	bodySize.at(lastPos) =
 			char(std::toupper(static_cast<unsigned char>(bodySize.at(lastPos))));
 	bodyNumber = utils::deleteLastOf('M', bodySize);
 	if (!utils::isPositiveNumber(bodyNumber)) {
-		std::cerr << RED ERROR " Value must be a positive number followed by 'M' (e.g 100M): '"
+		std::cerr << RED ERROR " Size must be a positive number followed by 'M' (e.g 100M): '"
 					 + bodySize + "'" RESET << std::endl;
 		return false;
 	}
 	return true;
 }
 
+bool Parser::_isValidPathLocation(const std::string &pathLocation) {
+	return _isValidPath(pathLocation, "location");
+}
 
-bool Parser::_isValidPathLocation(const std::string &path) {
-	if (path[0] != '/') {
-		std::cerr << RED ERROR " Path for error must be start with '/': '"
-					 + path + "'" RESET << std::endl;
+bool Parser::_isValidAcceptedMethod(std::vector<std::string> values) {
+	std::string toUpper;
+	for (size_t i = 0; i < values.size(); i++) {
+		toUpper = utils::stringToUpper(values.at(i));
+		if (toUpper != "GET" && toUpper != "POST" && toUpper != "DELETE") {
+			std::cerr << RED ERROR " Invalid argument for 'accepted_methods': '"
+						 + values[i] + "'." RESET << std::endl;
+			return false;
+		}
+	}
+	return true;
+}
+
+bool Parser::_isValidAutoindex(const std::string &autoindex) {
+	std::string toLower;
+	toLower = utils::stringToLower(autoindex);
+	if (toLower != "on" && toLower != "off") {
+		std::cerr << RED ERROR " Value doesn't match with 'on' or 'off' required for 'autoindex': '"
+					 + autoindex + "'." RESET << std::endl;
 		return false;
 	}
-	if (path.find_last_of('/') == path.size() - 1 && path.size() != 1) {
-		std::cerr << RED ERROR " Path for error page can't be a directory: '"
-					 + path + "'" RESET << std::endl;
+	return true;
+}
+
+bool Parser::_isValidRoot(const std::string &root) {
+	return _isValidPath(root, "root");
+}
+
+bool Parser::_isValidRedirection(std::vector<std::string> values) {
+	if (values.size() < 2 || !_isValidStatusCode(values[0], "redirection")) {
+		return false;
+	}
+	if (values[1].find_last_of('/') == values[1].size() - 1 && values[1].size() != 1) {
+		std::cerr << RED ERROR " Path for 'redirection' can't be a directory: '"
+					 + values[1] + "'." RESET << std::endl;
+		return false;
+	}
+	return true;
+}
+
+bool Parser::_isValidCGI(const std::vector<std::string> &cgi) {
+	if (cgi.size() < 2) {
+		throw ConfigFileException("Missing arguments for 'cgi'.");
+	}
+	if (!_isValidPath(cgi[1], "cgi")) {
 		return false;
 	}
 	return true;
@@ -432,21 +477,23 @@ bool Parser::_isValidPathLocation(const std::string &path) {
 ************************************************************************************/
 
 int Parser::_checkPort(std::vector<std::string> port) {
-	if (port.size() != 1) {
-		throw ConfigFileException("Only one argument is allowed for port.");
+	if (port.size() > 1) {
+		throw ConfigFileException("Invalid number of arguments for 'port'. "
+								  "Only one argument is allowed followed by ';'.");
 	}
 	if (!Parser::_isValidPortRange(port[0])) {
-		throw ConfigFileException("Invalid value for port.");
+		throw ConfigFileException("Invalid value for 'port'.");
 	}
 	return utils::stringToInt(port[0]);
 }
 
 std::string Parser::_checkHost(std::vector<std::string> host) {
-	if (host.size() != 1) {
-		throw ConfigFileException("Only one argument is allowed for host.");
+	if (host.size() > 1) {
+		throw ConfigFileException("Invalid number of arguments for 'host'. "
+								  "Only one argument is allowed followed by ';'.");
 	}
 	if (!Parser::_isValidIpv4Address(host[0])) {
-		throw ConfigFileException("Invalid value for host.");
+		throw ConfigFileException("Invalid value for 'host'.");
 	}
 	if (host[0] == "localhost") {
 		host[0] = "127.0.0.1";
@@ -456,7 +503,7 @@ std::string Parser::_checkHost(std::vector<std::string> host) {
 
 std::vector<std::string> Parser::_checkServerNames(std::vector<std::string> serverNames) {
 	if (!_areValidServerNames(serverNames)) {
-		throw ConfigFileException("Invalid value(s) for server name.");
+		throw ConfigFileException("Invalid value(s) for 'server_name'.");
 	}
 	std::vector<std::string> myVector;
 	for (size_t i = 0; i < serverNames.size(); i++) {
@@ -466,8 +513,12 @@ std::vector<std::string> Parser::_checkServerNames(std::vector<std::string> serv
 }
 
 std::map<int, std::string> Parser::_checkErrorPage(std::vector<std::string> errorPage) {
-	if (!_isValidErrorPageConfig(errorPage)) {
-		throw ConfigFileException("Invalid value(s) for error page.");
+	if (errorPage.size() > 2) {
+		throw ConfigFileException("Invalid number of arguments for 'error_page'. "
+								  "Two arguments are expected followed by ';'.");
+	}
+	if (!_isValidErrorPage(errorPage)) {
+		throw ConfigFileException("Invalid arguments for 'error_page'.");
 	}
 	std::map<int, std::string> res;
 	res = utils::makeMap(utils::stringToInt(errorPage[0]), errorPage[1]);
@@ -475,21 +526,22 @@ std::map<int, std::string> Parser::_checkErrorPage(std::vector<std::string> erro
 }
 
 std::string Parser::_checkIndex(std::vector<std::string> index) {
-	if (index.size() != 1) {
-		throw ConfigFileException("Only one argument is allowed for index.");
+	if (index.size() > 1) {
+		throw ConfigFileException("Invalid number of arguments for 'index'. "
+								  "Only one argument is allowed.");
 	}
 	if (!_isValidIndex(index[0])) {
-		throw ConfigFileException("Invalid value for index.");
+		throw ConfigFileException("Invalid argument for 'index'.");
 	}
 	return index[0];
 }
 
 long Parser::_checkBodySize(std::vector<std::string> bodySize) {
 	if (bodySize.size() != 1) {
-		throw ConfigFileException("Only one argument is allowed for bodySize.");
+		throw ConfigFileException("Only one argument is allowed for 'client_max_body_size'.");
 	}
 	if (!_isValidBodySize(bodySize[0])) {
-		throw ConfigFileException("Invalid value for body size.");
+		throw ConfigFileException("Invalid argument for 'client_max_body_size'.");
 	}
 	size_t lastPos = bodySize.size() - 1;
 	bodySize[0].at(lastPos) =
@@ -497,6 +549,75 @@ long Parser::_checkBodySize(std::vector<std::string> bodySize) {
 	bodySize[0] = utils::deleteLastOf('M', bodySize[0]);
 	long res = utils::stringToLong(bodySize[0]);
 	return res;
+}
+
+std::set<std::string> Parser::_checkAcceptedMethods(std::vector<std::string> methods) {
+	if (!_isValidAcceptedMethod(methods)) {
+		throw ConfigFileException("Invalid arguments for 'accepted_methods'.");
+	}
+	std::set<std::string> mySet;
+	for (size_t i = 0; i < methods.size(); i++) {
+		methods[i] = utils::stringToUpper(methods.at(i));
+		if (!mySet.insert(methods[i]).second) {
+			throw ConfigFileException(
+					" Duplicate value in 'accepted_methods'. '" + methods[i] + "'");
+		}
+		if (methods[i] != "GET" && methods[i] != "POST" && methods[i] != "DELETE") {
+			throw ConfigFileException(
+					" Invalid value for 'accepted_methods'. '" + methods[i] + "'");
+		}
+	}
+	return mySet;
+}
+
+bool Parser::_checkAutoindex(std::vector<std::string> autoIndex) {
+	if (autoIndex.size() > 1) {
+		throw ConfigFileException("Only one argument is allowed for 'autoindex'.");
+	}
+	if (!_isValidAutoindex(autoIndex[0])) {
+		throw ConfigFileException("Invalid value for 'autoindex'.");
+	}
+	if (autoIndex[0] == "on") {
+		return true;
+	} else {
+		return false;
+	}
+}
+
+std::string Parser::_checkRoot(std::vector<std::string> root) {
+	if (root.size() > 1) {
+		throw ConfigFileException("Only one argument is allowed for 'root'.");
+	}
+	if (!_isValidRoot(root[0])) {
+		throw ConfigFileException("Invalid value for 'root'.");
+	}
+	return root[0];
+}
+
+std::map<int, std::string> Parser::_checkRedirection(std::vector<std::string> redir) {
+	if (redir.size() > 2) {
+		throw ConfigFileException("Invalid number of arguments for 'redirection'. "
+								  "Two arguments are expected followed by ';'.");
+	}
+	if (!_isValidRedirection(redir)) {
+		throw ConfigFileException("Invalid value(s) for 'redirection'.");
+	}
+	std::map<int, std::string> res;
+	res = utils::makeMap(utils::stringToInt(redir[0]), redir[1]);
+	return res;
+}
+
+std::pair<std::string, std::string> Parser::_checkCGI(std::vector<std::string> cgi) {
+	if (cgi.size() > 2) {
+		throw ConfigFileException("Invalid number of arguments for 'cgi'. "
+								  "Two arguments are expected followed by ';'.");
+	}
+	if (!_isValidCGI(cgi)) {
+		throw ConfigFileException("Invalid value(s) for 'cgi'.");
+	}
+	std::pair<std::string, std::string> myPair;
+	myPair = std::make_pair(cgi[0], cgi[1]);
+	return myPair;
 }
 
 
@@ -538,5 +659,3 @@ void Parser::cleanLocationBlocks(std::vector<Location> *locationBlocks) {
 		locationIt = locationBlocks->erase(locationIt);
 	}
 }
-
-
