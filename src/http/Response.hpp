@@ -57,6 +57,8 @@ public:
 //    Response    &addBody(const std::string body);
 
     std::string writeStatusLine(int statusCode);
+    std::string writeHeaders();
+    std::string writeBody();
 
 private:
     //status line

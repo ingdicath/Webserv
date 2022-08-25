@@ -130,13 +130,25 @@ std::string Response::writeStatusLine(int statusCode) {
     return statusLine;
 }
 
+std::string Response::writeHeaders() {
+    std::string headers;
+
+    headers.append("\r\n");
+    return headers;
+}
+
+std::string Response::writeBody() {
+    _body = "<HTML>Hello</HTML>";
+
+    std::string body = _body;
+    return body;
+}
+
 int main() {
     Response    response;
-    std::string statusLine = response.writeStatusLine(200);
-    std::cout << statusLine << std::endl;
-    std::string statusLine1 = response.writeStatusLine(404);
-    std::cout << statusLine1 << std::endl;
-    std::string statusLine2 = response.writeStatusLine(302);
-    std::cout << statusLine2 << std::endl;
+    std::string output = response.writeStatusLine(200);
+    output.append(response.writeHeaders());
+    output.append(response.writeBody());
+    std::cout << output << std::endl;
     return 0;
 }
