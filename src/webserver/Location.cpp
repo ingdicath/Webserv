@@ -11,8 +11,10 @@ Location::Location() : _pathLocation("/"), _root(DEFAULT_ROOT), _autoindex(false
 	_acceptedMethods.insert("GET");
 	_acceptedMethods.insert("POST");
 	_acceptedMethods.insert("DELETE");
-	_redirection.insert(std::pair<int, std::string>(DEFAULT_REDIRECTION_NUM,
-													DEFAULT_REDIRECTION_PAGE));
+	_redirection.insert(std::pair<int, std::string>(301 , "/redirection/301.html"));
+	_redirection.insert(std::pair<int, std::string>(302 , "/redirection/302.html"));
+	_redirection.insert(std::pair<int, std::string>(303 , "/redirection/303.html"));
+	_redirection.insert(std::pair<int, std::string>(307 , "/redirection/307.html"));
 }
 
 Location::Location(std::string path) : _pathLocation(path), _root(DEFAULT_ROOT),
@@ -20,8 +22,10 @@ Location::Location(std::string path) : _pathLocation(path), _root(DEFAULT_ROOT),
 	_acceptedMethods.insert("GET");
 	_acceptedMethods.insert("POST");
 	_acceptedMethods.insert("DELETE");
-	_redirection.insert(std::pair<int, std::string>(DEFAULT_REDIRECTION_NUM,
-													DEFAULT_REDIRECTION_PAGE));
+	_redirection.insert(std::pair<int, std::string>(301 , "/redirection/301.html"));
+	_redirection.insert(std::pair<int, std::string>(302 , "/redirection/302.html"));
+	_redirection.insert(std::pair<int, std::string>(303 , "/redirection/303.html"));
+	_redirection.insert(std::pair<int, std::string>(307 , "/redirection/307.html"));
 }
 
 Location::~Location() {}

@@ -42,11 +42,6 @@
 #define DEFAULT_CLIENT_MAX_BODY_SIZE 10 // in Megabytes
 #define DEFAULT_ROOT "/www"
 #define DEFAULT_SERVER_NAME ""
-#define DEFAULT_ERROR_PAGE_NUM 404
-#define DEFAULT_ERROR_PAGE_URL "/errors/404.html"
-#define DEFAULT_REDIRECTION_NUM 301
-#define DEFAULT_REDIRECTION_PAGE "/redirection/301.html"
-
 #define DEFAULT_BACKLOG 1000
 #define DEFAULT_TIMEOUT 10 // added: 60 seconds is default nginx timeout: change later
 

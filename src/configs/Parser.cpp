@@ -448,9 +448,15 @@ bool Parser::_isValidRedirection(std::vector<std::string> values) {
 }
 
 bool Parser::_isValidCGI(const std::vector<std::string> &cgi) {
-	if (cgi.size() < 2) {
-		throw ConfigFileException("Missing arguments for 'cgi'.");
+	if (cgi.size() != 2) {
+		return false;
 	}
+	if (cgi[0] != ".py"){
+		std::cerr << RED ERROR " 'cgi' can only have .py extension: '" + cgi[0]
+					 + "'." RESET << std::endl;
+		return false;
+	}
+
 	if (!_isValidPath(cgi[1], "cgi")) {
 		return false;
 	}
