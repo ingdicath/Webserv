@@ -47,10 +47,20 @@ public:
 		virtual const char *what() const throw();
 	};
 
+
 	//Get functions
-	int						getPort(void) const;
-	const std::string		&getHost() const;
-	std::vector<Location>	*getLocations();
+	int								getPort(void) const;
+	const std::string				&getHost() const;
+	std::vector<Location>			*getLocations();
+	const std::vector<std::string>	&getServerName() const;
+	const std::string				&getIndex() const;
+	long							getClientMaxBodySize() const;
+	const							std::map<int, std::string> &getErrorPage() const;
+
+	int								getServerSocket(void) const;
+	std::vector<Client>				getClients(void) const;
+	long long						getTimeout(void) const;
+
 
 	//Set functions
 	void					setPort(int port);
@@ -59,10 +69,6 @@ public:
 	void					setErrorPage(const std::map<int, std::string> &errorPage);
 	void					setIndex(const std::string &index);
 	void					setClientMaxBodySize(long clientMaxBodySize);
-
-	int						getServerSocket(void) const;
-	std::vector<Client>		getClients(void) const;
-	long long				getTimeout(void) const;
 
 
 	void addLocation(Location &location);

@@ -166,9 +166,9 @@ void	Server::removeClient(int thisSocket) {
 	}
 }
 
-/*
-** GET functions
-*/
+/**
+ * Getters
+ */
 
 int		Server::getPort(void) const {
 	return _port;
@@ -181,7 +181,21 @@ std::vector<Location> *Server::getLocations(void) {		// check if const is possib
 	return &_locations;
 }
 
+const std::vector<std::string> &Server::getServerName() const {
+	return _serverName;
+}
 
+const std::string &Server::getIndex() const {
+	return _index;
+}
+
+long Server::getClientMaxBodySize() const {
+	return _clientMaxBodySize;
+}
+
+const std::map<int, std::string> &Server::getErrorPage() const {
+	return _errorPage;
+}
 
 
 int		Server::getServerSocket(void) const {
