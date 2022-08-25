@@ -54,9 +54,9 @@ std::vector<Server> Parser::validateConfiguration(const std::string &configFile)
 		}
 	}
 	if (!sectionBlock.empty()) {
-		//TODO: fix cleanServerBlocks to avoid memory leaks
-		cleanServerBlocks(&servers);
 		throw ConfigFileException("Open unbalanced curly braces.");
+	} else if (sectionBlock.empty() && !utils::trim(line).empty()) {
+		throw ConfigFileException("found invalid characters outside blocks.");
 	}
 	fileUtils.closeFile(_file);
 	return servers;
@@ -79,19 +79,10 @@ void Parser::_checkOpenCurly(bool isComment, std::stack<std::string> *sectionBlo
 		if (sectionBlock->empty() && line == "server") {    // See if it is better define as enum
 			serverBlocks->push_back(*new Server());        // BE CAREFULL: if you use 'new' you should delete as well
 		} else if (sectionBlock->empty() && command == "location") {
-			//TODO: fix cleanServerBlocks to avoid memory leaks
-			cleanServerBlocks(serverBlocks);
-//			while (1) {}; //delete, just testing for memory leaks
 			throw ConfigFileException("location block found outside server block.");
-
-		}
-		else if (sectionBlock->empty() && command != "location" && command != "server") {
-			//TODO: fix cleanServerBlocks to avoid memory leaks
-			cleanServerBlocks(serverBlocks);
-//			while (1) {}; //delete, just testing for memory leaks
+		} else if (sectionBlock->empty() && command != "location" && command != "server") {
 			throw ConfigFileException("Unbalanced configuration.");
-		}
-		else if (sectionBlock->top() == "server" && command == "location" && posPath != -1) {
+		} else if (sectionBlock->top() == "server" && command == "location" && posPath != -1) {
 			std::string pathLocation = line.substr(posPath - 1, line.size());
 			pathLocation = utils::trim(pathLocation);
 			Server &server = serverBlocks->back();  //brings last server to create new location
@@ -99,13 +90,8 @@ void Parser::_checkOpenCurly(bool isComment, std::stack<std::string> *sectionBlo
 			location.setPathLocation(pathLocation);
 			server.addLocation(location);
 		} else if (sectionBlock->top() == "location" && command == "location") {
-			//TODO: fix cleanServerBlocks to avoid memory leaks
-			cleanServerBlocks(serverBlocks);
-//			while (1) {}; //delete, just testing for memory leaks
 			throw ConfigFileException("location block unclosed.");
 		} else {
-//			//TODO: fix cleanServerBlocks to avoid memory leaks
-			cleanServerBlocks(serverBlocks);
 			throw ConfigFileException("invalid value, no server or location detected in open block.");
 		}
 		sectionBlock->push(command);
@@ -177,7 +163,8 @@ void Parser::_storeDirective(const Directive &directive, Server *server) {
 			server->getLocations()->back().setMethods(_checkAcceptedMethods(directive._value));
 			break;
 		case AUTOINDEX:
-			server->getLocations()->back().setAutoindex(_checkAutoindex(directive._value)); //bring the last location
+			server->getLocations()->back().setAutoindex(
+					_checkAutoindex(directive._value)); //bring the last location
 			break;
 		case CGI:
 			server->getLocations()->back().setCGI(_checkCGI(directive._value));
@@ -190,7 +177,6 @@ void Parser::_storeDirective(const Directive &directive, Server *server) {
 			break;
 		case INVALID:
 			std::cerr << RED ERROR " Invalid directive: '" + directive._key + "'." RESET << std::endl;
-			//TODO: clean servers, maybe not here but take into account this.
 			throw ConfigFileException("Wrong argument for directive.");
 		default:
 			break;
@@ -642,7 +628,9 @@ const char *Parser::ConfigFileException::what() const throw() {
 * 							Functions for clean servers								*
 ************************************************************************************/
 
-//TODO: complete this function, possibly move to another cpp file
+//TODO: this function is not neccesary probably, we have en main webserver.clear().
+// Check the destructor for location y server.
+
 void Parser::cleanServerBlocks(std::vector<Server> *serverBlocks) {
 	std::vector<Server>::iterator serverIt = serverBlocks->begin();
 	for (; serverIt < serverBlocks->end(); serverIt++) {
@@ -652,7 +640,6 @@ void Parser::cleanServerBlocks(std::vector<Server> *serverBlocks) {
 	}
 }
 
-//TODO: complete this function, possibly move to another cpp file
 void Parser::cleanLocationBlocks(std::vector<Location> *locationBlocks) {
 	std::vector<Location>::iterator locationIt = locationBlocks->begin();
 	for (; locationIt < locationBlocks->end(); locationIt++) {
