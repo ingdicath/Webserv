@@ -174,7 +174,7 @@ void    Webserver::runWebserver(void) {
 									std::cout << "existing connection of socket " << i << std::endl; // test: delete later
 									itClient->setClientTimeStamp();
 									takeRequest(i);
-									// add check if fd of client is ready to writee
+									// add check if fd of client is ready to write
 									writeResponse(i);
 									FD_CLR(i, &_currentSockets);
 									ready = updateReadySockets(timeout);
