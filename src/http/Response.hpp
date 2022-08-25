@@ -51,10 +51,12 @@ public:
     Response &operator=(const Response &obj);
 
     //add status, type, length, body in sequence
-    Response    &addStatus(const e_statusCode status);
-    Response    &addType(const std::string type);
-    Response    &addLength(const long contentLength);
-    Response    &addBody(const std::string body);
+//    Response    &addStatus(const e_statusCode status);
+//    Response    &addType(const std::string type);
+//    Response    &addLength(const long contentLength);
+//    Response    &addBody(const std::string body);
+
+    std::string writeStatusLine(int statusCode);
 
 private:
     //status line
@@ -74,6 +76,4 @@ private:
     std::string _body;
 
     std::string getStatusMsg(int statusCode); //use it becaus cannot use the map
-
-    std::string writeStatusLine(int statusCode);
 };

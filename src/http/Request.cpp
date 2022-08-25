@@ -2,8 +2,6 @@
 // Created by Hz Lin on 18/07/2022.
 //
 
-//TODO: parse the body part when it is chunked
-
 #include "Request.hpp"
 #include "../utils/settings.hpp"
 #include "../utils/utils.hpp"

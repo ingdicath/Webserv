@@ -53,6 +53,7 @@ std::string Response::getStatusMsg(int statusCode) {
     } else if (statusCode == 505) {
         statusMsg = "HTTP Version Not Supported";
     }
+    return statusMsg;
 }
 
 //const std::map<int, const std::string> Response::statusMsg =
@@ -106,13 +107,36 @@ Response &Response::operator=(const Response &obj) {
     return *this;
 }
 
+static std::string  codeToStr(int code) {
+    std::string res;
+
+    for (int i = 0; i < 3; i++) {
+        res.insert(0, 1, ((code % 10) + '0'));
+        code = code / 10;
+    }
+    return res;
+}
+
 std::string Response::writeStatusLine(int statusCode) {
     std::string statusMsg = getStatusMsg(statusCode);
 
     std::string statusLine;
     statusLine.append(_protocol);
     statusLine.append(" ");
+    statusLine.append(codeToStr(statusCode));
+    statusLine.append(" ");
+    statusLine.append(statusMsg);
+    statusLine.append("\r\n");
+    return statusLine;
+}
 
-    std::string codeStr;
-
+int main() {
+    Response    response;
+    std::string statusLine = response.writeStatusLine(200);
+    std::cout << statusLine << std::endl;
+    std::string statusLine1 = response.writeStatusLine(404);
+    std::cout << statusLine1 << std::endl;
+    std::string statusLine2 = response.writeStatusLine(302);
+    std::cout << statusLine2 << std::endl;
+    return 0;
 }
