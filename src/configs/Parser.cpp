@@ -90,9 +90,9 @@ void Parser::_checkOpenCurly(bool isComment, std::stack<std::string> *sectionBlo
 			location.setPathLocation(pathLocation);
 			server.addLocation(location);
 		} else if (sectionBlock->top() == "location" && command == "location") {
-			throw ConfigFileException("location block unclosed.");
+			throw ConfigFileException("Location block unclosed -- Nested location not allowed.");
 		} else {
-			throw ConfigFileException("invalid value, no server or location detected in open block.");
+			throw ConfigFileException("Invalid value, no server or location detected in open block.");
 		}
 		sectionBlock->push(command);
 //		std::cout << "curly: " << sectionBlock->top() << std::endl; //test, delete
@@ -213,7 +213,7 @@ Parser::Directive Parser::_splitDirective(std::string &input) {
 
 	// check if key and value exists
 	if (splitPos > input.size()) {
-		throw ConfigFileException("Unbalanced directive Key.");
+		throw ConfigFileException("Unbalanced directive key: '" + cleanInput + "'.");
 	}
 	std::string directiveKey = cleanInput.substr(0, splitPos);
 	std::string directiveValue = cleanInput.substr(splitPos, cleanInput.size());
