@@ -14,6 +14,7 @@
 #include <cerrno>
 #include "Server.hpp"
 #include "../http/Response.hpp"
+#include "../configs/Parser.hpp"
 #include <algorithm> //testing purpose, delete
 #include <iostream> //testing purpose, delete
 #include <iterator> //testing purpose, delete
@@ -21,7 +22,7 @@
 Server::Server(void) :
 		_port(DEFAULT_PORT),
 		_host(DEFAULT_HOST),
-		_clientMaxBodySize(DEFAULT_CLIENT_MAX_BODY_SIZE),
+		_clientMaxBodySize(DEFAULT_CLIENT_MAX_BODY_SIZE), //TODO: is not initialize default value
 		_timeOut(DEFAULT_TIMEOUT),
 		_serverSocket(-1) {
 	_serverName.push_back(DEFAULT_SERVER_NAME);
@@ -40,6 +41,7 @@ Server::Server(void) :
 	_errorPage.insert(std::pair<int, std::string>(500, "/errors/500.html"));
 	_errorPage.insert(std::pair<int, std::string>(501, "/errors/501.html"));
 	_errorPage.insert(std::pair<int, std::string>(505, "/errors/505.html"));
+	_flagPort = false;
 }
 
 // REMOVE THIS ONE LATER: ONLY FOR TESTING PURPOSES
@@ -229,11 +231,19 @@ long long Server::getTimeout(void) const {
  */
 
 void Server::setPort(int port) {
+	if (_flagPort){
+		throw Parser::ConfigFileException("Duplicate value in 'port'.");
+	}
 	_port = port;
+	_flagPort = true;
 }
 
 void Server::setHost(std::string host) {
+	if (_flagHost){
+		throw Parser::ConfigFileException("Duplicate value in 'host'.");
+	}
 	_host = host;
+	_flagHost = true;
 }
 
 void Server::setServerName(const std::vector<std::string> &serverName) {
@@ -244,7 +254,7 @@ void Server::setErrorPage(const std::map<int, std::string> &errorPage) {
 	_errorPage = errorPage;
 }
 
-void Server::addLocation(Location &location) {
+void Server::addLocation(Location location) {
 	_locations.push_back(location);
 }
 

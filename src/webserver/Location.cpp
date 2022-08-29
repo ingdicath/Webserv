@@ -6,7 +6,6 @@
 
 #include "../utils/settings.hpp"
 
-
 Location::Location() : _pathLocation("/"), _root(DEFAULT_ROOT), _autoindex(false) {
 	_acceptedMethods.insert("GET");
 	_acceptedMethods.insert("POST");
@@ -33,6 +32,7 @@ Location::~Location() {}
 Location::Location(const Location &obj) {
 	*this = obj;
 }
+
 
 Location &Location::operator=(const Location &obj) {
 	if (this != &obj) {

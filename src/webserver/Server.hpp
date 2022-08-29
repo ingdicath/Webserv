@@ -70,7 +70,7 @@ public:
 	void					setClientMaxBodySize(long clientMaxBodySize);
 
 
-	void addLocation(Location &location);
+	void addLocation(Location location);
 
 
 private:
@@ -83,6 +83,9 @@ private:
 	long						_clientMaxBodySize;
 	std::vector<Location>		_locations;				// Explore how this works
 
+// Variables that help to validate duplicate values
+	bool						_flagPort; // option #1 for validate duplicate directives
+	bool						_flagHost;
 
 	int							_timeOut;
 

@@ -83,22 +83,14 @@ void Parser::_checkOpenCurly(bool isComment, std::stack<std::string> *sectionBlo
 		} else if (sectionBlock->empty() && command != "location" && command != "server") {
 			throw ConfigFileException("Unbalanced configuration.");
 		} else if (sectionBlock->top() == "server" && command == "location" && posPath != -1) {
-			std::string pathLocation = line.substr(posPath - 1, line.size());
-			pathLocation = utils::trim(pathLocation);
 			Server &server = serverBlocks->back();  //brings last server to create new location
-			Location location = *new Location(); // BE CAREFULL: if you use 'new' you should delete as well
-			if (!_isValidPathLocation(pathLocation, "location")){
-				throw ConfigFileException("Invalid path for Location block.");
-			}
-			location.setPathLocation(pathLocation);
-			server.addLocation(location);
+			server.addLocation(_checkLocation(line, posPath - 1));
 		} else if (sectionBlock->top() == "location" && command == "location") {
 			throw ConfigFileException("Location block unclosed -- Nested location not allowed.");
 		} else {
 			throw ConfigFileException("Invalid value, no server or location detected in open block.");
 		}
 		sectionBlock->push(command);
-//		std::cout << "curly: " << sectionBlock->top() << std::endl; //test, delete
 	}
 }
 
@@ -110,7 +102,6 @@ void Parser::_checkOpenCurly(bool isComment, std::stack<std::string> *sectionBlo
 void Parser::_checkSemiColon(bool isComment, std::vector<Server> *serverBlocks, std::string line) {
 	if (!isComment) {
 		line = utils::trim(line);
-//		std::cout << "line that is validated: " << line << std::endl; //test, delete
 		Directive directive = Parser::_splitDirective(line);
 		_storeDirective(directive, &serverBlocks->back());
 	}
@@ -129,14 +120,6 @@ void Parser::_checkCloseCurly(bool isComment, std::stack<std::string> *sectionBl
 	}
 }
 
-void Parser::_addDirectiveToSet(std::string directive) {
-	if (!_uniqueDirectives.insert(directive).second) {
-		throw ConfigFileException("duplicate value in '" + directive + "'.");
-//		std::cerr << RED "duplicate value in '" + directive + "'." RESET << std::endl;
-	}
-}
-
-
 /**
  * When it is found a key that corresponds to a valid parameter, it will be validated
  * and stored in the Server or in the location class parameters.
@@ -146,7 +129,6 @@ void Parser::_addDirectiveToSet(std::string directive) {
 void Parser::_storeDirective(const Directive &directive, Server *server) {
 	switch (Parser::_resolveDirective(directive._key)) {
 		case PORT:
-			_addDirectiveToSet(directive._key);
 			server->setPort(_checkPort(directive._value));
 			break;
 		case HOST_:
@@ -164,9 +146,6 @@ void Parser::_storeDirective(const Directive &directive, Server *server) {
 		case BODY_SIZE:
 			server->setClientMaxBodySize(_checkBodySize(directive._value));
 			break;
-//		case ROUTE_LOCATION:
-//			server->getLocations()->back().setPathLocation(_checkpathLocation(directive._value));
-//			break;
 		case ROOT:
 			server->getLocations()->back().setRoot(_checkRoot(directive._value));
 			break;
@@ -203,7 +182,6 @@ Parser::eDirectives Parser::_resolveDirective(const std::string &input) {
 	if (input == "server_name") return Parser::SERVER_NAME;
 	if (input == "error_page") return Parser::ERROR_PAGE;
 	if (input == "client_max_body_size") return Parser::BODY_SIZE;
-//	if (input == "location") return Parser::ROUTE_LOCATION; // Check this
 	if (input == "root") return Parser::ROOT;
 	if (input == "accepted_methods") return Parser::ACCEPTED_METHODS;
 	if (input == "index") return Parser::INDEX;
@@ -244,7 +222,6 @@ Parser::Directive Parser::_splitDirective(std::string &input) {
 	directive._value = directiveValues;
 	return directive;
 }
-
 
 
 /************************************************************************************
@@ -366,13 +343,6 @@ bool Parser::_isValidErrorPage(std::vector<std::string> values) {
 		|| !_isValidPath(values[1], "error_page")) {
 		return false;
 	}
-//	std::set<std::string> mySet; //check this
-//	for (size_t i = 0; i < values.size(); ++i) {
-//		if (!mySet.insert(values[i]).second) {
-//			std::cerr << RED "duplicate value in Error page." RESET << std::endl;
-//			return false;
-//		}
-//	}
 	return true;
 }
 
@@ -440,10 +410,6 @@ bool Parser::_isValidAutoindex(const std::string &autoindex) {
 	return true;
 }
 
-bool Parser::_isValidRoot(const std::string &root) {
-	return _isValidPath(root, "root");
-}
-
 bool Parser::_isValidRedirection(std::vector<std::string> values) {
 	if (values.size() < 2 || !_isValidStatusCode(values[0], "redirection")) {
 		return false;
@@ -477,27 +443,12 @@ bool Parser::_isValidCGI(const std::vector<std::string> &cgi) {
 					 + "'." RESET << std::endl;
 		return false;
 	}
-
 	if (!_isValidPath(cgi[1], "cgi")) {
 		return false;
 	}
 	return true;
 }
 
-// add 29Aug by Diana
-bool Parser::_isValidPathLocation(std::string pathLoc, const std::string &directive) {
-	std::vector<std::string> myVec;
-	myVec = utils::splitByWhiteSpaces(pathLoc, WHITESPACES);
-	if (myVec.size() != 1){
-		std::cerr << RED ERROR " Invalid number of arguments for path Location: '" + pathLoc
-					 + "'." RESET << std::endl;
-		return false;
-	}
-	if (!_isValidPath(pathLoc, "location")){
-		return false;
-	}
-	return true;
-}
 /************************************************************************************
 * 							Functions to check parameters							*
 ************************************************************************************/
@@ -577,16 +528,15 @@ long Parser::_checkBodySize(std::vector<std::string> bodySize) {
 	return res;
 }
 
-//std::string Parser::_checkpathLocation(std::vector<std::string> pathLoc) {
-//	if (pathLoc.size() > 1) {
-//		throw ConfigFileException("Only one argument is allowed for path in Location block.");
-//	}
-//	if (!_isValidPath(pathLoc[0], "location")) {
-//		throw ConfigFileException("Invalid value(s) for path in Location block'.");
-//	}
-//	return pathLoc[0];
-//}
-
+Location Parser::_checkLocation(const std::string &line, const int &posPath) {
+	std::string pathLocation = line.substr(posPath, line.size());
+	pathLocation = utils::trim(pathLocation);
+	std::vector<std::string> myVec = utils::splitByWhiteSpaces(pathLocation, WHITESPACES);
+	if (myVec.size() != 1 || !_isValidPath(pathLocation, "location")) {
+		throw ConfigFileException("Invalid arguments for path in Location block.");
+	}
+	return *new Location(pathLocation); // BE CAREFULL: if you use 'new' you should delete as well
+}
 
 std::set<std::string> Parser::_checkAcceptedMethods(std::vector<std::string> methods) {
 	if (!_isValidAcceptedMethod(methods)) {
@@ -625,7 +575,7 @@ std::string Parser::_checkRoot(std::vector<std::string> root) {
 	if (root.size() > 1) {
 		throw ConfigFileException("Only one argument is allowed for 'root'.");
 	}
-	if (!_isValidRoot(root[0])) {
+	if (!_isValidPath(root[0], "root")) {
 		throw ConfigFileException("Invalid value for 'root'.");
 	}
 	return root[0];
@@ -707,6 +657,3 @@ void Parser::cleanLocationBlocks(std::vector<Location> *locationBlocks) {
 		locationIt = locationBlocks->erase(locationIt);
 	}
 }
-
-
-
