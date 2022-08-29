@@ -91,7 +91,7 @@ void    Webserver::createConnection(void) {
 ** Handle the request (to do)
 ** Send the response HTTP back to client (to do)
 */
-static void	takeRequest(int clientFD, std::vector<Client>::iterator itClient) {
+static void	takeRequest(std::vector<Client>::iterator itClient) {
 	char	recvline[MAXLINE + 1];
     // this is a static placeholder, change to a variable when the config parsing is done
     long    maxClientBody = 2147483647;
@@ -104,7 +104,7 @@ static void	takeRequest(int clientFD, std::vector<Client>::iterator itClient) {
     //problem with this, cannot recieved more than one, don't know why
 
     do {
-        bytesRead = recv(clientFD, recvline, MAXLINE - 1, 0);
+        bytesRead = recv(itClient->getClientSocket(), recvline, MAXLINE - 1, 0);
         if (bytesRead > 0) {
             std::cout << "Has read: " << bytesRead << std::endl; // for testing, delete later
             itClient->setClientTimeStamp();
@@ -112,7 +112,6 @@ static void	takeRequest(int clientFD, std::vector<Client>::iterator itClient) {
             memset(recvline, 0, MAXLINE);
         }
     } while (request.isComplete() == false);
-//    memset(recvline, 0, MAXLINE);
 
 	// print out info in the object for testing, delete later
 	std::cout << request << std::endl;
@@ -174,7 +173,7 @@ void    Webserver::runWebserver(void) {
 								if (i == itClient->getClientSocket()) {
 									std::cout << "existing connection of socket " << i << std::endl; // test: delete later
 									itClient->setClientTimeStamp();
-									takeRequest(i, itClient);
+									takeRequest(itClient);
 									// add check if fd of client is ready to write
 									writeResponse(i);
 									FD_CLR(i, &_currentSockets);
