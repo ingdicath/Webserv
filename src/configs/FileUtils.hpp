@@ -7,13 +7,10 @@
 class FileUtils {
 public:
 	FileUtils();
-
 	virtual ~FileUtils();
 
 	bool isEmptyFile(std::ifstream &inputFile);
-
 	void openFile(std::ifstream &file, const std::string &filePath);
-
 	void closeFile(std::ifstream &file);
 };
 

@@ -87,8 +87,8 @@ void Parser::_checkOpenCurly(bool isComment, std::stack<std::string> *sectionBlo
 			pathLocation = utils::trim(pathLocation);
 			Server &server = serverBlocks->back();  //brings last server to create new location
 			Location location = *new Location(); // BE CAREFULL: if you use 'new' you should delete as well
-			if (!_isValidPath(pathLocation, "location")){
-				throw ConfigFileException(" Invalid path for Location block.");
+			if (!_isValidPathLocation(pathLocation, "location")){
+				throw ConfigFileException("Invalid path for Location block.");
 			}
 			location.setPathLocation(pathLocation);
 			server.addLocation(location);
@@ -129,6 +129,14 @@ void Parser::_checkCloseCurly(bool isComment, std::stack<std::string> *sectionBl
 	}
 }
 
+void Parser::_addDirectiveToSet(std::string directive) {
+	if (!_uniqueDirectives.insert(directive).second) {
+		throw ConfigFileException("duplicate value in '" + directive + "'.");
+//		std::cerr << RED "duplicate value in '" + directive + "'." RESET << std::endl;
+	}
+}
+
+
 /**
  * When it is found a key that corresponds to a valid parameter, it will be validated
  * and stored in the Server or in the location class parameters.
@@ -138,6 +146,7 @@ void Parser::_checkCloseCurly(bool isComment, std::stack<std::string> *sectionBl
 void Parser::_storeDirective(const Directive &directive, Server *server) {
 	switch (Parser::_resolveDirective(directive._key)) {
 		case PORT:
+			_addDirectiveToSet(directive._key);
 			server->setPort(_checkPort(directive._value));
 			break;
 		case HOST_:
@@ -155,9 +164,9 @@ void Parser::_storeDirective(const Directive &directive, Server *server) {
 		case BODY_SIZE:
 			server->setClientMaxBodySize(_checkBodySize(directive._value));
 			break;
-		case ROUTE_LOCATION:
-			server->getLocations()->back().setPathLocation(_checkpathLocation(directive._value));
-			break;
+//		case ROUTE_LOCATION:
+//			server->getLocations()->back().setPathLocation(_checkpathLocation(directive._value));
+//			break;
 		case ROOT:
 			server->getLocations()->back().setRoot(_checkRoot(directive._value));
 			break;
@@ -235,6 +244,8 @@ Parser::Directive Parser::_splitDirective(std::string &input) {
 	directive._value = directiveValues;
 	return directive;
 }
+
+
 
 /************************************************************************************
 * 				Functions that verify if a parameter is valid or not				*
@@ -319,7 +330,7 @@ bool Parser::_isValidStatusCode(const std::string &statusCode, const std::string
 			return false;
 		}
 	} else if (directive == "redirection") {
-		if (num < 300 || num > 307) { //TODO: Check if we need use all codes or just 301
+		if (num < 300 || num > 307) {
 			std::cerr << RED ERROR " Status code must be between 300 and 307: '"
 						 + statusCode + "'" RESET << std::endl;
 			return false;
@@ -473,7 +484,20 @@ bool Parser::_isValidCGI(const std::vector<std::string> &cgi) {
 	return true;
 }
 
-
+// add 29Aug by Diana
+bool Parser::_isValidPathLocation(std::string pathLoc, const std::string &directive) {
+	std::vector<std::string> myVec;
+	myVec = utils::splitByWhiteSpaces(pathLoc, WHITESPACES);
+	if (myVec.size() != 1){
+		std::cerr << RED ERROR " Invalid number of arguments for path Location: '" + pathLoc
+					 + "'." RESET << std::endl;
+		return false;
+	}
+	if (!_isValidPath(pathLoc, "location")){
+		return false;
+	}
+	return true;
+}
 /************************************************************************************
 * 							Functions to check parameters							*
 ************************************************************************************/
@@ -553,15 +577,15 @@ long Parser::_checkBodySize(std::vector<std::string> bodySize) {
 	return res;
 }
 
-std::string Parser::_checkpathLocation(std::vector<std::string> pathLoc) {
-	if (pathLoc.size() > 1) {
-		throw ConfigFileException("Only one argument is allowed for path in Location block.");
-	}
-	if (!_isValidPath(pathLoc[0], "location")) {
-		throw ConfigFileException("Invalid value(s) for path in Location block'.");
-	}
-	return pathLoc[0];
-}
+//std::string Parser::_checkpathLocation(std::vector<std::string> pathLoc) {
+//	if (pathLoc.size() > 1) {
+//		throw ConfigFileException("Only one argument is allowed for path in Location block.");
+//	}
+//	if (!_isValidPath(pathLoc[0], "location")) {
+//		throw ConfigFileException("Invalid value(s) for path in Location block'.");
+//	}
+//	return pathLoc[0];
+//}
 
 
 std::set<std::string> Parser::_checkAcceptedMethods(std::vector<std::string> methods) {
@@ -652,12 +676,12 @@ std::string Parser::_checkUpload(std::vector<std::string> upload) {
  * This is a custom exception to show error messages when the configuration file is processed.
  */
 Parser::ConfigFileException::ConfigFileException(const std::string &message)
-		: msg_("[ERROR] " + message) {}
+		: _msg("[ERROR] " + message) {}
 
 Parser::ConfigFileException::~ConfigFileException() throw() {}
 
 const char *Parser::ConfigFileException::what() const throw() {
-	return msg_.c_str();
+	return _msg.c_str();
 }
 
 
@@ -683,4 +707,6 @@ void Parser::cleanLocationBlocks(std::vector<Location> *locationBlocks) {
 		locationIt = locationBlocks->erase(locationIt);
 	}
 }
+
+
 

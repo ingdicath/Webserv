@@ -139,4 +139,29 @@ namespace utils {
 		return myMap;
 	}
 
+// add 29Aug by Diana
+	std::vector<std::string> splitByWhiteSpaces(const std::string& string, const std::string& whiteSp)
+	{
+		size_t	startPos = 0;
+		size_t	endPos;
+		size_t  splitPos;
+		size_t	len;
+		std::vector<std::string> vec;
+
+		while (startPos < string.size())
+		{
+			splitPos = string.find_first_of(whiteSp, startPos);
+			endPos = std::min(splitPos, string.size());
+			len = endPos - startPos;
+			if (len)
+			{
+				std::string sub = string.substr(startPos, len);
+				utils::trim(sub);
+				vec.push_back(sub);
+			}
+			startPos = endPos + 1;
+		}
+		return vec;
+	}
+
 } // end namespace utils
