@@ -91,7 +91,7 @@ void    Webserver::createConnection(void) {
 ** Handle the request (to do)
 ** Send the response HTTP back to client (to do)
 */
-static void	takeRequest(int clientFD) {
+static void	takeRequest(int clientFD, std::vector<Client>::iterator itClient) {
 	char	recvline[MAXLINE + 1];
     // this is a static placeholder, change to a variable when the config parsing is done
     long    maxClientBody = 2147483647;
@@ -106,12 +106,13 @@ static void	takeRequest(int clientFD) {
     do {
         bytesRead = recv(clientFD, recvline, MAXLINE - 1, 0);
         if (bytesRead > 0) {
-            std::cout << "Has read: " << bytesRead << std::endl;
+            std::cout << "Has read: " << bytesRead << std::endl; // for testing, delete later
+            itClient->setClientTimeStamp();
             request.parseRequest(recvline, bytesRead);
             memset(recvline, 0, MAXLINE);
         }
     } while (request.isComplete() == false);
-    memset(recvline, 0, MAXLINE);
+//    memset(recvline, 0, MAXLINE);
 
 	// print out info in the object for testing, delete later
 	std::cout << request << std::endl;
@@ -173,7 +174,7 @@ void    Webserver::runWebserver(void) {
 								if (i == itClient->getClientSocket()) {
 									std::cout << "existing connection of socket " << i << std::endl; // test: delete later
 									itClient->setClientTimeStamp();
-									takeRequest(i);
+									takeRequest(i, itClient);
 									// add check if fd of client is ready to write
 									writeResponse(i);
 									FD_CLR(i, &_currentSockets);
