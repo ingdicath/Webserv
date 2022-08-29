@@ -24,6 +24,7 @@ public:
 	void setRoot(const std::string &root);
 	void setRedirection(const std::map<int, std::string> &redirection);
 	void setCGI(const std::pair<std::string, std::string> &cgi);
+	void setUpload(const std::string &upload);
 
 private:
 	std::string _pathLocation;

@@ -65,7 +65,7 @@ private:
 	void _checkOpenCurly(bool isComment, std::stack<std::string> *sectionBlock, std::vector<Server> *serverBlocks,
 						 std::string line);
 
-	void _storeDirective(const Directive& directive, Server *server);
+	void _storeDirective(const Directive &directive, Server *server);
 
 	eDirectives _resolveDirective(const std::string &input);
 
@@ -92,16 +92,14 @@ private:
 
 	bool _isValidBodySize(std::string bodySize);
 
-	bool _isValidPathLocation(const std::string &pathLocation); // TODO
-
 	bool _isValidAcceptedMethod(std::vector<std::string> values);
 
-	bool _isValidAutoindex(const std::string& autoindex);
+	bool _isValidAutoindex(const std::string &autoindex);
 
 	bool _isValidRoot(const std::string &root);
 
 
-
+	bool _isValidExtension(const std::string &extension);
 
 	int _checkPort(std::vector<std::string> port);
 
@@ -127,5 +125,9 @@ private:
 
 	std::pair<std::string, std::string> _checkCGI(std::vector<std::string> cgi);
 
-	bool _isValidCGI(const std::vector<std::string>& cgi);
+	bool _isValidCGI(const std::vector<std::string> &cgi);
+
+	std::string _checkUpload(std::vector<std::string> upload);
+
+	std::string _checkpathLocation(std::vector<std::string> pathLoc);
 };

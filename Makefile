@@ -21,7 +21,6 @@ OBJ_DIR 	=	obj/
 
 SRC			=	main.cpp \
 				utils.cpp \
-				Configurator.cpp \
 				Client.cpp \
 				Server.cpp \
 				Webserver.cpp \

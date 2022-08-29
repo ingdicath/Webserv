@@ -6,8 +6,6 @@ set(CMAKE_CXX_STANDARD 11)
 include_directories(includes)
 
 add_executable(Webserv src/main.cpp
-        src/configs/Configurator.cpp
-        src/configs/Configurator.hpp
         src/configs/Parser.cpp
         src/configs/FileUtils.cpp
         src/configs/Parser.hpp

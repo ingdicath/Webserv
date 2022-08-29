@@ -6,7 +6,6 @@
 
 #include "Location.hpp"
 #include "Client.hpp"
-#include "../configs/Configurator.hpp"
 #include "../utils/settings.hpp"
 
 #include <sys/socket.h>

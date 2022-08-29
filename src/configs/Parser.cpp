@@ -56,7 +56,7 @@ std::vector<Server> Parser::validateConfiguration(const std::string &configFile)
 	if (!sectionBlock.empty()) {
 		throw ConfigFileException("Open unbalanced curly braces.");
 	} else if (sectionBlock.empty() && !utils::trim(line).empty()) {
-		throw ConfigFileException("found invalid characters outside blocks.");
+		throw ConfigFileException("Found invalid characters outside blocks.");
 	}
 	fileUtils.closeFile(_file);
 	return servers;
@@ -76,7 +76,7 @@ void Parser::_checkOpenCurly(bool isComment, std::stack<std::string> *sectionBlo
 		int posPath = static_cast<int>(line.find_first_of('/'));
 		std::string command = line.substr(0, posPath);
 		command = utils::trim(command);
-		if (sectionBlock->empty() && line == "server") {    // See if it is better define as enum
+		if (sectionBlock->empty() && line == "server") {
 			serverBlocks->push_back(*new Server());        // BE CAREFULL: if you use 'new' you should delete as well
 		} else if (sectionBlock->empty() && command == "location") {
 			throw ConfigFileException("location block found outside server block.");
@@ -87,6 +87,9 @@ void Parser::_checkOpenCurly(bool isComment, std::stack<std::string> *sectionBlo
 			pathLocation = utils::trim(pathLocation);
 			Server &server = serverBlocks->back();  //brings last server to create new location
 			Location location = *new Location(); // BE CAREFULL: if you use 'new' you should delete as well
+			if (!_isValidPath(pathLocation, "location")){
+				throw ConfigFileException(" Invalid path for Location block.");
+			}
 			location.setPathLocation(pathLocation);
 			server.addLocation(location);
 		} else if (sectionBlock->top() == "location" && command == "location") {
@@ -152,10 +155,9 @@ void Parser::_storeDirective(const Directive &directive, Server *server) {
 		case BODY_SIZE:
 			server->setClientMaxBodySize(_checkBodySize(directive._value));
 			break;
-//		case ROUTE_LOCATION:
-//			server->getLocations()->setPathLocation(_checkpathLocation(directive._value));
-//			//TODO
-//			break;
+		case ROUTE_LOCATION:
+			server->getLocations()->back().setPathLocation(_checkpathLocation(directive._value));
+			break;
 		case ROOT:
 			server->getLocations()->back().setRoot(_checkRoot(directive._value));
 			break;
@@ -169,9 +171,9 @@ void Parser::_storeDirective(const Directive &directive, Server *server) {
 		case CGI:
 			server->getLocations()->back().setCGI(_checkCGI(directive._value));
 			break;
-//		case UPLOAD:
-//			//TODO
-//			break;
+		case UPLOAD:
+			server->getLocations()->back().setUpload(_checkUpload(directive._value));
+			break;
 		case REDIRECTION:
 			server->getLocations()->back().setRedirection(_checkRedirection(directive._value));
 			break;
@@ -192,7 +194,7 @@ Parser::eDirectives Parser::_resolveDirective(const std::string &input) {
 	if (input == "server_name") return Parser::SERVER_NAME;
 	if (input == "error_page") return Parser::ERROR_PAGE;
 	if (input == "client_max_body_size") return Parser::BODY_SIZE;
-	if (input == "location") return Parser::ROUTE_LOCATION; // Check this
+//	if (input == "location") return Parser::ROUTE_LOCATION; // Check this
 	if (input == "root") return Parser::ROOT;
 	if (input == "accepted_methods") return Parser::ACCEPTED_METHODS;
 	if (input == "index") return Parser::INDEX;
@@ -403,10 +405,6 @@ bool Parser::_isValidBodySize(std::string bodySize) {
 	return true;
 }
 
-bool Parser::_isValidPathLocation(const std::string &pathLocation) {
-	return _isValidPath(pathLocation, "location");
-}
-
 bool Parser::_isValidAcceptedMethod(std::vector<std::string> values) {
 	std::string toUpper;
 	for (size_t i = 0; i < values.size(); i++) {
@@ -447,12 +445,24 @@ bool Parser::_isValidRedirection(std::vector<std::string> values) {
 	return true;
 }
 
+bool Parser::_isValidExtension(const std::string &extension) {
+	size_t start = extension.find_first_of('.');
+	if (start != 0) {
+		return false;
+	}
+	size_t numDots = std::count(extension.begin(), extension.end(), '.');
+	if (numDots != 1) {
+		return false;
+	}
+	return true;
+}
+
 bool Parser::_isValidCGI(const std::vector<std::string> &cgi) {
 	if (cgi.size() != 2) {
 		return false;
 	}
-	if (cgi[0] != ".py"){
-		std::cerr << RED ERROR " 'cgi' can only have .py extension: '" + cgi[0]
+	if (!_isValidExtension(cgi[0])) {
+		std::cerr << RED ERROR " Invalid extension for 'cgi': '" + cgi[0]
 					 + "'." RESET << std::endl;
 		return false;
 	}
@@ -543,6 +553,17 @@ long Parser::_checkBodySize(std::vector<std::string> bodySize) {
 	return res;
 }
 
+std::string Parser::_checkpathLocation(std::vector<std::string> pathLoc) {
+	if (pathLoc.size() > 1) {
+		throw ConfigFileException("Only one argument is allowed for path in Location block.");
+	}
+	if (!_isValidPath(pathLoc[0], "location")) {
+		throw ConfigFileException("Invalid value(s) for path in Location block'.");
+	}
+	return pathLoc[0];
+}
+
+
 std::set<std::string> Parser::_checkAcceptedMethods(std::vector<std::string> methods) {
 	if (!_isValidAcceptedMethod(methods)) {
 		throw ConfigFileException("Invalid arguments for 'accepted_methods'.");
@@ -612,6 +633,16 @@ std::pair<std::string, std::string> Parser::_checkCGI(std::vector<std::string> c
 	return myPair;
 }
 
+std::string Parser::_checkUpload(std::vector<std::string> upload) {
+	if (upload.size() > 1) {
+		throw ConfigFileException("Only one argument is allowed for 'upload'.");
+	}
+	if (!_isValidPath(upload[0], "upload")) {
+		throw ConfigFileException("Invalid value(s) for 'upload'.");
+	}
+	return upload[0];
+}
+
 
 /************************************************************************************
 * 										Exception									*
@@ -652,3 +683,4 @@ void Parser::cleanLocationBlocks(std::vector<Location> *locationBlocks) {
 		locationIt = locationBlocks->erase(locationIt);
 	}
 }
+

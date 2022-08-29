@@ -74,3 +74,7 @@ void Location::setRedirection(const std::map<int, std::string> &redirection) {
 void Location::setCGI(const std::pair<std::string, std::string> &cgi) {
 	_cgi = cgi;
 }
+
+void Location::setUpload(const std::string &upload) {
+	_upload = upload;
+}
