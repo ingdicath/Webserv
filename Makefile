@@ -40,7 +40,7 @@ RM			=	/bin/rm -rf
 GREEN		=	\033[38;5;10m
 RESET		=	\033[0m
 CYAN		=	\033[38;5;81m
-YELLOW		=	\033[33;3;8m
+PURPLE		=	\033[35;5;95m
 
 all:			$(NAME)
 
@@ -51,7 +51,7 @@ $(NAME):		$(OBJ_FILES)
 # $(SRC_DIR)%.cpp
 $(OBJ_DIR)%.o:	$(notdir %.cpp)
 				@mkdir -p $(OBJ_DIR)
-				@echo "$(YELLOW)Creating objects for: $<$(RESET)"
+				@echo "$(PURPLE)Creating objects for: $<$(RESET)"
 				@$(CC) -c $(CFLAGS) -o $@ $<
 
 clean:
