@@ -22,26 +22,13 @@
 Server::Server(void) :
 		_port(DEFAULT_PORT),
 		_host(DEFAULT_HOST),
-		_clientMaxBodySize(DEFAULT_CLIENT_MAX_BODY_SIZE), //TODO: is not initialize default value
+		_clientMaxBodySize(DEFAULT_CLIENT_MAX_BODY_SIZE),
 		_timeOut(DEFAULT_TIMEOUT),
 		_serverSocket(-1) {
 	_serverName.push_back(DEFAULT_SERVER_NAME);
-	_errorPage.insert(std::pair<int, std::string>(400, "/errors/400.html"));
-	_errorPage.insert(std::pair<int, std::string>(403, "/errors/403.html"));
-	_errorPage.insert(std::pair<int, std::string>(404, "/errors/404.html"));
-	_errorPage.insert(std::pair<int, std::string>(405, "/errors/405.html"));
-	_errorPage.insert(std::pair<int, std::string>(408, "/errors/408.html"));
-	_errorPage.insert(std::pair<int, std::string>(410, "/errors/410.html"));
-	_errorPage.insert(std::pair<int, std::string>(411, "/errors/411.html"));
-	_errorPage.insert(std::pair<int, std::string>(413, "/errors/413.html"));
-	_errorPage.insert(std::pair<int, std::string>(414, "/errors/414.html"));
-	_errorPage.insert(std::pair<int, std::string>(418, "/errors/418.html"));
-	_errorPage.insert(std::pair<int, std::string>(429, "/errors/429.html"));
-	_errorPage.insert(std::pair<int, std::string>(431, "/errors/431.html"));
-	_errorPage.insert(std::pair<int, std::string>(500, "/errors/500.html"));
-	_errorPage.insert(std::pair<int, std::string>(501, "/errors/501.html"));
-	_errorPage.insert(std::pair<int, std::string>(505, "/errors/505.html"));
+	_setDefaultErrorPages();
 	_flagPort = false;
+	_flagHost = false;
 }
 
 // REMOVE THIS ONE LATER: ONLY FOR TESTING PURPOSES
@@ -193,7 +180,7 @@ const std::string &Server::getHost() const {
 	return _host;
 }
 
-std::vector<Location> *Server::getLocations(void) {		// check if const is possible later
+std::vector<Location> *Server::getLocations(void) {
 	return &_locations;
 }
 
@@ -212,7 +199,6 @@ long Server::getClientMaxBodySize() const {
 const std::map<int, std::string> &Server::getErrorPage() const {
 	return _errorPage;
 }
-
 
 int		Server::getServerSocket(void) const {
 	return _serverSocket;
@@ -264,4 +250,22 @@ void Server::setIndex(const std::string &index) {
 
 void Server::setClientMaxBodySize(long clientMaxBodySize) {
 	_clientMaxBodySize = clientMaxBodySize;
+}
+
+void Server::_setDefaultErrorPages() {
+	_errorPage.insert(std::pair<int, std::string>(400, "/errors/400.html"));
+	_errorPage.insert(std::pair<int, std::string>(403, "/errors/403.html"));
+	_errorPage.insert(std::pair<int, std::string>(404, "/errors/404.html"));
+	_errorPage.insert(std::pair<int, std::string>(405, "/errors/405.html"));
+	_errorPage.insert(std::pair<int, std::string>(408, "/errors/408.html"));
+	_errorPage.insert(std::pair<int, std::string>(410, "/errors/410.html"));
+	_errorPage.insert(std::pair<int, std::string>(411, "/errors/411.html"));
+	_errorPage.insert(std::pair<int, std::string>(413, "/errors/413.html"));
+	_errorPage.insert(std::pair<int, std::string>(414, "/errors/414.html"));
+	_errorPage.insert(std::pair<int, std::string>(418, "/errors/418.html"));
+	_errorPage.insert(std::pair<int, std::string>(429, "/errors/429.html"));
+	_errorPage.insert(std::pair<int, std::string>(431, "/errors/431.html"));
+	_errorPage.insert(std::pair<int, std::string>(500, "/errors/500.html"));
+	_errorPage.insert(std::pair<int, std::string>(501, "/errors/501.html"));
+	_errorPage.insert(std::pair<int, std::string>(505, "/errors/505.html"));
 }

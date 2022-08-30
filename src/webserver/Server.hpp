@@ -93,4 +93,6 @@ private:
 	int							_serverSocket;
 	struct sockaddr_in			_serverAddr;
 	std::vector<Client>			_clients;
+
+	void	_setDefaultErrorPages();
 };

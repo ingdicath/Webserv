@@ -18,7 +18,6 @@ public:
 	virtual ~Location();
 
 	//Setters
-	void setPathLocation(const std::string &pathLocation);
 	void setAutoindex(bool autoindex);
 	void setMethods(const std::set<std::string> &acceptedMethods);
 	void setRoot(const std::string &root);
@@ -34,4 +33,6 @@ private:
 	std::set<std::string> _acceptedMethods;
 	std::map<int, std::string> _redirection;
 	std::pair<std::string, std::string> _cgi;
+
+	void	_setDefaultRedirectionPages();
 };

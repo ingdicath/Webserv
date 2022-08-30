@@ -10,10 +10,7 @@ Location::Location() : _pathLocation("/"), _root(DEFAULT_ROOT), _autoindex(false
 	_acceptedMethods.insert("GET");
 	_acceptedMethods.insert("POST");
 	_acceptedMethods.insert("DELETE");
-	_redirection.insert(std::pair<int, std::string>(301 , "/redirection/301.html"));
-	_redirection.insert(std::pair<int, std::string>(302 , "/redirection/302.html"));
-	_redirection.insert(std::pair<int, std::string>(303 , "/redirection/303.html"));
-	_redirection.insert(std::pair<int, std::string>(307 , "/redirection/307.html"));
+	_setDefaultRedirectionPages();
 }
 
 Location::Location(std::string path) : _pathLocation(path), _root(DEFAULT_ROOT),
@@ -21,10 +18,7 @@ Location::Location(std::string path) : _pathLocation(path), _root(DEFAULT_ROOT),
 	_acceptedMethods.insert("GET");
 	_acceptedMethods.insert("POST");
 	_acceptedMethods.insert("DELETE");
-	_redirection.insert(std::pair<int, std::string>(301 , "/redirection/301.html"));
-	_redirection.insert(std::pair<int, std::string>(302 , "/redirection/302.html"));
-	_redirection.insert(std::pair<int, std::string>(303 , "/redirection/303.html"));
-	_redirection.insert(std::pair<int, std::string>(307 , "/redirection/307.html"));
+	_setDefaultRedirectionPages();
 }
 
 Location::~Location() {}
@@ -32,7 +26,6 @@ Location::~Location() {}
 Location::Location(const Location &obj) {
 	*this = obj;
 }
-
 
 Location &Location::operator=(const Location &obj) {
 	if (this != &obj) {
@@ -50,10 +43,6 @@ Location &Location::operator=(const Location &obj) {
 /**
  * SETTERS
  */
-
-void Location::setPathLocation(const std::string &pathLocation) {
-	_pathLocation = pathLocation;
-}
 
 void Location::setAutoindex(bool autoindex) {
 	_autoindex = autoindex;
@@ -77,4 +66,11 @@ void Location::setCGI(const std::pair<std::string, std::string> &cgi) {
 
 void Location::setUpload(const std::string &upload) {
 	_upload = upload;
+}
+
+void Location::_setDefaultRedirectionPages() {
+	_redirection.insert(std::pair<int, std::string>(301 , "/redirection/301.html"));
+	_redirection.insert(std::pair<int, std::string>(302 , "/redirection/302.html"));
+	_redirection.insert(std::pair<int, std::string>(303 , "/redirection/303.html"));
+	_redirection.insert(std::pair<int, std::string>(307 , "/redirection/307.html"));
 }

@@ -39,9 +39,12 @@ Webserver& Webserver::operator=(const Webserver & rhs) {
 }
 
 Webserver::~Webserver(void) {
-	// TODO: adjust the message based on if the webserver is actually created or there is a config error
-	std::cout << RED "Webserver is destroyed" RESET << std::endl;
-	return;
+	if (_servers.empty()) {
+		std::cout << RED "Unable to create the webserver due to "
+					 "configuration file parsing failure." RESET << std::endl;
+	} else {
+		std::cout << RED "Webserver is destroyed" RESET << std::endl;
+	}
 }
 
 /*
@@ -53,8 +56,10 @@ Webserver::~Webserver(void) {
 void	Webserver::loadConfiguration(const std::string& configFile) {
 	Parser parser;
 	_servers = parser.validateConfiguration(configFile);
-
 }
+
+
+
 
 //TODO: Check ports, is not working setting up just one port (15Aug)
 
