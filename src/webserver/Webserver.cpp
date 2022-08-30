@@ -77,8 +77,9 @@ void    Webserver::createConnection(void) {
 			_servers.erase(it--);
 		}
 		else {
-			FD_SET(it->getServerSocket(), &_readSet);
-			updateMaxSocket(it->getServerSocket(), ADD);
+			updateSockets(it->getServerSocket(), ADD, 0);
+			//FD_SET(it->getServerSocket(), &_readSet);
+			//updateMaxSocket(it->getServerSocket(), ADD);
 			_activeServers++;
 		}
 	}
@@ -119,7 +120,6 @@ int	 Webserver::takeRequest(std::vector<Client>::iterator itClient, std::vector<
             memset(recvline, 0, MAXLINE);
         }
         else if (bytesRead < 0) {
-            itServer->removeClient(itClient->getClientSocket());
             std::cout << "recv failed" << std::endl; //need more detailed error message
 			return EXIT_FAILURE;
         }
@@ -154,7 +154,7 @@ void    Webserver::runWebserver(void) {
 			if (_activeClients == 0)
 				std::cout << CYAN "+++++++ Waiting for connection ++++++++" RESET << std::endl;
 			while (ready == 0)
-				ready = updateReadySockets(timeout);
+				ready = findReadySockets(timeout);
 		}
 		else if (ready > 0) {
 			// loop through all existing servers
@@ -167,20 +167,20 @@ void    Webserver::runWebserver(void) {
 						// when the server socket is put in the 'ready' set there is a new connection
 						if (i == itServer->getServerSocket()) {
 							int newSocket = itServer->acceptConnection();
-							// new client is added to set of _readSet
-							FD_SET(newSocket, &_readSet);
-							updateMaxSocket(newSocket, ADD);
-							_activeClients++;
+							updateSockets(newSocket, ADD, READ);
 							ready--;
-						// existing connection
+						// else it is an existing connection
 						} else {
 							std::vector<Client> clients = itServer->getClients();
 							for (std::vector<Client>::iterator itClient = clients.begin(); itClient < clients.end(); itClient++) {
 								if (i == itClient->getClientSocket()) {
 									std::cout << "existing connection of socket " << i << std::endl; // test: delete later
 									if	(takeRequest(itClient, itServer) == 0)
-										FD_SET(i, &_writeSet);
-									FD_CLR(i, &_readSet);
+										updateSockets(i, ADD, WRITE);
+									else {
+										itServer->removeClient(i);
+										updateSockets(i, REMOVE, READ);
+									}
 									ready--;
 								}
 							}
@@ -192,11 +192,8 @@ void    Webserver::runWebserver(void) {
 						for (std::vector<Client>::iterator itClient = clients.begin(); itClient < clients.end(); itClient++) {
 							if (i == itClient->getClientSocket()) {
 								writeResponse(i);
-								std::cout << "Response written to client "<< i << std::endl;
 								itServer->removeClient(i);
-								updateMaxSocket(i, REMOVE);
-								_activeClients--;
-								FD_CLR(i, &_writeSet);
+								updateSockets(i, REMOVE, WRITE);
 								ready--;
 							}
 						}
@@ -211,13 +208,12 @@ void    Webserver::runWebserver(void) {
 ** DESCRIPTION
 ** Function that updates the fd_sets _readyRead and _readyWrite
 ** JOBS
-** 1. Initializes the file descriptor sets _readyRead and _readyWrite to contain no file descriptors
-** 2. Copy the _currentSockets set into the _readyRead set (because on return select destroys the original set)
-** 3. Copy the _currentSockets set into the _readyWrite set (because on return select destroys the original set)
+** 2. Copy the _readSet set into the _readyRead set (because on return select destroys the original set)
+** 3. Copy the _writeSet set into the _readyWrite set (because on return select destroys the original set)
 ** 4. Retrieve the ready sockets (that are ready to read or write) by running the select function with both sets.
 ** 5. Run the checkTimeout function to see if any of the clients is not responding
 */
-int	Webserver::updateReadySockets(struct timeval timeout) {
+int	Webserver::findReadySockets(struct timeval timeout) {
 	int ready;
 
 	_readyRead = _readSet;
@@ -228,7 +224,7 @@ int	Webserver::updateReadySockets(struct timeval timeout) {
 }
 
 /*
-** DESCRIPTION
+** DESCRIPTION - TODO: UPDATEN!!
 ** Function that updates the highest (max) used file descriptor (socket) in the program to be used in the select function
 ** to check the 'readyness' of all file descriptors (sockets) until the given max has reached
 ** JOBS
@@ -236,11 +232,28 @@ int	Webserver::updateReadySockets(struct timeval timeout) {
 ** 2. When a socket is removed (type = REMOVED), the function finds the socket in the vector, erases it and the max value is retrieved
 **
 */
-void Webserver::updateMaxSocket(int socket, int type) {
+void Webserver::updateSockets(int socket, int type, int subtype) {
 	if (type == ADD) {
-		_allSockets.push_back(socket);
+		if (!subtype) {
+			_allSockets.push_back(socket);
+			FD_SET(socket, &_readSet);
+		}
+		if (subtype == READ) {
+			_allSockets.push_back(socket);
+			FD_SET(socket, &_readSet);
+			_activeClients++;
+		}
+		if (subtype == WRITE) {
+			FD_CLR(socket, &_readSet);
+			FD_SET(socket, &_writeSet);
+		}
 	}
-	else {
+	else if (type == REMOVE) {
+		if (subtype == READ)
+			FD_CLR(socket, &_readSet);
+		if (subtype == WRITE)
+			FD_CLR(socket, &_writeSet);
+		_activeClients--;
 		std::vector<int>::iterator it = std::find(_allSockets.begin(), _allSockets.end(), socket);
 		_allSockets.erase(it);
 	}
@@ -283,10 +296,8 @@ void Webserver::checkTimeout(void) {
 			if (seconds >= itServer->getTimeout()) {
 				clientSocket = itClient->getClientSocket();
 				std::cout << RED "Client " << clientSocket << " timed out: " << seconds << " seconds" RESET << std::endl;
-				FD_CLR(clientSocket, &_readSet);
 				itServer->removeClient(clientSocket);
-				updateMaxSocket(clientSocket, REMOVE);
-				_activeClients--;
+				updateSockets(clientSocket, REMOVE, READ);
 			}
 		}
 	}

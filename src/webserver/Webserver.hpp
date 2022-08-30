@@ -12,6 +12,8 @@ enum e_typeMax
 {
 	ADD,
 	REMOVE,
+	WRITE,
+	READ,
 };
 
 class Webserver {
@@ -24,8 +26,8 @@ public:
 	void	loadConfiguration(const std::string& configFile);
 	void	createConnection(void);
 	void	runWebserver(void);
-	int		updateReadySockets(struct timeval timeout);
-	void	updateMaxSocket(int socket, int type);
+	int		findReadySockets(struct timeval timeout);
+	void	updateSockets(int socket, int type, int subtype);
 	int	 	takeRequest(std::vector<Client>::iterator itClient, std::vector<Server>::iterator itServer);
 	void	writeResponse(int clientFD);
 	void	checkTimeout(void);
