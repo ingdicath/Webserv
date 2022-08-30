@@ -78,8 +78,6 @@ void    Webserver::createConnection(void) {
 		}
 		else {
 			updateSockets(it->getServerSocket(), ADD, 0);
-			//FD_SET(it->getServerSocket(), &_readSet);
-			//updateMaxSocket(it->getServerSocket(), ADD);
 			_activeServers++;
 		}
 	}
@@ -156,14 +154,13 @@ void    Webserver::runWebserver(void) {
 			while (ready == 0)
 				ready = findReadySockets(timeout);
 		}
-		else if (ready > 0) {
+		else {
 			// loop through all existing servers
 			for (std::vector<Server>::iterator itServer = _servers.begin(); itServer < _servers.end(); itServer++) {
 				// loop through all existing sockets
 				for (int i = 0; i <= _maxSocket; i++) {
 					// handling the 'ready to read' sockets
 					if (FD_ISSET(i, &_readyRead) && ready > 0) {
-						std::cout << i << " = readyRead" << ", ready = " << ready << std::endl;
 						// when the server socket is put in the 'ready' set there is a new connection
 						if (i == itServer->getServerSocket()) {
 							int newSocket = itServer->acceptConnection();
@@ -174,7 +171,7 @@ void    Webserver::runWebserver(void) {
 							std::vector<Client> clients = itServer->getClients();
 							for (std::vector<Client>::iterator itClient = clients.begin(); itClient < clients.end(); itClient++) {
 								if (i == itClient->getClientSocket()) {
-									std::cout << "existing connection of socket " << i << std::endl; // test: delete later
+									std::cout << i << " = readyRead" << ", ready = " << ready << std::endl; // test: delete later
 									if	(takeRequest(itClient, itServer) == 0)
 										updateSockets(i, ADD, WRITE);
 									else {
@@ -187,10 +184,11 @@ void    Webserver::runWebserver(void) {
 						}
 					}
 					// handling the 'ready to write' sockets
-					else if (FD_ISSET(i, &_readyWrite) && ready > 0) {
+					if (FD_ISSET(i, &_readyWrite) && ready > 0) {
 						std::vector<Client> clients = itServer->getClients();
 						for (std::vector<Client>::iterator itClient = clients.begin(); itClient < clients.end(); itClient++) {
 							if (i == itClient->getClientSocket()) {
+								std::cout << i << " = readyWrite" << ", ready = " << ready << std::endl; // test: delete later
 								writeResponse(i);
 								itServer->removeClient(i);
 								updateSockets(i, REMOVE, WRITE);
@@ -199,6 +197,9 @@ void    Webserver::runWebserver(void) {
 						}
 					}
 				} // loop through all sockets
+				if (ready == 0) {
+					break;
+				}
 			} // loop through all servers
 		}
 	}
@@ -230,7 +231,6 @@ int	Webserver::findReadySockets(struct timeval timeout) {
 ** JOBS
 ** 1. When a new socket is opened in the programm (type = ADD) the value of the new socket is added to the vector of allSockets
 ** 2. When a socket is removed (type = REMOVED), the function finds the socket in the vector, erases it and the max value is retrieved
-**
 */
 void Webserver::updateSockets(int socket, int type, int subtype) {
 	if (type == ADD) {
