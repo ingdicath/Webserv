@@ -17,6 +17,8 @@ Webserver::Webserver(void)
 		_activeClients(0),
 		_activeServers(0) {
 	FD_ZERO(&_currentSockets);
+	FD_ZERO(&_readyRead);
+	FD_ZERO(&_readyWrite);
 }
 
 Webserver::Webserver(const Webserver & src) {
@@ -50,14 +52,8 @@ Webserver::~Webserver(void) {
 void	Webserver::loadConfiguration(const std::string& configFile) {
 	Parser parser;
 	_servers = parser.validateConfiguration(configFile);
-	// Diana: in this spot you can add a function in which you send the configFile to the Configurator.cpp file
-	// and do your stuff. After you finished, we can create servers based on your configuration
-//	Server     newServer(80);				// test: delete later
-//	_servers.push_back(newServer);			// test: delete later
-//	Server     newServer2(81);				// test: delete later
-//	_servers.push_back(newServer2);			// test: delete later
-}
 
+}
 
 //TODO: Check ports, is not working setting up just one port (15Aug)
 
@@ -70,8 +66,6 @@ void	Webserver::loadConfiguration(const std::string& configFile) {
 ** 3. Updates the _max_socket fd
 */
 void    Webserver::createConnection(void) {
-	FD_ZERO(&_currentSockets);
-
 	for (std::vector<Server>::iterator it = _servers.begin(); it < _servers.end(); it++) {
 		if (it->setupServer() == EXIT_FAILURE) {
 			_servers.erase(it--);
@@ -125,6 +119,7 @@ static void	takeRequest(std::vector<Client>::iterator itClient, std::vector<Serv
     } while (request.isComplete() == false);
     writeResponse(itClient->getClientSocket());
     itServer->removeClient(itClient->getClientSocket());
+
 	// print out info in the object for testing, delete later
 	std::cout << request << std::endl;
 }
@@ -145,16 +140,15 @@ void    Webserver::runWebserver(void) {
 	int				ready = 0;
 	struct timeval	timeout;
 
+	timeout.tv_sec  = 1;
+	timeout.tv_usec = 0;
 	std::cout << GREEN "Webserver running" RESET << std::endl;
 	while (running) {
 		if (ready == 0) {
 			if (_activeClients == 0)
 				std::cout << CYAN "+++++++ Waiting for connection ++++++++" RESET << std::endl;
-			while (ready == 0) {
-				timeout.tv_sec  = 1;
-				timeout.tv_usec = 0;
+			while (ready == 0)
 				ready = updateReadySockets(timeout);
-			}
 		}
 		else if (ready > 0) {
 			// loop through all existing servers
@@ -179,9 +173,6 @@ void    Webserver::runWebserver(void) {
 									std::cout << "existing connection of socket " << i << std::endl; // test: delete later
 									itClient->setClientTimeStamp();
 									takeRequest(itClient, itServer);
-//                                    itServer->removeClient(i);
-									// add check if fd of client is ready to write
-//									writeResponse(i);
 									FD_CLR(i, &_currentSockets);
 									ready = updateReadySockets(timeout);
 								}
@@ -207,8 +198,6 @@ void    Webserver::runWebserver(void) {
 int	Webserver::updateReadySockets(struct timeval timeout) {
 	int ready;
 
-	FD_ZERO(&_readyRead);
-	FD_ZERO(&_readyWrite);
 	_readyRead = _currentSockets;
 	ready = select(_maxSocket + 1, &_readyRead, &_readyWrite, NULL, &timeout);
 	checkTimeout();
