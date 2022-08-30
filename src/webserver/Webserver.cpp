@@ -17,6 +17,7 @@ Webserver::Webserver(void)
 		_activeClients(0),
 		_activeServers(0) {
 	FD_ZERO(&_currentSockets);
+	FD_ZERO(&_wSet);
 	FD_ZERO(&_readyRead);
 	FD_ZERO(&_readyWrite);
 }
@@ -80,7 +81,7 @@ void    Webserver::createConnection(void) {
 		throw (std::logic_error("There are no active servers"));
 }
 
-static void	writeResponse(int clientFD) {
+void	 Webserver::writeResponse(int clientFD) {
     char	buff[MAXLINE + 1];
 
     snprintf((char*)buff, sizeof(buff), "HTTP/1.1 200 OK\r\n\r\n<HTML>Hello</HTML>");
@@ -92,7 +93,7 @@ static void	writeResponse(int clientFD) {
 ** Handle the request (to do)
 ** Send the response HTTP back to client (to do)
 */
-static void	takeRequest(std::vector<Client>::iterator itClient, std::vector<Server>::iterator itServer) {
+void	 Webserver::takeRequest(std::vector<Client>::iterator itClient, std::vector<Server>::iterator itServer) {
 	char	recvline[MAXLINE + 1];
     // this is a static placeholder, change to a variable when the config parsing is done
     long    maxClientBody = 2147483647;
@@ -117,8 +118,8 @@ static void	takeRequest(std::vector<Client>::iterator itClient, std::vector<Serv
             std::cout << "recv failed" << std::endl; //need more detailed error message
         }
     } while (request.isComplete() == false);
-    writeResponse(itClient->getClientSocket());
-    itServer->removeClient(itClient->getClientSocket());
+    //writeResponse(itClient->getClientSocket());
+    //itServer->removeClient(itClient->getClientSocket());
 
 	// print out info in the object for testing, delete later
 	std::cout << request << std::endl;
@@ -157,6 +158,7 @@ void    Webserver::runWebserver(void) {
 				for (int i = 0; i <= _maxSocket; i++) {
 					// handling the 'ready to read' sockets
 					if (FD_ISSET(i, &_readyRead)) {
+						std::cout << i << " = readyRead" << std::endl;
 						// when the server socket is put in the 'ready' set there is a new connection
 						if (i == itServer->getServerSocket()) {
 							int newSocket = itServer->acceptConnection();
@@ -171,13 +173,24 @@ void    Webserver::runWebserver(void) {
 							for (std::vector<Client>::iterator itClient = clients.begin(); itClient < clients.end(); itClient++) {
 								if (i == itClient->getClientSocket()) {
 									std::cout << "existing connection of socket " << i << std::endl; // test: delete later
-									itClient->setClientTimeStamp();
 									takeRequest(itClient, itServer);
+									// TODO: only do next if takeRequest was succes
+									FD_SET(itClient->getClientSocket(), &_wSet);
 									FD_CLR(i, &_currentSockets);
 									ready = updateReadySockets(timeout);
 								}
 							}
 						}
+					}
+					else if (FD_ISSET(i, &_readyWrite)) {
+						std::cout << i << " = readyWrite" << std::endl;
+						// TODO: add writeRespond rule
+						// TODO: check why in this case client 5 still times out
+						// TODO: find out when to remove client 5 from currentSockets
+						FD_CLR(i, &_wSet);
+						FD_CLR(i, &_currentSockets);
+						itServer->removeClient(i);
+						ready = updateReadySockets(timeout);
 					}
 				} // loop through all sockets
 			} // loop through all servers
@@ -199,6 +212,7 @@ int	Webserver::updateReadySockets(struct timeval timeout) {
 	int ready;
 
 	_readyRead = _currentSockets;
+	_readyWrite = _wSet;
 	ready = select(_maxSocket + 1, &_readyRead, &_readyWrite, NULL, &timeout);
 	checkTimeout();
 	return ready;
@@ -250,6 +264,7 @@ void Webserver::clear(void) {
 void Webserver::checkTimeout(void) {
 	struct		timeval tv;
 	long long	seconds;
+	int			clientSocket;		
 
 	for (std::vector<Server>::iterator itServer = _servers.begin(); itServer < _servers.end(); itServer++) {
 		std::vector<Client> clients = itServer->getClients();
@@ -258,8 +273,8 @@ void Webserver::checkTimeout(void) {
 			seconds = tv.tv_sec - itClient->getClientTimeStamp();
 			if (seconds >= itServer->getTimeout()) {
 				std::cout << RED "Client " << itClient->getClientSocket() << " timed out: " << seconds << " seconds" RESET << std::endl; // test: delete later
-				FD_CLR(itClient->getClientSocket(), &_currentSockets);
-				int clientSocket = itClient->getClientSocket();
+				clientSocket = itClient->getClientSocket();
+				FD_CLR(clientSocket, &_currentSockets);
 				itServer->removeClient(clientSocket);
 				updateMaxSocket(clientSocket, REMOVE);
 				_activeClients--;
