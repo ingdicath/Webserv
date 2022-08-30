@@ -36,8 +36,8 @@ private:
 	std::vector<int>		_allSockets;
 	int						_activeClients;
 	int						_activeServers;
-	fd_set					_currentSockets;
-	fd_set					_wSet;
+	fd_set					_writeSet;
+	fd_set					_readSet;
 	fd_set					_readyRead;
 	fd_set					_readyWrite;
 	std::vector<Server>		_servers;

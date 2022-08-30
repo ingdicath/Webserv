@@ -16,8 +16,8 @@ Webserver::Webserver(void)
 	: 	_maxSocket(0),
 		_activeClients(0),
 		_activeServers(0) {
-	FD_ZERO(&_currentSockets);
-	FD_ZERO(&_wSet);
+	FD_ZERO(&_readSet);
+	FD_ZERO(&_writeSet);
 	FD_ZERO(&_readyRead);
 	FD_ZERO(&_readyWrite);
 }
@@ -33,7 +33,6 @@ Webserver& Webserver::operator=(const Webserver & rhs) {
 		_maxSocket = rhs._maxSocket;
 		_activeClients = rhs._activeClients;
 		_activeServers = rhs._activeServers;
-		_currentSockets = rhs._currentSockets;
 		_servers = rhs._servers;
 	}
 	return *this;
@@ -73,7 +72,7 @@ void    Webserver::createConnection(void) {
 			_servers.erase(it--);
 		}
 		else {
-			FD_SET(it->getServerSocket(), &_currentSockets);
+			FD_SET(it->getServerSocket(), &_readSet);
 			updateMaxSocket(it->getServerSocket(), ADD);
 			_activeServers++;
 		}
@@ -158,16 +157,16 @@ void    Webserver::runWebserver(void) {
 				// loop through all existing sockets
 				for (int i = 0; i <= _maxSocket; i++) {
 					// handling the 'ready to read' sockets
-					if (FD_ISSET(i, &_readyRead)) {
-						std::cout << i << " = readyRead" << std::endl;
+					if (FD_ISSET(i, &_readyRead) && ready > 0) {
+						std::cout << i << " = readyRead" << ", ready = " << ready << std::endl;
 						// when the server socket is put in the 'ready' set there is a new connection
 						if (i == itServer->getServerSocket()) {
 							int newSocket = itServer->acceptConnection();
-							// new client is added to set of _current_sockets
-							FD_SET(newSocket, &_currentSockets);
+							// new client is added to set of _readSet
+							FD_SET(newSocket, &_readSet);
 							updateMaxSocket(newSocket, ADD);
 							_activeClients++;
-							ready = updateReadySockets(timeout);
+							ready--;
 						// existing connection
 						} else {
 							std::vector<Client> clients = itServer->getClients();
@@ -175,21 +174,27 @@ void    Webserver::runWebserver(void) {
 								if (i == itClient->getClientSocket()) {
 									std::cout << "existing connection of socket " << i << std::endl; // test: delete later
 									if	(takeRequest(itClient, itServer) == 0)
-										FD_SET(i, &_wSet);
-									FD_CLR(i, &_currentSockets);
-									ready = updateReadySockets(timeout);
+										FD_SET(i, &_writeSet);
+									FD_CLR(i, &_readSet);
+									ready--;
 								}
 							}
 						}
 					}
 					// handling the 'ready to write' sockets
-					else if (FD_ISSET(i, &_readyWrite)) {
-						writeResponse(i);
-						std::cout << "Response written to client "<< i << std::endl;
-						// TODO: check why in this case client 5 still times out
-						itServer->removeClient(i);
-						FD_CLR(i, &_wSet);
-						ready = updateReadySockets(timeout);
+					else if (FD_ISSET(i, &_readyWrite) && ready > 0) {
+						std::vector<Client> clients = itServer->getClients();
+						for (std::vector<Client>::iterator itClient = clients.begin(); itClient < clients.end(); itClient++) {
+							if (i == itClient->getClientSocket()) {
+								writeResponse(i);
+								std::cout << "Response written to client "<< i << std::endl;
+								itServer->removeClient(i);
+								updateMaxSocket(i, REMOVE);
+								_activeClients--;
+								FD_CLR(i, &_writeSet);
+								ready--;
+							}
+						}
 					}
 				} // loop through all sockets
 			} // loop through all servers
@@ -210,8 +215,8 @@ void    Webserver::runWebserver(void) {
 int	Webserver::updateReadySockets(struct timeval timeout) {
 	int ready;
 
-	_readyRead = _currentSockets;
-	_readyWrite = _wSet;
+	_readyRead = _readSet;
+	_readyWrite = _writeSet;
 	ready = select(_maxSocket + 1, &_readyRead, &_readyWrite, NULL, &timeout);
 	checkTimeout();
 	return ready;
@@ -271,9 +276,9 @@ void Webserver::checkTimeout(void) {
 			gettimeofday(&tv, NULL);
 			seconds = tv.tv_sec - itClient->getClientTimeStamp();
 			if (seconds >= itServer->getTimeout()) {
-				std::cout << RED "Client " << itClient->getClientSocket() << " timed out: " << seconds << " seconds" RESET << std::endl; // test: delete later
 				clientSocket = itClient->getClientSocket();
-				FD_CLR(clientSocket, &_currentSockets);
+				std::cout << RED "Client " << clientSocket << " timed out: " << seconds << " seconds" RESET << std::endl;
+				FD_CLR(clientSocket, &_readSet);
 				itServer->removeClient(clientSocket);
 				updateMaxSocket(clientSocket, REMOVE);
 				_activeClients--;
