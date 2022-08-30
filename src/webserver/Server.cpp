@@ -6,7 +6,7 @@
 /*   By: aheister <aheister@student.codam.nl>         +#+                     */
 /*                                                   +#+                      */
 /*   Created: 2022/07/11 15:09:47 by aheister      #+#    #+#                 */
-/*   Updated: 2022/07/25 16:22:44 by aheister      ########   odam.nl         */
+/*   Updated: 2022/08/30 10:15:06 by aheister      ########   odam.nl         */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -173,6 +173,7 @@ void	Server::addClient(int newSocket, struct	sockaddr_in clientAddr) {
 ** Function to remove a client from the vector of clients of a server
 */
 void	Server::removeClient(int thisSocket) {
+	std::cout << "Remove " << thisSocket << std::endl;
 	for (std::vector<Client>::iterator it = _clients.begin(); it < _clients.end(); it++) {
 		if (it->getClientSocket() == thisSocket) {
 			std::cout << RED "Client " << it->getClientSocket() << " removed" RESET << std::endl; // test: delete later

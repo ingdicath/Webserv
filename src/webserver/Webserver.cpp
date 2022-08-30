@@ -40,6 +40,7 @@ Webserver& Webserver::operator=(const Webserver & rhs) {
 }
 
 Webserver::~Webserver(void) {
+	// TODO: adjust the message based on if the webserver is actually created or there is a config error
 	std::cout << RED "Webserver is destroyed" RESET << std::endl;
 	return;
 }
@@ -93,7 +94,7 @@ void	 Webserver::writeResponse(int clientFD) {
 ** Handle the request (to do)
 ** Send the response HTTP back to client (to do)
 */
-void	 Webserver::takeRequest(std::vector<Client>::iterator itClient, std::vector<Server>::iterator itServer) {
+int	 Webserver::takeRequest(std::vector<Client>::iterator itClient, std::vector<Server>::iterator itServer) {
 	char	recvline[MAXLINE + 1];
     // this is a static placeholder, change to a variable when the config parsing is done
     long    maxClientBody = 2147483647;
@@ -116,13 +117,13 @@ void	 Webserver::takeRequest(std::vector<Client>::iterator itClient, std::vector
         else if (bytesRead < 0) {
             itServer->removeClient(itClient->getClientSocket());
             std::cout << "recv failed" << std::endl; //need more detailed error message
+			return EXIT_FAILURE;
         }
     } while (request.isComplete() == false);
-    //writeResponse(itClient->getClientSocket());
-    //itServer->removeClient(itClient->getClientSocket());
 
 	// print out info in the object for testing, delete later
 	std::cout << request << std::endl;
+	return EXIT_SUCCESS;
 }
 
 /*
@@ -173,23 +174,21 @@ void    Webserver::runWebserver(void) {
 							for (std::vector<Client>::iterator itClient = clients.begin(); itClient < clients.end(); itClient++) {
 								if (i == itClient->getClientSocket()) {
 									std::cout << "existing connection of socket " << i << std::endl; // test: delete later
-									takeRequest(itClient, itServer);
-									// TODO: only do next if takeRequest was succes
-									FD_SET(itClient->getClientSocket(), &_wSet);
+									if	(takeRequest(itClient, itServer) == 0)
+										FD_SET(i, &_wSet);
 									FD_CLR(i, &_currentSockets);
 									ready = updateReadySockets(timeout);
 								}
 							}
 						}
 					}
+					// handling the 'ready to write' sockets
 					else if (FD_ISSET(i, &_readyWrite)) {
-						std::cout << i << " = readyWrite" << std::endl;
-						// TODO: add writeRespond rule
+						writeResponse(i);
+						std::cout << "Response written to client "<< i << std::endl;
 						// TODO: check why in this case client 5 still times out
-						// TODO: find out when to remove client 5 from currentSockets
-						FD_CLR(i, &_wSet);
-						FD_CLR(i, &_currentSockets);
 						itServer->removeClient(i);
+						FD_CLR(i, &_wSet);
 						ready = updateReadySockets(timeout);
 					}
 				} // loop through all sockets
