@@ -58,9 +58,6 @@ void	Webserver::loadConfiguration(const std::string& configFile) {
 	_servers = parser.validateConfiguration(configFile);
 }
 
-
-
-
 //TODO: Check ports, is not working setting up just one port (15Aug)
 
 /*
@@ -126,7 +123,7 @@ int	 Webserver::takeRequest(std::vector<Client>::iterator itClient, std::vector<
     } while (request.isComplete() == false);
 
 	// print out info in the object for testing, delete later
-	std::cout << request << std::endl;
+	//std::cout << request << std::endl;
 	return EXIT_SUCCESS;
 }
 
@@ -173,7 +170,7 @@ void    Webserver::runWebserver(void) {
 							std::vector<Client> clients = itServer->getClients();
 							for (std::vector<Client>::iterator itClient = clients.begin(); itClient < clients.end(); itClient++) {
 								if (i == itClient->getClientSocket()) {
-									std::cout << i << " = readyRead" << ", ready = " << ready << std::endl; // test: delete later
+									//std::cout << i << " = readyRead" << ", ready = " << ready << std::endl; // test: delete later
 									if	(takeRequest(itClient, itServer) == 0)
 										updateSockets(i, ADD, WRITE);
 									else {
@@ -190,7 +187,7 @@ void    Webserver::runWebserver(void) {
 						std::vector<Client> clients = itServer->getClients();
 						for (std::vector<Client>::iterator itClient = clients.begin(); itClient < clients.end(); itClient++) {
 							if (i == itClient->getClientSocket()) {
-								std::cout << i << " = readyWrite" << ", ready = " << ready << std::endl; // test: delete later
+								//std::cout << i << " = readyWrite" << ", ready = " << ready << std::endl; // test: delete later
 								writeResponse(i);
 								itServer->removeClient(i);
 								updateSockets(i, REMOVE, WRITE);
@@ -211,10 +208,10 @@ void    Webserver::runWebserver(void) {
 ** DESCRIPTION
 ** Function that updates the fd_sets _readyRead and _readyWrite
 ** JOBS
-** 2. Copy the _readSet set into the _readyRead set (because on return select destroys the original set)
-** 3. Copy the _writeSet set into the _readyWrite set (because on return select destroys the original set)
-** 4. Retrieve the ready sockets (that are ready to read or write) by running the select function with both sets.
-** 5. Run the checkTimeout function to see if any of the clients is not responding
+** 1. Copy the _readSet set into the _readyRead set (because on return select destroys the original set)
+** 2. Copy the _writeSet set into the _readyWrite set (because on return select destroys the original set)
+** 3. Retrieve the ready sockets (that are ready to read or write) by running the select function with both sets.
+** 4. Run the checkTimeout function to see if any of the clients is not responding
 */
 int	Webserver::findReadySockets(struct timeval timeout) {
 	int ready;
@@ -259,7 +256,7 @@ void Webserver::updateSockets(int socket, int type, int subtype) {
 		std::vector<int>::iterator it = std::find(_allSockets.begin(), _allSockets.end(), socket);
 		_allSockets.erase(it);
 	}
-	_maxSocket = *std::max_element(_allSockets.begin() + 1, _allSockets.end());
+	_maxSocket = *std::max_element(_allSockets.begin(), _allSockets.end());
 }
 
 /*
