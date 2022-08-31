@@ -65,12 +65,11 @@ public:
 	void					setPort(int port);
 	void					setHost(std::string host);
 	void					setServerName(const std::vector<std::string> &serverName);
-	void					setErrorPage(const std::map<int, std::string> &errorPage);
 	void					setIndex(const std::string &index);
 	void					setClientMaxBodySize(long clientMaxBodySize);
 
-
-	void addLocation(Location location);
+	void					addErrorPage(const std::pair<int, std::string> &errorPage);
+	void					addLocation(Location location);
 
 
 private:

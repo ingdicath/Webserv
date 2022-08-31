@@ -21,9 +21,10 @@ public:
 	void setAutoindex(bool autoindex);
 	void setMethods(const std::set<std::string> &acceptedMethods);
 	void setRoot(const std::string &root);
-	void setRedirection(const std::map<int, std::string> &redirection);
 	void setCGI(const std::pair<std::string, std::string> &cgi);
 	void setUpload(const std::string &upload);
+
+	void addRedirection(const std::pair<int, std::string> &redirection);
 
 private:
 	std::string _pathLocation;

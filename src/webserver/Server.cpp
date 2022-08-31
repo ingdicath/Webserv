@@ -12,6 +12,7 @@
 
 #include <cstring>
 #include <cerrno>
+#include <map>
 #include "Server.hpp"
 #include "../http/Response.hpp"
 #include "../configs/Parser.hpp"
@@ -33,18 +34,18 @@ Server::Server(void) :
 
 // REMOVE THIS ONE LATER: ONLY FOR TESTING PURPOSES
 Server::Server(int port) :
-	_port(port),
-	_host(DEFAULT_HOST),
-	_timeOut(DEFAULT_TIMEOUT),
-	_serverSocket(-1) {
+		_port(port),
+		_host(DEFAULT_HOST),
+		_timeOut(DEFAULT_TIMEOUT),
+		_serverSocket(-1) {
 }
 
-Server::Server(const Server & src) {
+Server::Server(const Server &src) {
 	*this = src;
 }
 
-Server& Server::operator=(const Server & rhs) {
-	if (this != & rhs) {
+Server &Server::operator=(const Server &rhs) {
+	if (this != &rhs) {
 		_port = rhs._port;
 		_host = rhs._host;
 		_serverName = rhs._serverName;
@@ -69,7 +70,7 @@ const char *Server::setupException::what() const throw() {
 /*
 ** Configuration of the server 
 */
-void	Server::configServer(void) {
+void Server::configServer(void) {
 	return;
 }
 
@@ -86,7 +87,7 @@ void	Server::configServer(void) {
 ** 5. Creates the connection by putting the server in a listening state
 ** 6. If either one of these jobs fail, the function returns with EXIT_FAILURE 
 */
-int	Server::setupServer(void) {
+int Server::setupServer(void) {
 	int iSetOption = 1;
 
 	try {
@@ -96,20 +97,20 @@ int	Server::setupServer(void) {
 		if (fcntl(_serverSocket, F_SETFL, O_NONBLOCK) == -1) {
 			throw setupException();
 		}
-		setsockopt(this->_serverSocket, SOL_SOCKET, SO_REUSEADDR, (char*)&iSetOption, sizeof(iSetOption));
+		setsockopt(this->_serverSocket, SOL_SOCKET, SO_REUSEADDR, (char *) &iSetOption, sizeof(iSetOption));
 		memset(&_serverAddr, 0, sizeof(_serverAddr));
 		_serverAddr.sin_family = AF_INET;
 		_serverAddr.sin_port = htons(_port);
-		char* host = const_cast<char*>(_host.c_str());	// TODO: put this in configuration part
+		char *host = const_cast<char *>(_host.c_str());    // TODO: put this in configuration part
 		_serverAddr.sin_addr.s_addr = inet_addr(host);
-		if (bind(_serverSocket, (struct sockaddr *)&_serverAddr, sizeof(_serverAddr)) == -1) {
+		if (bind(_serverSocket, (struct sockaddr *) &_serverAddr, sizeof(_serverAddr)) == -1) {
 			throw setupException();
 		}
 		if (listen(_serverSocket, DEFAULT_BACKLOG) == -1) {
 			throw setupException();
 		}
 	}
-	catch (setupException& e) {
+	catch (setupException &e) {
 		std::cout << RED << e.what();
 		std::cout << "Server IP: " << _host << " port: " << _port << std::endl;
 		std::cout << "Error: " << strerror(errno) << "\n" << RESET << std::endl;
@@ -127,14 +128,14 @@ int	Server::setupServer(void) {
 */
 int Server::acceptConnection(void) {
 
-	int		newSocket;
-	struct	sockaddr_in clientAddr;
-	int		clientAddrlen = sizeof(clientAddr);
+	int newSocket;
+	struct sockaddr_in clientAddr;
+	int clientAddrlen = sizeof(clientAddr);
 
-	if ((newSocket = accept(this->_serverSocket, (struct sockaddr *)&clientAddr, (socklen_t*)&clientAddrlen)) == -1) {
+	if ((newSocket = accept(this->_serverSocket, (struct sockaddr *) &clientAddr, (socklen_t *) &clientAddrlen)) ==
+		-1) {
 		throw (std::runtime_error("Accept incoming connection failed"));
-	}
-	else {
+	} else {
 		this->addClient(newSocket, clientAddr);
 	}
 	return newSocket;
@@ -144,8 +145,8 @@ int Server::acceptConnection(void) {
 ** DESCRIPTION
 ** Function to create a new client object and add it to the back of the vector of clients of a server
 */
-void	Server::addClient(int newSocket, struct	sockaddr_in clientAddr) {
-	Client	client;
+void Server::addClient(int newSocket, struct sockaddr_in clientAddr) {
+	Client client;
 
 	client.setClientAddress(clientAddr);
 	std::cout << "Client: " << inet_ntoa(clientAddr.sin_addr) << std::endl; // test: delete later
@@ -159,7 +160,7 @@ void	Server::addClient(int newSocket, struct	sockaddr_in clientAddr) {
 ** DESCRIPTION
 ** Function to remove a client from the vector of clients of a server
 */
-void	Server::removeClient(int thisSocket) {
+void Server::removeClient(int thisSocket) {
 	for (std::vector<Client>::iterator it = _clients.begin(); it < _clients.end(); it++) {
 		if (it->getClientSocket() == thisSocket) {
 			std::cout << RED "Client " << it->getClientSocket() << " removed" RESET << std::endl; // test: delete later
@@ -173,7 +174,7 @@ void	Server::removeClient(int thisSocket) {
  * Getters
  */
 
-int		Server::getPort(void) const {
+int Server::getPort(void) const {
 	return _port;
 }
 const std::string &Server::getHost() const {
@@ -200,11 +201,11 @@ const std::map<int, std::string> &Server::getErrorPage() const {
 	return _errorPage;
 }
 
-int		Server::getServerSocket(void) const {
+int Server::getServerSocket(void) const {
 	return _serverSocket;
 }
 
-std::vector<Client>	Server::getClients(void) const {
+std::vector<Client> Server::getClients(void) const {
 	return _clients;
 }
 
@@ -217,7 +218,7 @@ long long Server::getTimeout(void) const {
  */
 
 void Server::setPort(int port) {
-	if (_flagPort){
+	if (_flagPort) {
 		throw Parser::ConfigFileException("Duplicate value in 'port'.");
 	}
 	_port = port;
@@ -225,7 +226,7 @@ void Server::setPort(int port) {
 }
 
 void Server::setHost(std::string host) {
-	if (_flagHost){
+	if (_flagHost) {
 		throw Parser::ConfigFileException("Duplicate value in 'host'.");
 	}
 	_host = host;
@@ -234,14 +235,6 @@ void Server::setHost(std::string host) {
 
 void Server::setServerName(const std::vector<std::string> &serverName) {
 	_serverName = serverName;
-}
-
-void Server::setErrorPage(const std::map<int, std::string> &errorPage) {
-	_errorPage = errorPage;
-}
-
-void Server::addLocation(Location location) {
-	_locations.push_back(location);
 }
 
 void Server::setIndex(const std::string &index) {
@@ -268,4 +261,23 @@ void Server::_setDefaultErrorPages() {
 	_errorPage.insert(std::pair<int, std::string>(500, "/errors/500.html"));
 	_errorPage.insert(std::pair<int, std::string>(501, "/errors/501.html"));
 	_errorPage.insert(std::pair<int, std::string>(505, "/errors/505.html"));
+}
+
+/**
+ * If the status error code already exists in the default error Pages map, the path to this error
+ * is updated, if is not found, it is added to the current map of error pages.
+ * @param errorPage Is the pair of status error code and path defined in the config file
+ * by the user.
+ */
+void Server::addErrorPage(const std::pair<int, std::string> &errorPage) {
+	std::map<int, std::string>::iterator it = _errorPage.find(errorPage.first);
+	if (it != _errorPage.end()) {
+		_errorPage.at(it->first) = errorPage.second;
+	} else {
+		_errorPage.insert(errorPage);
+	}
+}
+
+void Server::addLocation(Location location) {
+	_locations.push_back(location);
 }

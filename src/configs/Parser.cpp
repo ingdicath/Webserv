@@ -138,7 +138,7 @@ void Parser::_storeDirective(const Directive &directive, Server *server) {
 			server->setServerName(_checkServerNames(directive._value));
 			break;
 		case ERROR_PAGE:
-			server->setErrorPage(_checkErrorPage(directive._value));
+			server->addErrorPage(_checkErrorPage(directive._value));
 			break;
 		case INDEX:
 			server->setIndex(_checkIndex(directive._value));
@@ -163,7 +163,7 @@ void Parser::_storeDirective(const Directive &directive, Server *server) {
 			server->getLocations()->back().setUpload(_checkUpload(directive._value));
 			break;
 		case REDIRECTION:
-			server->getLocations()->back().setRedirection(_checkRedirection(directive._value));
+			server->getLocations()->back().addRedirection(_checkRedirection(directive._value));
 			break;
 		case INVALID:
 			std::cerr << RED ERROR " Invalid directive: '" + directive._key + "'." RESET << std::endl;
@@ -489,7 +489,7 @@ std::vector<std::string> Parser::_checkServerNames(std::vector<std::string> serv
 	return myVector;
 }
 
-std::map<int, std::string> Parser::_checkErrorPage(std::vector<std::string> errorPage) {
+std::pair<int, std::string> Parser::_checkErrorPage(std::vector<std::string> errorPage) {
 	if (errorPage.size() > 2) {
 		throw ConfigFileException("Invalid number of arguments for 'error_page'. "
 								  "Two arguments are expected followed by ';'.");
@@ -497,8 +497,8 @@ std::map<int, std::string> Parser::_checkErrorPage(std::vector<std::string> erro
 	if (!_isValidErrorPage(errorPage)) {
 		throw ConfigFileException("Invalid arguments for 'error_page'.");
 	}
-	std::map<int, std::string> res;
-	res = utils::makeMap(utils::stringToInt(errorPage[0]), errorPage[1]);
+	std::pair<int, std::string> res;
+	res = std::make_pair(utils::stringToInt(errorPage[0]), errorPage[1]);
 	return res;
 }
 
@@ -581,7 +581,7 @@ std::string Parser::_checkRoot(std::vector<std::string> root) {
 	return root[0];
 }
 
-std::map<int, std::string> Parser::_checkRedirection(std::vector<std::string> redir) {
+std::pair<int, std::string> Parser::_checkRedirection(std::vector<std::string> redir) {
 	if (redir.size() > 2) {
 		throw ConfigFileException("Invalid number of arguments for 'redirection'. "
 								  "Two arguments are expected followed by ';'.");
@@ -589,8 +589,8 @@ std::map<int, std::string> Parser::_checkRedirection(std::vector<std::string> re
 	if (!_isValidRedirection(redir)) {
 		throw ConfigFileException("Invalid value(s) for 'redirection'.");
 	}
-	std::map<int, std::string> res;
-	res = utils::makeMap(utils::stringToInt(redir[0]), redir[1]);
+	std::pair<int, std::string> res;
+	res = std::make_pair(utils::stringToInt(redir[0]), redir[1]);
 	return res;
 }
 

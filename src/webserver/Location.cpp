@@ -56,10 +56,6 @@ void Location::setRoot(const std::string &root) {
 	_root = root;
 }
 
-void Location::setRedirection(const std::map<int, std::string> &redirection) {
-	_redirection = redirection;
-}
-
 void Location::setCGI(const std::pair<std::string, std::string> &cgi) {
 	_cgi = cgi;
 }
@@ -69,8 +65,18 @@ void Location::setUpload(const std::string &upload) {
 }
 
 void Location::_setDefaultRedirectionPages() {
-	_redirection.insert(std::pair<int, std::string>(301 , "/redirection/301.html"));
-	_redirection.insert(std::pair<int, std::string>(302 , "/redirection/302.html"));
-	_redirection.insert(std::pair<int, std::string>(303 , "/redirection/303.html"));
-	_redirection.insert(std::pair<int, std::string>(307 , "/redirection/307.html"));
+	_redirection.insert(std::pair<int, std::string>(301, "/redirection/301.html"));
+	_redirection.insert(std::pair<int, std::string>(302, "/redirection/302.html"));
+	_redirection.insert(std::pair<int, std::string>(303, "/redirection/303.html"));
+	_redirection.insert(std::pair<int, std::string>(307, "/redirection/307.html"));
+}
+
+
+void Location::addRedirection(const std::pair<int, std::string> &redirection) {
+	std::map<int, std::string>::iterator it = _redirection.find(redirection.first);
+	if (it != _redirection.end()) {
+		_redirection.at(it->first) = redirection.second;
+	} else {
+		_redirection.insert(redirection);
+	}
 }

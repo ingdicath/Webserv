@@ -84,8 +84,8 @@ private:
 	std::string _checkIndex(std::vector<std::string> index);
 	std::string _checkRoot(std::vector<std::string> root);
 	std::vector<std::string> _checkServerNames(std::vector<std::string> serverNames);
-	std::map<int, std::string> _checkErrorPage(std::vector<std::string> errorPage);
-	std::map<int, std::string> _checkRedirection(std::vector<std::string> redir);
+	std::pair<int, std::string> _checkErrorPage(std::vector<std::string> errorPage);
+	std::pair<int, std::string> _checkRedirection(std::vector<std::string> redir);
 	std::pair<std::string, std::string> _checkCGI(std::vector<std::string> cgi);
 	std::set<std::string> _checkAcceptedMethods(std::vector<std::string> methods);
 	Location _checkLocation(const std::string &line, const int &posPath);
