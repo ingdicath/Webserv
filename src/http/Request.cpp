@@ -252,7 +252,7 @@ void    Request::parseBody(std::string &input, long len) {
 //    }
 }
 
-void    Request::parseRequest(char rawRequest[], int bytesRead) {
+int    Request::parseRequest(char rawRequest[], int bytesRead) {
     if (_headersComplete) {
         std::string newInput;
         for (int i = 0; i  < bytesRead; i++) {
@@ -282,8 +282,10 @@ void    Request::parseRequest(char rawRequest[], int bytesRead) {
         }
         catch (std::exception &e) {
 			std::cout << e.what() << std::endl;
+            return 1;
         }
     }
+    return 0;
 }
 
 bool    Request::isComplete() const {

@@ -27,11 +27,14 @@ public:
     // basic POST request, with content length and body (send as whole)
     void    basicPOSTRequest(int &sock);
 
+    // long GET and POSt request
+    void    longGetRequest(int &sock);
+    void    longPOSTRequest(int &sock);
+
     // basic invalid request tests
     void    invalidMethod(int &sock);
     void    uriTooLong(int &sock);
     void    invalidVersion(int &sock);
-    void    headersTooLarge(int &sock); //bugs, check later
 
     // chunked, with content length
     void    chunkedRequest(int &sock);

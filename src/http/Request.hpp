@@ -24,7 +24,6 @@ public:
 private:
     std::string _rawRequest;
     long    _maxClientBody;
-//    bool    _requestComplete;
     bool    _headersComplete;
     long    _contentLength;
     bool    _chunked;
@@ -65,7 +64,7 @@ public:
     std::string getBody() const;
     std::string getRawRequest() const;
 
-	void	parseRequest(char rawRequest[], int bytesRead);
+	int 	parseRequest(char rawRequest[], int bytesRead);
     bool    isComplete() const;
 
     class   HeadersIncorrectException : public std::exception {

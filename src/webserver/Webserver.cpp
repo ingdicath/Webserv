@@ -114,7 +114,9 @@ int	 Webserver::takeRequest(std::vector<Client>::iterator itClient, std::vector<
         if (bytesRead > 0) {
             std::cout << "Has read: " << bytesRead << std::endl; // for testing, delete later
             itClient->setClientTimeStamp();
-            request.parseRequest(recvline, bytesRead);
+            if (request.parseRequest(recvline, bytesRead)) {
+                return EXIT_FAILURE;
+            }
             memset(recvline, 0, MAXLINE);
         }
         else if (bytesRead < 0) {

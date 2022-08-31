@@ -68,6 +68,57 @@ void    RequestTester::basicPOSTRequest(int &sock) {
     return;
 }
 
+void    RequestTester::longGetRequest(int &sock) {
+    std::string rqs =
+            "GET / HTTP/1.1\r\n"
+            "Host: localhost:8085\r\n"
+            "Connection: keep-alive\r\n"
+            "sec-ch-ua: \"Chromium\";v=\"104\", \" Not A;Brand\";v=\"99\", \"Google Chrome\";v=\"104\"\r\n"
+            "sec-ch-ua-mobile: ?0\r\n"
+            "sec-ch-ua-platform: \"macOS\"\r\n"
+            "Upgrade-Insecure-Requests: 1\r\n"
+            "User-Agent: Mozilla/5.0 (Macintosh; Intel Mac OS X 10_15_7) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/104.0.0.0 Safari/537.36\r\n"
+            "Accept: text/html,application/xhtml+xml,application/xml;q=0.9,image/avif,image/webp,image/apng,*/*;q=0.8,application/signed-exchange;v=b3;q=0.9\r\n"
+            "Sec-Fetch-Site: none\r\n"
+            "Sec-Fetch-Mode: navigate\r\n"
+            "Sec-Fetch-User: ?1\r\n"
+            "Sec-Fetch-Dest: document\r\n"
+            "Accept-Encoding: gzip, deflate, br\r\n"
+            "Accept-Language: en-GB,en;q=0.9,nl;q=0.8,zh-CN;q=0.7,zh;q=0.6\r\n"
+            "\r\n";
+    send(sock, rqs.c_str(), strlen(rqs.c_str()), 0);
+    std::cout << "long GET Request sent" << std::endl;
+
+    int byteRead;
+    char buff[1024] = { 0 };
+    byteRead = read(sock, buff, 1024);
+    if (byteRead != -1) {
+        std::cout << buff << std::endl;
+    }
+    std::cout << "long GET Request test done" << std::endl;
+    return;
+}
+
+void    RequestTester::longPOSTRequest(int &sock) {
+    std::string rqs =
+            "POST /basicPOSTRequest.txt HTTP/1.1\r\n"\
+        "content-length: 445\r\n"\
+        "host: localhost\r\n"\
+        "\r\n"\
+        "Lorem ipsum dolor sit amet, consectetur adipiscing elit, sed do eiusmod tempor incididunt ut labore et dolore magna aliqua. Ut enim ad minim veniam, quis nostrud exercitation ullamco laboris nisi ut aliquip ex ea commodo consequat. Duis aute irure dolor in reprehenderit in voluptate velit esse cillum dolore eu fugiat nulla pariatur. Excepteur sint occaecat cupidatat non proident, sunt in culpa qui officia deserunt mollit anim id est laborum.";
+    send(sock, rqs.c_str(), strlen(rqs.c_str()), 0);
+    std::cout << "long POST Request sent" << std::endl;
+
+    int byteRead;
+    char buff[1024] = {0};
+    byteRead = read(sock, buff, 1024);
+    if (byteRead != -1) {
+        std::cout << buff << std::endl;
+    }
+    std::cout << "long POST Request test done" << std::endl;
+    return;
+}
+
 void    RequestTester::invalidMethod(int &sock) {
     std::string rqs =
             "TEST / HTTP/1.1\r\n"\
@@ -122,10 +173,6 @@ void    RequestTester::invalidVersion(int &sock) {
     return;
 }
 
-void    RequestTester::headersTooLarge(int &sock) {
-    (void)sock;
-}
-
 void    RequestTester::chunkedRequest(int &sock) {
     std::string rqsFirst =
         "POST /chunksTest.txt HTTP/1.1\r\n"\
@@ -137,7 +184,7 @@ void    RequestTester::chunkedRequest(int &sock) {
 
     send(sock, rqsFirst.c_str(), strlen(rqsFirst.c_str()), 0);
     std::cout << "Request with chunked body: first chunk sent" << std::endl;
-    sleep(1);
+//    sleep(1);
     send(sock, rqsSecond.c_str(), strlen(rqsSecond.c_str()), 0);
     std::cout << "Request with chunked body: second chunk sent" << std::endl;
 
@@ -164,13 +211,13 @@ void    RequestTester::chunkedEncoding(int &sock) {
 
     send(sock, rqsFirst.c_str(), strlen(rqsFirst.c_str()), 0);
     std::cout << "Request with chunked encoding: first chunk sent" << std::endl;
-    sleep(1);
+//    sleep(1);
     send(sock, rqsSecond.c_str(), strlen(rqsSecond.c_str()), 0);
     std::cout << "Request with chunked encoding: second chunk sent" << std::endl;
-	sleep(1);
+//    sleep(1);
 	send(sock, rqsThird.c_str(), strlen(rqsThird.c_str()), 0);
     std::cout << "Request with chunked encoding: third chunk sent" << std::endl;
-    sleep(1);
+//    sleep(1);
 	send(sock, rqsFinal.c_str(), strlen(rqsFinal.c_str()), 0);
     std::cout << "Request with chunked encoding: final chunk sent" << std::endl;
 
@@ -189,12 +236,13 @@ int main(int argc, char **argv) {
         std::cout << "pass the indicator of the test as argument" << std::endl;
         std::cout << "1:  basic GET request, without body" << std::endl;
         std::cout << "2:  basic POST request, with content_length and body" << std::endl;
-        std::cout << "3:  Request with invalid method" << std::endl;
-        std::cout << "4:  Request with an URI too long" << std::endl;
-        std::cout << "5:  Request with invalid HTTP version" << std::endl;
-        std::cout << "6:  Request with headers too large" << std::endl;
-        std::cout << "7:  Request with chunked body" << std::endl;
-		std::cout << "8:  Request with chunked encoding" << std::endl;
+        std::cout << "3:  Long GET request" << std::endl;
+        std::cout << "4:  Long GET request" << std::endl;
+        std::cout << "5:  Request with invalid method" << std::endl;
+        std::cout << "6:  Request with an URI too long" << std::endl;
+        std::cout << "7:  Request with invalid HTTP version" << std::endl;
+        std::cout << "8:  Request with chunked body" << std::endl;
+		std::cout << "9:  Request with chunked encoding" << std::endl;
         return 1;
     }
 
@@ -211,21 +259,24 @@ int main(int argc, char **argv) {
             tester.basicPOSTRequest(sock);
         }
         else if (std::strcmp(argv[1], "3") == 0) {
-            tester.invalidMethod(sock);
+            tester.longGetRequest(sock);
         }
         else if (std::strcmp(argv[1], "4") == 0) {
-            tester.uriTooLong(sock);
+            tester.longPOSTRequest(sock);
         }
         else if (std::strcmp(argv[1], "5") == 0) {
-            tester.invalidVersion(sock);
+            tester.invalidMethod(sock);
         }
         else if (std::strcmp(argv[1], "6") == 0) {
-            tester.headersTooLarge(sock);
+            tester.uriTooLong(sock);
         }
         else if (std::strcmp(argv[1], "7") == 0) {
+            tester.invalidVersion(sock);
+        }
+        else if (std::strcmp(argv[1], "8") == 0) {
             tester.chunkedRequest(sock);
         }
-		else if (std::strcmp(argv[1], "8") == 0) {
+		else if (std::strcmp(argv[1], "9") == 0) {
             tester.chunkedEncoding(sock);
         }
         else {
