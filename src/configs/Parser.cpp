@@ -34,7 +34,7 @@ std::vector<Server> Parser::validateConfiguration(const std::string &configFile)
 				line = "";
 				break;
 			case ';':
-				_checkSemiColon(isComment, &servers, line);
+				_checkSemiColon(isComment, &servers, line, sectionBlock);
 				line = "";
 				break;
 			case '}':
@@ -99,11 +99,15 @@ void Parser::_checkOpenCurly(bool isComment, std::stack<std::string> *sectionBlo
  * composed by two parts: key and value(e.g. key-> port, value-> 80).
  * Then, this directive is stored in the last server added in the vector of servers.
  */
-void Parser::_checkSemiColon(bool isComment, std::vector<Server> *serverBlocks, std::string line) {
+void Parser::_checkSemiColon(bool isComment, std::vector<Server> *serverBlocks, std::string line,
+							 std::stack<std::string> section) {
 	if (!isComment) {
 		line = utils::trim(line);
 		Directive directive = Parser::_splitDirective(line);
-		_storeDirective(directive, &serverBlocks->back());
+		if (section.top() == "server")
+			_storeServerDirective(directive, &serverBlocks->back());
+		else
+			_storeLocationDirective(directive, &serverBlocks->back().getLocations()->back());
 	}
 }
 
@@ -122,11 +126,9 @@ void Parser::_checkCloseCurly(bool isComment, std::stack<std::string> *sectionBl
 
 /**
  * When it is found a key that corresponds to a valid parameter, it will be validated
- * and stored in the Server or in the location class parameters.
- * @param directive
- * @param server
+ * and stored in the Server block.
  */
-void Parser::_storeDirective(const Directive &directive, Server *server) {
+void Parser::_storeServerDirective(const Directive &directive, Server *server) {
 	switch (Parser::_resolveDirective(directive._key)) {
 		case PORT:
 			server->setPort(_checkPort(directive._value));
@@ -140,38 +142,55 @@ void Parser::_storeDirective(const Directive &directive, Server *server) {
 		case ERROR_PAGE:
 			server->addErrorPage(_checkErrorPage(directive._value));
 			break;
-		case INDEX:
-			server->setIndex(_checkIndex(directive._value));
-			break;
 		case BODY_SIZE:
 			server->setClientMaxBodySize(_checkBodySize(directive._value));
 			break;
+		case INVALID:
+			std::cerr << RED ERROR " Invalid directive: '" + directive._key + "'." RESET
+					  << std::endl;
+			throw ConfigFileException("Wrong argument for directive.");
+		default:
+			throw ConfigFileException("'" + directive._key + "' is not allowed in server block.");
+	}
+}
+
+
+/**
+ * When it is found a key that corresponds to a valid parameter, it will be validated
+ * and stored in the Location block.
+ */
+void Parser::_storeLocationDirective(const Parser::Directive &directive, Location *location) {
+	switch (Parser::_resolveDirective(directive._key)) {
+		case INDEX:
+			location->setIndex(_checkIndex(directive._value));
+			break;
 		case ROOT:
-			server->getLocations()->back().setRoot(_checkRoot(directive._value));
+			location->setRoot(_checkRoot(directive._value));
 			break;
 		case ACCEPTED_METHODS:
-			server->getLocations()->back().setMethods(_checkAcceptedMethods(directive._value));
+			location->setMethods(_checkAcceptedMethods(directive._value));
 			break;
 		case AUTOINDEX:
-			server->getLocations()->back().setAutoindex(
+			location->setAutoindex(
 					_checkAutoindex(directive._value)); //bring the last location
 			break;
 		case CGI:
-			server->getLocations()->back().setCGI(_checkCGI(directive._value));
+			location->setCGI(_checkCGI(directive._value));
 			break;
 		case UPLOAD:
-			server->getLocations()->back().setUpload(_checkUpload(directive._value));
+			location->setUpload(_checkUpload(directive._value));
 			break;
 		case REDIRECTION:
-			server->getLocations()->back().addRedirection(_checkRedirection(directive._value));
+			location->addRedirection(_checkRedirection(directive._value));
 			break;
 		case INVALID:
 			std::cerr << RED ERROR " Invalid directive: '" + directive._key + "'." RESET << std::endl;
 			throw ConfigFileException("Wrong argument for directive.");
 		default:
-			break;
+			throw ConfigFileException("'" + directive._key + "' is not allowed in location block.");
 	}
 }
+
 
 /**
  * Translate strings to enums to allow work with switch case.
@@ -354,13 +373,6 @@ bool Parser::_isValidIndex(const std::string &index) {
 	size_t lastPos = index.size() - 1;
 	if (index.find_last_of('/') == lastPos && index.size() != 1) {
 		std::cerr << RED ERROR " 'index' can't be a directory: '" + index
-					 + "'." RESET << std::endl;
-		return false;
-	}
-	std::string extension = index.substr(index.find_last_of('.') + 1);
-	extension = utils::stringToLower(extension);
-	if (extension != "html") {
-		std::cerr << RED ERROR " 'index' can only have html extension: '" + index
 					 + "'." RESET << std::endl;
 		return false;
 	}

@@ -6,7 +6,8 @@
 
 #include "../utils/settings.hpp"
 
-Location::Location() : _pathLocation("/"), _root(DEFAULT_ROOT), _autoindex(false) {
+Location::Location() : _pathLocation("/"), _root(DEFAULT_ROOT),
+					   _index(DEFAULT_INDEX), _autoindex(false) {
 	_acceptedMethods.insert("GET");
 	_acceptedMethods.insert("POST");
 	_acceptedMethods.insert("DELETE");
@@ -14,7 +15,7 @@ Location::Location() : _pathLocation("/"), _root(DEFAULT_ROOT), _autoindex(false
 }
 
 Location::Location(std::string path) : _pathLocation(path), _root(DEFAULT_ROOT),
-									   _autoindex(false) {
+									   _index(DEFAULT_INDEX), _autoindex(false) {
 	_acceptedMethods.insert("GET");
 	_acceptedMethods.insert("POST");
 	_acceptedMethods.insert("DELETE");
@@ -33,6 +34,7 @@ Location &Location::operator=(const Location &obj) {
 		_acceptedMethods = obj._acceptedMethods;
 		_redirection = obj._redirection;
 		_root = obj._root;
+		_index = obj._index;
 		_autoindex = obj._autoindex;
 		_cgi = obj._cgi;
 		_upload = obj._upload;
@@ -62,6 +64,10 @@ void Location::setCGI(const std::pair<std::string, std::string> &cgi) {
 
 void Location::setUpload(const std::string &upload) {
 	_upload = upload;
+}
+
+void Location::setIndex(const std::string &index) {
+	_index = index;
 }
 
 void Location::_setDefaultRedirectionPages() {

@@ -41,6 +41,7 @@
 #define DEFAULT_HOST "0.0.0.0"
 #define DEFAULT_CLIENT_MAX_BODY_SIZE 10 // in Megabytes
 #define DEFAULT_ROOT "/www"
+#define DEFAULT_INDEX "index.html"
 #define DEFAULT_SERVER_NAME ""
 #define DEFAULT_BACKLOG 1000
 #define DEFAULT_TIMEOUT 10 // added: 60 seconds is default nginx timeout: change later

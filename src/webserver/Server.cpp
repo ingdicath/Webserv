@@ -237,10 +237,6 @@ void Server::setServerName(const std::vector<std::string> &serverName) {
 	_serverName = serverName;
 }
 
-void Server::setIndex(const std::string &index) {
-	_index = index;
-}
-
 void Server::setClientMaxBodySize(long clientMaxBodySize) {
 	_clientMaxBodySize = clientMaxBodySize;
 }

@@ -50,11 +50,12 @@ private:
 		INVALID
 	};
 
-	void _checkSemiColon(bool isComment, std::vector<Server> *serverBlocks, std::string line);
+	void
+	_checkSemiColon(bool isComment, std::vector<Server> *serverBlocks, std::string line, std::stack<std::string> section);
 	void _checkCloseCurly(bool isComment, std::stack<std::string> *sectionBlock);
 	void _checkOpenCurly(bool isComment, std::stack<std::string> *sectionBlock, std::vector<Server> *serverBlocks,
 						 std::string line);
-	void _storeDirective(const Directive &directive, Server *server);
+	void _storeServerDirective(const Directive &directive, Server *server);
 	eDirectives _resolveDirective(const std::string &input);
 	Directive _splitDirective(std::string &input);
 
@@ -89,4 +90,5 @@ private:
 	std::pair<std::string, std::string> _checkCGI(std::vector<std::string> cgi);
 	std::set<std::string> _checkAcceptedMethods(std::vector<std::string> methods);
 	Location _checkLocation(const std::string &line, const int &posPath);
+	void _storeLocationDirective(const Directive& directive, Location *location);
 };

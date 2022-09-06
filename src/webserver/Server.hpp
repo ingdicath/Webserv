@@ -65,7 +65,6 @@ public:
 	void					setPort(int port);
 	void					setHost(std::string host);
 	void					setServerName(const std::vector<std::string> &serverName);
-	void					setIndex(const std::string &index);
 	void					setClientMaxBodySize(long clientMaxBodySize);
 
 	void					addErrorPage(const std::pair<int, std::string> &errorPage);

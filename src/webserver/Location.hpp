@@ -23,6 +23,7 @@ public:
 	void setRoot(const std::string &root);
 	void setCGI(const std::pair<std::string, std::string> &cgi);
 	void setUpload(const std::string &upload);
+	void setIndex(const std::string &index);
 
 	void addRedirection(const std::pair<int, std::string> &redirection);
 
@@ -30,6 +31,7 @@ private:
 	std::string _pathLocation;
 	std::string _upload;
 	std::string _root;
+	std::string _index;
 	bool _autoindex;
 	std::set<std::string> _acceptedMethods;
 	std::map<int, std::string> _redirection;
