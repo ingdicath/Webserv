@@ -137,6 +137,7 @@ int Server::acceptConnection(void) {
 		throw (std::runtime_error("Accept incoming connection failed"));
 	} else {
 		this->addClient(newSocket, clientAddr);
+        _requests.insert(std::make_pair(newSocket, "")); //lin testing
 	}
 	return newSocket;
 }
@@ -276,4 +277,98 @@ void Server::addErrorPage(const std::pair<int, std::string> &errorPage) {
 
 void Server::addLocation(Location location) {
 	_locations.push_back(location);
+}
+
+//lin testing
+static int chunkedEnd(const std::string &str){
+    std::string endStr = "0\r\n\r\n";
+    size_t i = str.size();
+    size_t j = endStr.size();
+
+    while (j > 0) {
+        i--;
+        j--;
+        if (i < 0 || str[i] != endStr[j]) {
+            return (1);
+        }
+    }
+    return (0);
+}
+
+//return 0 is finished, return -1 when closing the conncetion
+int     Server::recvRequest(int clientId) {
+    char    buffer[MAXLINE + 1] = {0};
+    int     ret;
+
+    ret = recv(clientId, buffer, MAXLINE - 1, 0);
+    if (ret == 0) {
+        std::cout << "Connection was closed by client." << std::endl;
+        return EXIT_FAILURE;
+    }
+    else if (ret == -1) {
+        std::cout << "recv error, closing connection" << std::endl;
+        return EXIT_FAILURE;
+    }
+
+    _requests[clientId] += std::string(buffer);
+
+    size_t i = _requests[clientId].find("\r\n\r\n"); // find the end of the headers
+    if (i != std::string::npos) { //there is a body
+        if (_requests[clientId].find("Content-Length: ") == std::string::npos) { //no info about content length
+            if (_requests[clientId].find("Transfer-Encoding: chunked") != std::string::npos) { //it is chunked encoding
+                if (chunkedEnd(_requests[clientId]) == 0) { //chunked finished
+                    return EXIT_SUCCESS;
+                } else {
+                    return -1; //chunked not finished
+                }
+            }
+            else { //no content length and not chunked encoding
+                return EXIT_SUCCESS;
+            }
+        }
+        else { //there is content length
+            size_t	len = std::atoi(_requests[clientId].substr(_requests[clientId].find("Content-Length: ") + 16, 10).c_str());
+            if (_requests[clientId].size() >= len + i + 4) {
+                return EXIT_SUCCESS;
+            } else {
+                return -1; //content length does not match the body size
+            }
+        }
+    }
+    return -1;
+}
+
+void    Server::processChunk(int clientId) {
+    std::string heads = _requests[clientId].substr(0, _requests[clientId].find("\r\n\r\n"));
+    std::string	chunks = _requests[clientId].substr(_requests[clientId].find("\r\n\r\n") + 4, _requests[clientId].size() - 1);
+    std::string subChunk = chunks.substr(0,100);
+    std::string body = "";
+    int chunkSize = strtol(subChunk.c_str(), NULL, 16);
+    size_t i = 0;
+
+    while(chunkSize) {
+        i = chunks.find("\r\n", i) + 2;
+        body += chunks.substr(i, chunkSize);
+        i += chunkSize + 2;
+        subChunk = chunks.substr(i, 100);
+        chunkSize = strtol(subChunk.c_str(), NULL, 16);
+    }
+    _requests[clientId] = heads + "\r\n\r\n" + body + "\r\n\r\n";
+}
+
+void    Server::processRequest(int clientId) {
+    std::string recvd = "";
+
+    if (_requests[clientId].find("Transfer-Encoding: chunked") != std::string::npos &&
+            _requests[clientId].find("Transfer-Encoding: chunked") < _requests[clientId].find("\r\n\r\n")) {
+        processChunk(clientId);
+    }
+
+    //output for testing
+    if (_requests[clientId].size() < 1000) {
+        std::cout << "\n_request:\n" << _requests[clientId] << std::endl;
+    } else {
+        std::cout << "\n_request:\n" << _requests[clientId].substr(0, 1000) << std::endl;
+    }
+    _requests.erase(clientId);
 }

@@ -123,7 +123,7 @@ int	 Webserver::takeRequest(std::vector<Client>::iterator itClient, std::vector<
     } while (request.isComplete() == false);
 
 	// print out info in the object for testing, delete later
-	//std::cout << request << std::endl;
+	std::cout << request << std::endl;
 	return EXIT_SUCCESS;
 }
 
@@ -171,9 +171,13 @@ void    Webserver::runWebserver(void) {
 							for (std::vector<Client>::iterator itClient = clients.begin(); itClient < clients.end(); itClient++) {
 								if (i == itClient->getClientSocket()) {
 									//std::cout << i << " = readyRead" << ", ready = " << ready << std::endl; // test: delete later
-									if	(takeRequest(itClient, itServer) == 0)
-										updateSockets(i, ADD, WRITE);
-									else {
+									//if	(takeRequest(itClient, itServer) == 0)
+                                    int recvIndication = itServer->recvRequest(i);
+                                    if (recvIndication == EXIT_SUCCESS) {
+                                        itServer->processRequest(i);
+                                        updateSockets(i, ADD, WRITE);
+                                    }
+									else if (recvIndication == EXIT_FAILURE) {
 										itServer->removeClient(i);
 										updateSockets(i, REMOVE, READ);
 									}

@@ -12,8 +12,10 @@
 
 #pragma once
 
+#include <string>
 #include <netinet/in.h>
 #include <sys/time.h>
+#include "../utils/settings.hpp"
 
 class Client {
 public:
@@ -30,8 +32,14 @@ public:
     void                setClientAddress(struct sockaddr_in new_addr);
     void                setClientTimeStamp(void);
 
+    //lin testing request
+    int     recvRequest(int clientId);
+    void    processRequest();
+    void    processChunk();
+
 private:
     int                 _clientSocket;
     struct sockaddr_in 	_clientAddr;
     long long           _clientTimeStamp;
+    std::string         _request; //lin testing
 };

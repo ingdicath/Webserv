@@ -238,7 +238,7 @@ void    Request::parseBody(std::string &input, long len) {
         i += 2; // skip the \r\n
 
         std::cout << "chunkedLength: " << _chunkedLength << std::endl;
-
+        std::cout << "len, i: " << len << " " << i << std::endl;
         if (_chunkedLength != len - i - 2) {
             throw BodyLengthIncorrectException(); //need check, may be a different exception
         }

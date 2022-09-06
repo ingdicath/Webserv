@@ -7,6 +7,7 @@
 #include "Location.hpp"
 #include "Client.hpp"
 #include "../utils/settings.hpp"
+#include "../http/Request.hpp"
 
 #include <sys/socket.h>
 #include <sys/select.h>
@@ -70,6 +71,10 @@ public:
 	void					addErrorPage(const std::pair<int, std::string> &errorPage);
 	void					addLocation(Location location);
 
+    //lin testing request
+    int     recvRequest(int clientId);
+    void    processRequest(int clientId);
+    void    processChunk(int clientId);
 
 private:
 // Configuration file
@@ -91,6 +96,8 @@ private:
 	int							_serverSocket;
 	struct sockaddr_in			_serverAddr;
 	std::vector<Client>			_clients;
+
+    std::map<int, std::string> _requests; //lin testing
 
 	void	_setDefaultErrorPages();
 };
