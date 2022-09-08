@@ -167,6 +167,7 @@ void Server::removeClient(int thisSocket) {
 			std::cout << RED "Client " << it->getClientSocket() << " removed" RESET << std::endl; // test: delete later
 			close(it->getClientSocket());
 			_clients.erase(it);
+            _requests.erase(thisSocket);
 		}
 	}
 }
