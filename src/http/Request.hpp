@@ -11,9 +11,8 @@
 #include <cstdlib>
 #include <sstream>
 
-#define TRANSFER_ENCODING "transfer-encoding"
-#define CONTENT_LENGTH "content-length"
-#define HOST "host"
+#define CONTENT_LENGTH "Content-Length"
+#define HOST "Host"
 
 class Request {
 public:
@@ -22,38 +21,32 @@ public:
     };
 
 private:
-    std::string _rawRequest;
-    long    _maxClientBody;
-    bool    _headersComplete;
-    long    _contentLength;
-    bool    _chunked;
-    bool    _chunkedComplete;
-    bool    _chunkedHex;
-    bool    _chunkedSeparatedCRLF;
-    long    _chunkedLength;
-
-    method  _method;
-    std::vector<std::string>    _path;
-    std::string _httpVersion;
+    long                                _clientMaxBodySize;
+    method                              _method;
+    std::vector<std::string>            _path;
+    std::string                         _version;
     std::map<std::string, std::string>  _headers;
-	std::string _host;
-    std::string _body;
+	std::string                         _host;
+    std::string                         _body;
+    int                                 _ret;
 
 	void    parseMethod(std::stringstream &ss);
     void	setPath(std::string line);
 	void    parsePath(std::stringstream &ss);
 	void    parseVersion(std::stringstream &ss);
 	void    parseHeaders(std::stringstream &ss);
-    void    parseBody(std::string &input, long len);
-    // void appendBody(const char *body, long len);
+    void    parseBody(std::stringstream &ss, const std::string &requestStr);
+
+    Request();
 
 public:
-    Request();
-    Request(long maxClientBody);
+    Request(const std::string &requesStr, long clientMaxBodySize);
     virtual ~Request();
 
     Request(const Request &obj);
     Request &operator=(const Request &obj);
+
+    int parseRawRequest(const std::string &rawRequest);
 
     //getters
     method  getMethod() const;
@@ -62,10 +55,6 @@ public:
 	std::map<std::string, std::string>	getHeaders() const;
     std::string getHost() const;
     std::string getBody() const;
-    std::string getRawRequest() const;
-
-	int 	parseRequest(char rawRequest[], int bytesRead);
-    bool    isComplete() const;
 
     class   HeadersIncorrectException : public std::exception {
     public:

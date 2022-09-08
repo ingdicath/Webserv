@@ -7,22 +7,14 @@
 #include "../utils/utils.hpp"
 
 Request::Request() {
-    _headersComplete = false;
-    _chunked = false;
-    _chunkedComplete = false;
-    _chunkedHex = false;
-    _chunkedSeparatedCRLF = false;
-    _chunkedLength = 0;
 }
 
-Request::Request(long maxClientBody) {
-    _maxClientBody = maxClientBody;
-    _headersComplete = false;
-    _chunked = false;
-    _chunkedComplete = false;
-    _chunkedHex = false;
-    _chunkedSeparatedCRLF = false;
-    _chunkedLength = 0;
+Request::Request(const std::string &requestStr, long clientMaxBodySize) :
+    _clientMaxBodySize(clientMaxBodySize), _body(""), _ret(200) {
+    parseRawRequest(requestStr);
+    if (_ret != 200) {
+        std::cerr << RED "Request parsing error: " << _ret << RESET << std::endl;
+    }
 }
 
 Request::Request(const Request &obj) {
@@ -30,17 +22,9 @@ Request::Request(const Request &obj) {
 }
 
 Request &Request::operator=(const Request &obj) {
-    _rawRequest = obj._rawRequest;
-    _headersComplete = obj._headersComplete;
-    _contentLength = obj._contentLength;
-    _chunked = obj._chunked;
-    _chunkedComplete = obj._chunkedComplete;
-    _chunkedHex = obj._chunkedHex;
-    _chunkedSeparatedCRLF = obj._chunkedSeparatedCRLF;
-    _chunkedLength = obj._chunkedLength;
     _method = obj._method;
     _path = obj._path;
-    _httpVersion = obj._httpVersion;
+    _version = obj._version;
     _headers = obj._headers;
     _body = obj._body;
     _host = obj._host;
@@ -48,6 +32,27 @@ Request &Request::operator=(const Request &obj) {
 }
 
 Request::~Request() {
+}
+
+int Request::parseRawRequest(const std::string &rawRequest) {
+    if (rawRequest.find("\r\n\r\n") != std::string::npos) {
+        try {
+            std::stringstream ss(rawRequest);
+            parseMethod(ss);
+            parsePath(ss);
+            parseVersion(ss);
+            ss.ignore(2); // skip the \r\n
+            parseHeaders(ss);
+            parseBody(ss, rawRequest);
+        }
+        catch (std::exception &e) {
+            std::cout << e.what() << std::endl;
+        }
+    }
+    else {
+        _ret = 400;
+    }
+    return _ret;
 }
 
 // Getters, for testing now, may use later for handling
@@ -60,7 +65,7 @@ std::vector<std::string>    Request::getPath() const {
 }
 
 std::string	Request::getVersion() const {
-	return _httpVersion;
+	return _version;
 }
 
 std::map<std::string, std::string>	Request::getHeaders() const {
@@ -73,10 +78,6 @@ std::string Request::getHost() const {
 
 std::string Request::getBody() const {
     return _body;
-}
-
-std::string Request::getRawRequest() const {
-    return _rawRequest;
 }
 
 void    Request::parseMethod(std::stringstream &ss) {
@@ -94,9 +95,11 @@ void    Request::parseMethod(std::stringstream &ss) {
     }
     else if (method == "HEAD" || method == "PUT" || method == "CONNECT" ||
             method == "OPTIONS" || method == "TRACE" || method == "PATCH") {
+        _ret = 501;
         throw MethodNotSupportedException();
     }
     else {
+        _ret = 400;
         throw MethodInvalidException();
     }
 }
@@ -129,6 +132,7 @@ void    Request::parsePath(std::stringstream &ss) {
 
     ss >> requestPath;
     if (requestPath.length() > 2048) {
+        _ret = 414;
         throw UriTooLongException();
     }
 
@@ -143,27 +147,30 @@ void    Request::parsePath(std::stringstream &ss) {
 
     setPath(requestPath);
     if (_path[0] != "/") {
+        _ret = 400;
         throw UriInvalidException();
     }
 }
 
 void    Request::parseVersion(std::stringstream &ss) {
-    ss >> _httpVersion;
+    ss >> _version;
 
-    if (_httpVersion == "HTTP/2.0" || _httpVersion == "HTTP/2" || _httpVersion == "HTTP/3.0") {
+    if (_version == "HTTP/2.0" || _version == "HTTP/2" || _version == "HTTP/3.0") {
+        _ret = 505;
         throw VersionNotSupportedException();
     }
-    else if (_httpVersion != "HTTP/1.1") {
+    else if (_version != "HTTP/1.1") {
+        _ret = 400;
         throw VersionInvalidException();
     }
 }
 
-static std::string lowerCases(std::string str) {
-    for (size_t i = 0; i < str.size(); i++) {
-        str[i] = tolower(str[i]);
-    }
-    return str;
-}
+//static std::string lowerCases(std::string str) {
+//    for (size_t i = 0; i < str.size(); i++) {
+//        str[i] = tolower(str[i]);
+//    }
+//    return str;
+//}
 
 void    Request::parseHeaders(std::stringstream &ss) {
     std::string line;
@@ -175,23 +182,14 @@ void    Request::parseHeaders(std::stringstream &ss) {
         }
         std::string key, value;
         std::getline(header, key, ':');
-        key = lowerCases(key);
+//        key = lowerCases(key);
         std::getline(header, value);
         value = value.substr(1,value.size() - 2);
         if (key.empty() || value.empty()) {
+            _ret = 400;
             throw HeadersIncorrectException();
         }
         _headers.insert(std::pair<std::string, std::string>(key, value));
-    }
-
-    if (_headers.find(TRANSFER_ENCODING) != _headers.end() && _headers[TRANSFER_ENCODING] == "chunked") {
-        _chunked = true;
-    }
-    else if (_headers.find(CONTENT_LENGTH) == _headers.end()) {
-        _contentLength = 0;
-    }
-    else {
-        _contentLength = utils::strToLong(_headers[CONTENT_LENGTH].c_str());
     }
 
     if (_headers.find(HOST) == _headers.end()) {
@@ -202,107 +200,20 @@ void    Request::parseHeaders(std::stringstream &ss) {
     }
 }
 
-static long getHexNum(char c) {
-    long    res = -1;
-
-    if (c >= '0' && c <= '9') {
-        res = c - '0';
+void    Request::parseBody(std::stringstream &ss, const std::string &requestStr) {
+    int	currentPos = ss.tellg();
+    if (currentPos < requestStr.size()) {
+        std::string	restInput = requestStr.substr(currentPos, requestStr.size() - currentPos);
+        _body.assign(restInput);
     }
-    else if (c >= 'A' && c <= 'F') {
-        res = c - 'A' + 10;
+    if (_body.size() != 0 && _clientMaxBodySize != 0 && _body.size() > _clientMaxBodySize) {
+        _ret = 431;
+        throw MaxClientBodyException();
     }
-    else if (c >= 'a' && c <= 'f') {
-        res = c - 'a' + 10;
-    }
-    return res;
-}
-
-void    Request::parseBody(std::string &input, long len) {
-    if (!_chunked) {
-        _body.append(input.c_str(), len);
-        if (static_cast<long>(_body.size()) > _contentLength) {
-            throw BodyLengthIncorrectException();
-        }
-    }
-    else {
-        long i = 0;
-
-        if (input[i] == '0') {
-            _chunkedComplete = true;
-            return;
-        }
-        while (input[i] != '\r' && getHexNum(input[i]) != -1) {
-            _chunkedLength = _chunkedLength * 16 + getHexNum(input[i]);
-            i++;
-        }
-        i += 2; // skip the \r\n
-
-        std::cout << "chunkedLength: " << _chunkedLength << std::endl;
-        std::cout << "len, i: " << len << " " << i << std::endl;
-        if (_chunkedLength != len - i - 2) {
-            throw BodyLengthIncorrectException(); //need check, may be a different exception
-        }
-        else {
-            _body.append(input.substr(i, _chunkedLength));
-            _chunkedLength = 0;
-        }
-    }
-//    if (_contentLength != 0 && _contentLength > _maxClientBody) {
-//        throw MaxClientBodyException();
-//    }
-}
-
-int    Request::parseRequest(char rawRequest[], int bytesRead) {
-    if (_headersComplete) {
-        std::string newInput;
-        for (int i = 0; i  < bytesRead; i++) {
-            newInput += rawRequest[i];
-        }
-        parseBody(newInput, bytesRead);
-    }
-    else {
-        _rawRequest.append(rawRequest, bytesRead);
-    }
-
-    if (_rawRequest.find("\r\n\r\n") != std::string::npos && !_headersComplete) {
-        std::stringstream   ss(_rawRequest);
-
-		// parse the request line: method, URI and HTTP version
-		// throw exceptions when invalid, may need to change with response code
-        try {
-            parseMethod(ss);
-            parsePath(ss);
-            parseVersion(ss);
-            ss.ignore(2); // skip the \r\n
-            parseHeaders(ss);
-            int	currentPos = ss.tellg();
-            std::string	restInput = _rawRequest.substr(currentPos, _rawRequest.size() - currentPos);
-            parseBody(restInput, restInput.size());
-            _headersComplete = true;
-        }
-        catch (std::exception &e) {
-			std::cout << e.what() << std::endl;
-            return 1;
-        }
-    }
-    return 0;
-}
-
-bool    Request::isComplete() const {
-    if (!_headersComplete) {
-        return false;
-    }
-    if (_chunked) {
-        return (_chunkedComplete);
-    }
-    return (static_cast<long>(_body.size()) >= _contentLength);
 }
 
 // overload function for testing
 std::ostream	&operator<<(std::ostream &os, const Request &request) {
-	os << CYAN << "--------- Raw Request ---------" << std::endl;
-	os << request.getRawRequest() << RESET << std::endl;
-	
 	os << BLUE << "--------- Request Object Info ----------" << std::endl;
 	Request::method	method = request.getMethod();
 	if (method == 0) {
@@ -329,8 +240,7 @@ std::ostream	&operator<<(std::ostream &os, const Request &request) {
     }
 
 	os << "Host: " << request.getHost() << std::endl;
-
-	os << "Body: " << std::endl << request.getBody() << RESET << std::endl;
-
+	os << "Body: " << std::endl << request.getBody() << std::endl;
+    os <<  "------- Request Object Info Done --------" << RESET << std::endl;
 	return os;
 }

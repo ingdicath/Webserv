@@ -90,44 +90,6 @@ void	 Webserver::writeResponse(int clientFD) {
 }
 
 /*
-** Parse the HTTP request
-** Handle the request (to do)
-** Send the response HTTP back to client (to do)
-*/
-int	 Webserver::takeRequest(std::vector<Client>::iterator itClient, std::vector<Server>::iterator itServer) {
-	char	recvline[MAXLINE + 1];
-    // this is a static placeholder, change to a variable when the config parsing is done
-    long    maxClientBody = 2147483647;
-    int     bytesRead;
-
-    Request request(maxClientBody);
-
-    memset(recvline, 0, MAXLINE);
-    //read the clients message, until the connection closed
-    //problem with this, cannot recieved more than one, don't know why
-
-    do {
-        bytesRead = recv(itClient->getClientSocket(), recvline, MAXLINE - 1, 0);
-        if (bytesRead > 0) {
-            std::cout << "Has read: " << bytesRead << std::endl; // for testing, delete later
-            itClient->setClientTimeStamp();
-            if (request.parseRequest(recvline, bytesRead)) {
-                return EXIT_FAILURE;
-            }
-            memset(recvline, 0, MAXLINE);
-        }
-        else if (bytesRead < 0) {
-            std::cout << "recv failed" << std::endl; //need more detailed error message
-			return EXIT_FAILURE;
-        }
-    } while (request.isComplete() == false);
-
-	// print out info in the object for testing, delete later
-	std::cout << request << std::endl;
-	return EXIT_SUCCESS;
-}
-
-/*
 ** DESCRIPTION
 ** Function that in a loop checks the select function to find sockets that are ready to read or write. When there is one
 ** (or more) ready sockets then the function runs through all the servers and their clients to handle the requests.
@@ -171,7 +133,6 @@ void    Webserver::runWebserver(void) {
 							for (std::vector<Client>::iterator itClient = clients.begin(); itClient < clients.end(); itClient++) {
 								if (i == itClient->getClientSocket()) {
 									//std::cout << i << " = readyRead" << ", ready = " << ready << std::endl; // test: delete later
-									//if	(takeRequest(itClient, itServer) == 0)
                                     int recvIndication = itServer->recvRequest(i);
                                     if (recvIndication == EXIT_SUCCESS) {
                                         itServer->processRequest(i);

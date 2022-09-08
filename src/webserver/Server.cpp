@@ -137,7 +137,7 @@ int Server::acceptConnection(void) {
 		throw (std::runtime_error("Accept incoming connection failed"));
 	} else {
 		this->addClient(newSocket, clientAddr);
-        _requests.insert(std::make_pair(newSocket, "")); //lin testing
+        _requests.insert(std::make_pair(newSocket, ""));
 	}
 	return newSocket;
 }
@@ -280,7 +280,6 @@ void Server::addLocation(Location location) {
 	_locations.push_back(location);
 }
 
-//lin testing
 static int chunkedEnd(const std::string &str){
     std::string endStr = "0\r\n\r\n";
     size_t i = str.size();
@@ -297,11 +296,11 @@ static int chunkedEnd(const std::string &str){
 }
 
 //return 0 is finished, return -1 when closing the conncetion
-int     Server::recvRequest(int clientId) {
+int     Server::recvRequest(int socket) {
     char    buffer[MAXLINE + 1] = {0};
     int     ret;
 
-    ret = recv(clientId, buffer, MAXLINE - 1, 0);
+    ret = recv(socket, buffer, MAXLINE - 1, 0);
     if (ret == 0) {
         std::cout << "Connection was closed by client." << std::endl;
         return EXIT_FAILURE;
@@ -311,13 +310,13 @@ int     Server::recvRequest(int clientId) {
         return EXIT_FAILURE;
     }
 
-    _requests[clientId] += std::string(buffer);
+    _requests[socket] += std::string(buffer);
 
-    size_t i = _requests[clientId].find("\r\n\r\n"); // find the end of the headers
+    size_t i = _requests[socket].find("\r\n\r\n"); // find the end of the headers
     if (i != std::string::npos) { //there is a body
-        if (_requests[clientId].find("Content-Length: ") == std::string::npos) { //no info about content length
-            if (_requests[clientId].find("Transfer-Encoding: chunked") != std::string::npos) { //it is chunked encoding
-                if (chunkedEnd(_requests[clientId]) == 0) { //chunked finished
+        if (_requests[socket].find("Content-Length: ") == std::string::npos) { //no info about content length
+            if (_requests[socket].find("Transfer-Encoding: chunked") != std::string::npos) { //it is chunked encoding
+                if (chunkedEnd(_requests[socket]) == 0) { //chunked finished
                     return EXIT_SUCCESS;
                 } else {
                     return -1; //chunked not finished
@@ -328,8 +327,8 @@ int     Server::recvRequest(int clientId) {
             }
         }
         else { //there is content length
-            size_t	len = std::atoi(_requests[clientId].substr(_requests[clientId].find("Content-Length: ") + 16, 10).c_str());
-            if (_requests[clientId].size() >= len + i + 4) {
+            size_t	len = std::atoi(_requests[socket].substr(_requests[socket].find("Content-Length: ") + 16, 10).c_str());
+            if (_requests[socket].size() >= len + i + 4) {
                 return EXIT_SUCCESS;
             } else {
                 return -1; //content length does not match the body size
@@ -339,9 +338,9 @@ int     Server::recvRequest(int clientId) {
     return -1;
 }
 
-void    Server::processChunk(int clientId) {
-    std::string heads = _requests[clientId].substr(0, _requests[clientId].find("\r\n\r\n"));
-    std::string	chunks = _requests[clientId].substr(_requests[clientId].find("\r\n\r\n") + 4, _requests[clientId].size() - 1);
+void    Server::processChunk(int socket) {
+    std::string heads = _requests[socket].substr(0, _requests[socket].find("\r\n\r\n"));
+    std::string	chunks = _requests[socket].substr(_requests[socket].find("\r\n\r\n") + 4, _requests[socket].size() - 1);
     std::string subChunk = chunks.substr(0,100);
     std::string body = "";
     int chunkSize = strtol(subChunk.c_str(), NULL, 16);
@@ -354,22 +353,26 @@ void    Server::processChunk(int clientId) {
         subChunk = chunks.substr(i, 100);
         chunkSize = strtol(subChunk.c_str(), NULL, 16);
     }
-    _requests[clientId] = heads + "\r\n\r\n" + body + "\r\n\r\n";
+    _requests[socket] = heads + "\r\n\r\n" + body + "\r\n\r\n";
 }
 
-void    Server::processRequest(int clientId) {
-    std::string recvd = "";
+void    Server::processRequest(int socket) {
 
-    if (_requests[clientId].find("Transfer-Encoding: chunked") != std::string::npos &&
-            _requests[clientId].find("Transfer-Encoding: chunked") < _requests[clientId].find("\r\n\r\n")) {
-        processChunk(clientId);
+    if (_requests[socket].find("Transfer-Encoding: chunked") != std::string::npos &&
+            _requests[socket].find("Transfer-Encoding: chunked") < _requests[socket].find("\r\n\r\n")) {
+        processChunk(socket);
     }
 
     //output for testing
-    if (_requests[clientId].size() < 1000) {
-        std::cout << "\n_request:\n" << _requests[clientId] << std::endl;
+    if (_requests[socket].size() < 1000) {
+        std::cout << "\n_request:\n" << _requests[socket] << std::endl;
     } else {
-        std::cout << "\n_request:\n" << _requests[clientId].substr(0, 1000) << std::endl;
+        std::cout << "\n_request:\n" << _requests[socket].substr(0, 1000) << std::endl;
     }
-    _requests.erase(clientId);
+
+    if (_requests[socket] != "") {
+        Request request(_requests[socket], _clientMaxBodySize);
+        std::cout << request << std::endl;
+    }
+    _requests.erase(socket);
 }

@@ -71,7 +71,6 @@ public:
 	void					addErrorPage(const std::pair<int, std::string> &errorPage);
 	void					addLocation(Location location);
 
-    //lin testing request
     int     recvRequest(int clientId);
     void    processRequest(int clientId);
     void    processChunk(int clientId);
@@ -97,7 +96,7 @@ private:
 	struct sockaddr_in			_serverAddr;
 	std::vector<Client>			_clients;
 
-    std::map<int, std::string> _requests; //lin testing
+    std::map<int, std::string>  _requests;
 
 	void	_setDefaultErrorPages();
 };
