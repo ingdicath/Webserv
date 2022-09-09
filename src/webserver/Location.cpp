@@ -2,7 +2,8 @@
 // Created by Diana catherine Salamanca leguizamon on 5/31/22.
 //
 
-#include <csignal> //for getcwd
+#include <csignal> //for getcwd Linux
+#include <unistd.h>
 #include "Location.hpp"
 #include "../utils/settings.hpp"
 
