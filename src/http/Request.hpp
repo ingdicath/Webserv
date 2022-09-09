@@ -21,7 +21,7 @@ public:
     };
 
 private:
-    long                                _clientMaxBodySize;
+    unsigned long                       _clientMaxBodySize;
     method                              _method;
     std::vector<std::string>            _path;
     std::string                         _version;
@@ -40,7 +40,7 @@ private:
     Request();
 
 public:
-    Request(const std::string &requesStr, long clientMaxBodySize);
+    Request(const std::string &requesStr, unsigned long clientMaxBodySize);
     virtual ~Request();
 
     Request(const Request &obj);

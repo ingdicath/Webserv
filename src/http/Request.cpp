@@ -9,7 +9,7 @@
 Request::Request() {
 }
 
-Request::Request(const std::string &requestStr, long clientMaxBodySize) :
+Request::Request(const std::string &requestStr, unsigned long clientMaxBodySize) :
     _clientMaxBodySize(clientMaxBodySize), _body(""), _ret(200) {
     parseRawRequest(requestStr);
     if (_ret != 200) {
@@ -202,7 +202,7 @@ void    Request::parseHeaders(std::stringstream &ss) {
 
 void    Request::parseBody(std::stringstream &ss, const std::string &requestStr) {
     int	currentPos = ss.tellg();
-    if (currentPos < requestStr.size()) {
+    if (currentPos != -1 && static_cast<unsigned long>(currentPos) < requestStr.size()) {
         std::string	restInput = requestStr.substr(currentPos, requestStr.size() - currentPos);
         _body.assign(restInput);
     }
@@ -226,7 +226,7 @@ std::ostream	&operator<<(std::ostream &os, const Request &request) {
 	
 	std::vector<std::string>	path = request.getPath();
  	os << "Path: ";
-    for (int i = 0; i < path.size(); i++) {
+    for (unsigned long i = 0; i < path.size(); i++) {
         os << path[i] << " ";
     }
 	os << std::endl;
