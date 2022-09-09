@@ -2,24 +2,22 @@
 // Created by Diana catherine Salamanca leguizamon on 5/31/22.
 //
 
+#include <csignal> //for getcwd
 #include "Location.hpp"
-
 #include "../utils/settings.hpp"
 
-Location::Location() : _pathLocation("/"), _root(DEFAULT_ROOT),
+Location::Location() : _pathLocation("/"),
 					   _index(DEFAULT_INDEX), _autoindex(false) {
-	_acceptedMethods.insert("GET");
-	_acceptedMethods.insert("POST");
-	_acceptedMethods.insert("DELETE");
+	_setDefaultAllowedMethods();
 	_setDefaultRedirectionPages();
+	_setDefaultRoot();
 }
 
-Location::Location(std::string path) : _pathLocation(path), _root(DEFAULT_ROOT),
+Location::Location(std::string path) : _pathLocation(path),
 									   _index(DEFAULT_INDEX), _autoindex(false) {
-	_acceptedMethods.insert("GET");
-	_acceptedMethods.insert("POST");
-	_acceptedMethods.insert("DELETE");
+	_setDefaultAllowedMethods();
 	_setDefaultRedirectionPages();
+	_setDefaultRoot();
 }
 
 Location::~Location() {}
@@ -77,6 +75,18 @@ void Location::_setDefaultRedirectionPages() {
 	_redirection.insert(std::pair<int, std::string>(307, "/redirection/307.html"));
 }
 
+void Location::_setDefaultAllowedMethods() {
+	_acceptedMethods.insert("GET");
+	_acceptedMethods.insert("POST");
+	_acceptedMethods.insert("DELETE");
+}
+
+void Location::_setDefaultRoot() {
+	char cwd[4096];
+	char *res = getcwd(cwd, sizeof(cwd));
+	_root = res;
+	_root = _root.append(DEFAULT_ROOT);
+}
 
 void Location::addRedirection(const std::pair<int, std::string> &redirection) {
 	std::map<int, std::string>::iterator it = _redirection.find(redirection.first);
@@ -86,3 +96,4 @@ void Location::addRedirection(const std::pair<int, std::string> &redirection) {
 		_redirection.insert(redirection);
 	}
 }
+

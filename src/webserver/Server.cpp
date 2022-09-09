@@ -59,8 +59,11 @@ Server &Server::operator=(const Server &rhs) {
 	return *this;
 }
 
-Server::~Server(void) {
-	return;
+Server::~Server() {
+//	for (std::vector<Location>::iterator loc = _locations.begin(); loc != _locations.end(); loc++) {
+//		delete &loc;
+//		_locations.clear();
+//	}
 }
 
 const char *Server::setupException::what() const throw() {

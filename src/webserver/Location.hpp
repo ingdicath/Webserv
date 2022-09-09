@@ -38,4 +38,6 @@ private:
 	std::pair<std::string, std::string> _cgi;
 
 	void	_setDefaultRedirectionPages();
+	void	_setDefaultAllowedMethods();
+	void	_setDefaultRoot();
 };

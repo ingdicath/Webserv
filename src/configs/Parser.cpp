@@ -17,7 +17,6 @@ Parser::~Parser() {}
  * @param configFile is the path where is located the configuration file.
  */
 
-// TODO: Check if is possible to create server and location without using keyword new
 std::vector<Server> Parser::validateConfiguration(const std::string &configFile) {
 	std::vector<Server> servers;
 	std::string line;
@@ -38,7 +37,7 @@ std::vector<Server> Parser::validateConfiguration(const std::string &configFile)
 				line = "";
 				break;
 			case '}':
-				_checkCloseCurly(isComment, &sectionBlock);
+				_checkCloseCurly(isComment, &sectionBlock, line);
 				break;
 			case '#':
 				isComment = true;
@@ -56,7 +55,7 @@ std::vector<Server> Parser::validateConfiguration(const std::string &configFile)
 	if (!sectionBlock.empty()) {
 		throw ConfigFileException("Open unbalanced curly braces.");
 	} else if (sectionBlock.empty() && !utils::trim(line).empty()) {
-		throw ConfigFileException("Found invalid characters outside blocks.");
+		throw ConfigFileException("Found invalid characters outside blocks: '" + utils::trim(line) + "'.");
 	}
 	fileUtils.closeFile(_file);
 	return servers;
@@ -81,7 +80,8 @@ void Parser::_checkOpenCurly(bool isComment, std::stack<std::string> *sectionBlo
 		} else if (sectionBlock->empty() && command == "location") {
 			throw ConfigFileException("location block found outside server block.");
 		} else if (sectionBlock->empty() && command != "location" && command != "server") {
-			throw ConfigFileException("Unbalanced configuration.");
+			throw ConfigFileException("Unbalanced/wrong configuration in: '" + command +
+									  "'. Keywords allowed in this section are 'server' or 'location'.");
 		} else if (sectionBlock->top() == "server" && command == "location" && posPath != -1) {
 			Server &server = serverBlocks->back();  //brings last server to create new location
 			server.addLocation(_checkLocation(line, posPath - 1));
@@ -104,9 +104,12 @@ void Parser::_checkSemiColon(bool isComment, std::vector<Server> *serverBlocks, 
 	if (!isComment) {
 		line = utils::trim(line);
 		Directive directive = Parser::_splitDirective(line);
+		if (section.empty()) {
+			throw ConfigFileException("Found invalid characters ended with semicolon outside blocks.");
+		}
 		if (section.top() == "server")
 			_storeServerDirective(directive, &serverBlocks->back());
-		else
+		else if ((section.top() == "location"))
 			_storeLocationDirective(directive, &serverBlocks->back().getLocations()->back());
 	}
 }
@@ -115,19 +118,21 @@ void Parser::_checkSemiColon(bool isComment, std::vector<Server> *serverBlocks, 
  * When the line reaches a close curly brace, it is verified if there is a server
  * or location block opened.
  */
-void Parser::_checkCloseCurly(bool isComment, std::stack<std::string> *sectionBlock) {
+void Parser::_checkCloseCurly(bool isComment, std::stack<std::string> *sectionBlock, std::string line) {
 	if (!isComment) {
+		line = utils::trim(line);
 		if (sectionBlock->empty()) {
 			throw ConfigFileException("Unbalanced curly braces.");
+		} else if (!line.empty()) {
+			throw ConfigFileException("Wrong syntax in line: '" + utils::trim(line) + "'.");
 		}
+		//todo: complete this function including line
+//		if(sectionBlock->top() == "server" && getServer// getlocation / size = 0)
+		//todo: setdefaullocation or throw exception
 		sectionBlock->pop();
 	}
 }
 
-/**
- * When it is found a key that corresponds to a valid parameter, it will be validated
- * and stored in the Server block.
- */
 void Parser::_storeServerDirective(const Directive &directive, Server *server) {
 	switch (Parser::_resolveDirective(directive._key)) {
 		case PORT:
@@ -155,10 +160,6 @@ void Parser::_storeServerDirective(const Directive &directive, Server *server) {
 }
 
 
-/**
- * When it is found a key that corresponds to a valid parameter, it will be validated
- * and stored in the Location block.
- */
 void Parser::_storeLocationDirective(const Parser::Directive &directive, Location *location) {
 	switch (Parser::_resolveDirective(directive._key)) {
 		case INDEX:
@@ -171,8 +172,7 @@ void Parser::_storeLocationDirective(const Parser::Directive &directive, Locatio
 			location->setMethods(_checkAcceptedMethods(directive._value));
 			break;
 		case AUTOINDEX:
-			location->setAutoindex(
-					_checkAutoindex(directive._value)); //bring the last location
+			location->setAutoindex(_checkAutoindex(directive._value)); //bring the last location
 			break;
 		case CGI:
 			location->setCGI(_checkCGI(directive._value));
@@ -279,9 +279,7 @@ bool Parser::_isValidIpv4Address(const std::string &ipAddress) {
 	return true;
 }
 
-/**
- * @param serverName One server name is validated.
- */
+
 bool Parser::_isValidServerName(std::string serverName) {
 	serverName = utils::trim(serverName);
 	if (serverName[0] == '/' || serverName[0] == '*') {
@@ -335,16 +333,28 @@ bool Parser::_isValidStatusCode(const std::string &statusCode, const std::string
 	return true;
 }
 
-/**
- * It is checking if the url is a valid path.
- */
+
 bool Parser::_isValidPath(std::string path, const std::string &directive) {
+//	if (path[0] != '/') {
+//		std::cerr << RED ERROR " Path for '" + directive + "' must be start with '/': '"
+//					 + path + "'." RESET << std::endl;
+//		return false;
+//	}
+	if (path.find_last_of('/') == path.size() - 1 && path.size() != 1 && directive != "location") {
+		std::cerr << RED ERROR " Invalid syntax for '" + directive +
+					 "', remove the last '/': '" + path + "'." RESET << std::endl;
+		return false;
+	}
+	return true;
+}
+
+bool Parser::_isValidPathLocation(std::string path, const std::string &directive) {
 	if (path[0] != '/') {
 		std::cerr << RED ERROR " Path for '" + directive + "' must be start with '/': '"
 					 + path + "'." RESET << std::endl;
 		return false;
 	}
-	if (path.find_last_of('/') == path.size() - 1 && path.size() != 1) {
+	if (path.find_last_of('/') == path.size() - 1 && path.size() != 1 && directive != "location") {
 		std::cerr << RED ERROR " Path for " + directive +
 					 " can't be a directory, remove the last '/': '"
 					 + path + "'." RESET << std::endl;
@@ -544,8 +554,11 @@ Location Parser::_checkLocation(const std::string &line, const int &posPath) {
 	std::string pathLocation = line.substr(posPath, line.size());
 	pathLocation = utils::trim(pathLocation);
 	std::vector<std::string> myVec = utils::splitByWhiteSpaces(pathLocation, WHITESPACES);
-	if (myVec.size() != 1 || !_isValidPath(pathLocation, "location")) {
+	if (myVec.size() != 1 || !_isValidPathLocation(pathLocation, "location")) {
 		throw ConfigFileException("Invalid arguments for path in Location block.");
+	}
+	if (pathLocation.find_last_of('/') != pathLocation.size() - 1 && pathLocation.size() != 1) {
+		throw ConfigFileException("Path location '" + pathLocation + "' must end with '/'.");
 	}
 	return *new Location(pathLocation); // BE CAREFULL: if you use 'new' you should delete as well
 }
@@ -583,6 +596,7 @@ bool Parser::_checkAutoindex(std::vector<std::string> autoIndex) {
 	}
 }
 
+
 std::string Parser::_checkRoot(std::vector<std::string> root) {
 	if (root.size() > 1) {
 		throw ConfigFileException("Only one argument is allowed for 'root'.");
@@ -590,6 +604,12 @@ std::string Parser::_checkRoot(std::vector<std::string> root) {
 	if (!_isValidPath(root[0], "root")) {
 		throw ConfigFileException("Invalid value for 'root'.");
 	}
+	if (root[0][0] == '/') {
+		root[0].erase(root[0].begin());
+	}
+	char realPath[4096];
+	realpath(root[0].c_str(), realPath);
+	root[0] = realPath;
 	return root[0];
 }
 
@@ -625,6 +645,9 @@ std::string Parser::_checkUpload(std::vector<std::string> upload) {
 	}
 	if (!_isValidPath(upload[0], "upload")) {
 		throw ConfigFileException("Invalid value(s) for 'upload'.");
+	}
+	if (upload[0][0] != '/') {
+		upload[0] = "/" + upload[0];
 	}
 	return upload[0];
 }
