@@ -14,7 +14,6 @@
 #include <cerrno>
 #include <map>
 #include "Server.hpp"
-#include "../http/Response.hpp"
 #include "../configs/Parser.hpp"
 #include <algorithm> //testing purpose, delete
 #include <iostream> //testing purpose, delete
@@ -40,7 +39,9 @@ Server::Server(int port) :
 		_serverSocket(-1) {
 }
 
-Server::Server(const Server &src) {
+Server::Server(const Server &src) : _port(), _clientMaxBodySize(),
+									_flagPort(), _flagHost(), _timeOut(),
+									_serverSocket(), _serverAddr() {
 	*this = src;
 }
 
@@ -60,23 +61,15 @@ Server &Server::operator=(const Server &rhs) {
 }
 
 Server::~Server() {
-//	for (std::vector<Location>::iterator loc = _locations.begin(); loc != _locations.end(); loc++) {
-//		delete &loc;
-//		_locations.clear();
-//	}
+	for (std::vector<Location>::iterator loc = _locations.begin(); loc != _locations.end(); loc++) {
+		_locations.erase(loc);
+	}
+	_locations.clear();
 }
 
 const char *Server::setupException::what() const throw() {
 	return "Setup failed\n";
 }
-
-/*
-** Configuration of the server 
-*/
-void Server::configServer(void) {
-	return;
-}
-
 
 /*
 ** DESCRIPTION

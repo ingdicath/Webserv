@@ -13,12 +13,11 @@ Parser::Parser() {}
 Parser::~Parser() {}
 
 /**
- * In this function we are loading the configuration file and validate it char by char.
+ * The configuration file is being read char by char.
  * @param configFile is the path where is located the configuration file.
  */
 
-std::vector<Server> Parser::validateConfiguration(const std::string &configFile) {
-	std::vector<Server> servers;
+void Parser::validateConfiguration(const std::string &configFile, std::vector<Server> *servers) {
 	std::string line;
 	char currentChar;
 	bool isComment = false;
@@ -29,11 +28,11 @@ std::vector<Server> Parser::validateConfiguration(const std::string &configFile)
 	while (_file.get(currentChar)) {
 		switch (currentChar) {
 			case '{':
-				_checkOpenCurly(isComment, &sectionBlock, &servers, line);
+				_checkOpenCurly(isComment, &sectionBlock, servers, line);
 				line = "";
 				break;
 			case ';':
-				_checkSemiColon(isComment, &servers, line, sectionBlock);
+				_checkSemiColon(isComment, servers, line, sectionBlock);
 				line = "";
 				break;
 			case '}':
@@ -58,7 +57,6 @@ std::vector<Server> Parser::validateConfiguration(const std::string &configFile)
 		throw ConfigFileException("Found invalid characters outside blocks: '" + utils::trim(line) + "'.");
 	}
 	fileUtils.closeFile(_file);
-	return servers;
 }
 
 /**
@@ -76,7 +74,9 @@ void Parser::_checkOpenCurly(bool isComment, std::stack<std::string> *sectionBlo
 		std::string command = line.substr(0, posPath);
 		command = utils::trim(command);
 		if (sectionBlock->empty() && line == "server") {
-			serverBlocks->push_back(*new Server());        // BE CAREFULL: if you use 'new' you should delete as well
+			Server *temp = new Server(); // memory management
+			serverBlocks->push_back(*temp);
+			delete temp;
 		} else if (sectionBlock->empty() && command == "location") {
 			throw ConfigFileException("location block found outside server block.");
 		} else if (sectionBlock->empty() && command != "location" && command != "server") {
@@ -84,7 +84,9 @@ void Parser::_checkOpenCurly(bool isComment, std::stack<std::string> *sectionBlo
 									  "'. Keywords allowed in this section are 'server' or 'location'.");
 		} else if (sectionBlock->top() == "server" && command == "location" && posPath != -1) {
 			Server &server = serverBlocks->back();  //brings last server to create new location
-			server.addLocation(_checkLocation(line, posPath - 1));
+			Location *l = _checkLocation(line, posPath - 1);
+			server.addLocation(*l);
+			delete l;
 		} else if (sectionBlock->top() == "location" && command == "location") {
 			throw ConfigFileException("Location block unclosed -- Nested location not allowed.");
 		} else {
@@ -126,9 +128,6 @@ void Parser::_checkCloseCurly(bool isComment, std::stack<std::string> *sectionBl
 		} else if (!line.empty()) {
 			throw ConfigFileException("Wrong syntax in line: '" + utils::trim(line) + "'.");
 		}
-		//todo: complete this function including line
-//		if(sectionBlock->top() == "server" && getServer// getlocation / size = 0)
-		//todo: setdefaullocation or throw exception
 		sectionBlock->pop();
 	}
 }
@@ -159,7 +158,6 @@ void Parser::_storeServerDirective(const Directive &directive, Server *server) {
 	}
 }
 
-
 void Parser::_storeLocationDirective(const Parser::Directive &directive, Location *location) {
 	switch (Parser::_resolveDirective(directive._key)) {
 		case INDEX:
@@ -172,7 +170,7 @@ void Parser::_storeLocationDirective(const Parser::Directive &directive, Locatio
 			location->setMethods(_checkAcceptedMethods(directive._value));
 			break;
 		case AUTOINDEX:
-			location->setAutoindex(_checkAutoindex(directive._value)); //bring the last location
+			location->setAutoindex(_checkAutoindex(directive._value)); //retrieves the last location
 			break;
 		case CGI:
 			location->setCGI(_checkCGI(directive._value));
@@ -256,7 +254,7 @@ bool Parser::_isValidPortRange(const std::string &port) {
 }
 
 /**
- * A valid value for port can be 'localhost' or an ip4 address like '127.0.0.0'
+ * A valid value for port can be 'localhost' or an IPv4 address like '127.0.0.0'
  */
 bool Parser::_isValidIpv4Address(const std::string &ipAddress) {
 	if (ipAddress == "localhost") {
@@ -279,15 +277,14 @@ bool Parser::_isValidIpv4Address(const std::string &ipAddress) {
 	return true;
 }
 
-
 bool Parser::_isValidServerName(std::string serverName) {
 	serverName = utils::trim(serverName);
 	if (serverName[0] == '/' || serverName[0] == '*') {
-		std::cerr << RED ERROR " Path can't be a directory or use wildcard *. " RESET << std::endl;
+		std::cerr << RED ERROR " 'server_name' can't be a directory or use wildcard *. " RESET << std::endl;
 		return false;
 	}
 	if (serverName.find_last_of('/') == serverName.size() - 1 && serverName.size() != 1) {
-		std::cerr << RED ERROR " Path can't be a directory." RESET << std::endl;
+		std::cerr << RED ERROR " 'server_name' can't be a directory." RESET << std::endl;
 		return false;
 	}
 	return true;
@@ -299,7 +296,6 @@ bool Parser::_isValidServerName(std::string serverName) {
 bool Parser::_areValidServerNames(const std::vector<std::string> &serverNames) {
 	for (size_t i = 0; i < serverNames.size(); i++) {
 		if (!_isValidServerName(serverNames.at(i))) {
-			std::cerr << RED ERROR " Wrong syntax in server name." RESET << std::endl;
 			return false;
 		}
 	}
@@ -335,11 +331,6 @@ bool Parser::_isValidStatusCode(const std::string &statusCode, const std::string
 
 
 bool Parser::_isValidPath(std::string path, const std::string &directive) {
-//	if (path[0] != '/') {
-//		std::cerr << RED ERROR " Path for '" + directive + "' must be start with '/': '"
-//					 + path + "'." RESET << std::endl;
-//		return false;
-//	}
 	if (path.find_last_of('/') == path.size() - 1 && path.size() != 1 && directive != "location") {
 		std::cerr << RED ERROR " Invalid syntax for '" + directive +
 					 "', remove the last '/': '" + path + "'." RESET << std::endl;
@@ -351,12 +342,6 @@ bool Parser::_isValidPath(std::string path, const std::string &directive) {
 bool Parser::_isValidPathLocation(std::string path, const std::string &directive) {
 	if (path[0] != '/') {
 		std::cerr << RED ERROR " Path for '" + directive + "' must be start with '/': '"
-					 + path + "'." RESET << std::endl;
-		return false;
-	}
-	if (path.find_last_of('/') == path.size() - 1 && path.size() != 1 && directive != "location") {
-		std::cerr << RED ERROR " Path for " + directive +
-					 " can't be a directory, remove the last '/': '"
 					 + path + "'." RESET << std::endl;
 		return false;
 	}
@@ -376,7 +361,7 @@ bool Parser::_isValidErrorPage(std::vector<std::string> values) {
 }
 
 /**
- * in this case it is allowed just one html page. See if we need to change this in the future
+ * In this case it is allowed just one html page. See if we need to change this in the future
  * to allow more than one page and also other extensions
  */
 bool Parser::_isValidIndex(const std::string &index) {
@@ -550,7 +535,7 @@ long Parser::_checkBodySize(std::vector<std::string> bodySize) {
 	return res;
 }
 
-Location Parser::_checkLocation(const std::string &line, const int &posPath) {
+Location *Parser::_checkLocation(const std::string &line, const int &posPath) {
 	std::string pathLocation = line.substr(posPath, line.size());
 	pathLocation = utils::trim(pathLocation);
 	std::vector<std::string> myVec = utils::splitByWhiteSpaces(pathLocation, WHITESPACES);
@@ -560,7 +545,7 @@ Location Parser::_checkLocation(const std::string &line, const int &posPath) {
 	if (pathLocation.find_last_of('/') != pathLocation.size() - 1 && pathLocation.size() != 1) {
 		throw ConfigFileException("Path location '" + pathLocation + "' must end with '/'.");
 	}
-	return *new Location(pathLocation); // BE CAREFULL: if you use 'new' you should delete as well
+	return &(*new Location(pathLocation));
 }
 
 std::set<std::string> Parser::_checkAcceptedMethods(std::vector<std::string> methods) {
@@ -596,7 +581,6 @@ bool Parser::_checkAutoindex(std::vector<std::string> autoIndex) {
 	}
 }
 
-
 std::string Parser::_checkRoot(std::vector<std::string> root) {
 	if (root.size() > 1) {
 		throw ConfigFileException("Only one argument is allowed for 'root'.");
@@ -607,7 +591,7 @@ std::string Parser::_checkRoot(std::vector<std::string> root) {
 	if (root[0][0] == '/') {
 		root[0].erase(root[0].begin());
 	}
-	char realPath[4096];
+	char realPath[MAXLINE];
 	realpath(root[0].c_str(), realPath);
 	root[0] = realPath;
 	return root[0];
@@ -667,28 +651,4 @@ Parser::ConfigFileException::~ConfigFileException() throw() {}
 
 const char *Parser::ConfigFileException::what() const throw() {
 	return _msg.c_str();
-}
-
-
-/************************************************************************************
-* 							Functions for clean servers								*
-************************************************************************************/
-
-//TODO: this function is not neccesary probably, we have en main webserver.clear().
-// Check the destructor for location y server.
-
-void Parser::cleanServerBlocks(std::vector<Server> *serverBlocks) {
-	std::vector<Server>::iterator serverIt = serverBlocks->begin();
-	for (; serverIt < serverBlocks->end(); serverIt++) {
-		cleanLocationBlocks(serverIt->getLocations());
-		std::cout << "Element " << serverIt->getPort() << " erased" << std::endl; // test: delete later
-		serverIt = serverBlocks->erase(serverIt);
-	}
-}
-
-void Parser::cleanLocationBlocks(std::vector<Location> *locationBlocks) {
-	std::vector<Location>::iterator locationIt = locationBlocks->begin();
-	for (; locationIt < locationBlocks->end(); locationIt++) {
-		locationIt = locationBlocks->erase(locationIt);
-	}
 }

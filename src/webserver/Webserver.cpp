@@ -55,7 +55,7 @@ Webserver::~Webserver(void) {
 */
 void	Webserver::loadConfiguration(const std::string& configFile) {
 	Parser parser;
-	_servers = parser.validateConfiguration(configFile);
+	parser.validateConfiguration(configFile, &_servers);
 }
 
 //TODO: Check ports, is not working setting up just one port (15Aug)
@@ -78,6 +78,7 @@ void    Webserver::createConnection(void) {
 			_activeServers++;
 		}
 	}
+
 	if (_activeServers < 1)
 		throw (std::logic_error("There are no active servers"));
 }
@@ -250,7 +251,7 @@ void Webserver::clear(void) {
 void Webserver::checkTimeout(void) {
 	struct		timeval tv;
 	long long	seconds;
-	int			clientSocket;		
+	int			clientSocket;
 
 	for (std::vector<Server>::iterator itServer = _servers.begin(); itServer < _servers.end(); itServer++) {
 		std::vector<Client> clients = itServer->getClients();

@@ -23,7 +23,7 @@ Location::Location(std::string path) : _pathLocation(path),
 
 Location::~Location() {}
 
-Location::Location(const Location &obj) {
+Location::Location(const Location &obj) : _autoindex() {
 	*this = obj;
 }
 
@@ -83,7 +83,7 @@ void Location::_setDefaultAllowedMethods() {
 }
 
 void Location::_setDefaultRoot() {
-	char cwd[4096];
+	char cwd[MAXLINE];
 	char *res = getcwd(cwd, sizeof(cwd));
 	_root = res;
 	_root = _root.append(DEFAULT_ROOT);
@@ -97,4 +97,3 @@ void Location::addRedirection(const std::pair<int, std::string> &redirection) {
 		_redirection.insert(redirection);
 	}
 }
-

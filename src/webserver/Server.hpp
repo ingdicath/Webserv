@@ -33,9 +33,6 @@ public:
 	Server& operator=(Server const & rhs);
 	virtual ~Server(void);
 
-	//Configuration functions
-	void	configServer(void);
-
 	//Socket functions
 	int		setupServer(void);
 	int		acceptConnection(void);

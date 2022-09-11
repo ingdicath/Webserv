@@ -7,15 +7,13 @@
 #include <fstream>
 #include <stack>
 #include "../webserver/Server.hpp"
+#include "../webserver/Webserver.hpp"
 
 class Parser {
 public:
 	Parser();
 	virtual ~Parser();
-	std::vector<Server> validateConfiguration(const std::string &configFile);
-	void cleanServerBlocks(std::vector<Server> *); // check this, delete possibly, manage in destructor
-	void cleanLocationBlocks(std::vector<Location> *); // check this, delete possibly, manage in destructor
-
+	void validateConfiguration(const std::string &configFile, std::vector<Server> *servers);
 
 	class ConfigFileException : public std::exception {
 	public:
@@ -57,6 +55,7 @@ private:
 	void _checkCloseCurly(bool isComment, std::stack<std::string> *sectionBlock,
 						  std::string line);
 	void _storeServerDirective(const Directive &directive, Server *server);
+	void _storeLocationDirective(const Directive &directive, Location *location);
 	eDirectives _resolveDirective(const std::string &input);
 	Directive _splitDirective(std::string &input);
 
@@ -91,6 +90,5 @@ private:
 	std::pair<int, std::string> _checkRedirection(std::vector<std::string> redir);
 	std::pair<std::string, std::string> _checkCGI(std::vector<std::string> cgi);
 	std::set<std::string> _checkAcceptedMethods(std::vector<std::string> methods);
-	Location _checkLocation(const std::string &line, const int &posPath);
-	void _storeLocationDirective(const Directive &directive, Location *location);
+	Location *_checkLocation(const std::string &line, const int &posPath);
 };

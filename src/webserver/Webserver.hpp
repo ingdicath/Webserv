@@ -44,4 +44,3 @@ private:
 	fd_set					_readyWrite;
 	std::vector<Server>		_servers;
 };
-
