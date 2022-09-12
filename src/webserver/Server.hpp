@@ -77,12 +77,14 @@ private:
 	int							_port;
 	std::string					_host;
 	std::vector<std::string>	_serverName;
-	std::string					_index;
 	std::map<int, std::string>	_errorPage;					// Explore how this works
 	long						_clientMaxBodySize;
 	std::vector<Location>		_locations;				// Explore how this works
 
-// Variables that help to validate duplicate values
+// Flag to set default port in case multiples ports with the same value
+	bool						_isDefault;
+
+	// Variables that help to validate duplicate values
 	bool						_flagPort; // option #1 for validate duplicate directives
 	bool						_flagHost;
 

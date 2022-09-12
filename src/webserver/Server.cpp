@@ -23,6 +23,7 @@ Server::Server(void) :
 		_port(DEFAULT_PORT),
 		_host(DEFAULT_HOST),
 		_clientMaxBodySize(DEFAULT_CLIENT_MAX_BODY_SIZE),
+		_isDefault(false),
 		_timeOut(DEFAULT_TIMEOUT),
 		_serverSocket(-1) {
 	_serverName.push_back(DEFAULT_SERVER_NAME);
@@ -39,7 +40,7 @@ Server::Server(int port) :
 		_serverSocket(-1) {
 }
 
-Server::Server(const Server &src) : _port(), _clientMaxBodySize(),
+Server::Server(const Server &src) : _port(), _clientMaxBodySize(), _isDefault(),
 									_flagPort(), _flagHost(), _timeOut(),
 									_serverSocket(), _serverAddr() {
 	*this = src;
@@ -50,9 +51,9 @@ Server &Server::operator=(const Server &rhs) {
 		_port = rhs._port;
 		_host = rhs._host;
 		_serverName = rhs._serverName;
-		_index = rhs._index;
 		_errorPage = rhs._errorPage;
 		_clientMaxBodySize = rhs._clientMaxBodySize;
+		_isDefault = rhs._isDefault;
 		_locations = rhs._locations;
 		_timeOut = rhs._timeOut;
 		_serverSocket = rhs._serverSocket;
@@ -61,10 +62,10 @@ Server &Server::operator=(const Server &rhs) {
 }
 
 Server::~Server() {
-	for (std::vector<Location>::iterator loc = _locations.begin(); loc != _locations.end(); loc++) {
-		_locations.erase(loc);
-	}
-	_locations.clear();
+//	for (std::vector<Location>::iterator loc = _locations.begin(); loc != _locations.end(); loc++) {
+//		_locations.erase(loc);
+//	}
+//	_locations.clear();
 }
 
 const char *Server::setupException::what() const throw() {
@@ -185,10 +186,6 @@ std::vector<Location> *Server::getLocations(void) {
 
 const std::vector<std::string> &Server::getServerName() const {
 	return _serverName;
-}
-
-const std::string &Server::getIndex() const {
-	return _index;
 }
 
 long Server::getClientMaxBodySize() const {

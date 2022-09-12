@@ -97,3 +97,32 @@ void Location::addRedirection(const std::pair<int, std::string> &redirection) {
 		_redirection.insert(redirection);
 	}
 }
+
+/**
+ * GETTERS
+ */
+
+const std::string &Location::getPathLocation() const {
+	return _pathLocation;
+}
+const std::string &Location::getUpload() const {
+	return _upload;
+}
+const std::string &Location::getRoot() const {
+	return _root;
+}
+const std::string &Location::getIndex() const {
+	return _index;
+}
+bool Location::isAutoindex() const {
+	return _autoindex;
+}
+const std::set<std::string> &Location::getAcceptedMethods() const {
+	return _acceptedMethods;
+}
+const std::map<int, std::string> &Location::getRedirection() const {
+	return _redirection;
+}
+const std::pair<std::string, std::string> &Location::getCgi() const {
+	return _cgi;
+}

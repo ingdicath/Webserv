@@ -91,4 +91,6 @@ private:
 	std::pair<std::string, std::string> _checkCGI(std::vector<std::string> cgi);
 	std::set<std::string> _checkAcceptedMethods(std::vector<std::string> methods);
 	Location *_checkLocation(const std::string &line, const int &posPath);
+
+	void _setDefaultServer( std::vector<Server> *serverBlocks);
 };

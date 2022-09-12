@@ -636,6 +636,19 @@ std::string Parser::_checkUpload(std::vector<std::string> upload) {
 	return upload[0];
 }
 
+void Parser::_setDefaultServer(std::vector<Server> *serverBlocks) {
+	for (std::vector<Server>::iterator itFirst = serverBlocks->begin(); itFirst != serverBlocks->end(); itFirst++){
+		for(std::vector<Server>::iterator itSecond = serverBlocks->begin() + 1; itFirst != serverBlocks->end() - 1; itSecond++){
+
+		}
+
+	}
+//	if ( std::find(vec.begin(), vec.end(), item) != vec.end() )
+//		//do_this();
+//	else
+//		//do_that();
+}
+
 
 /************************************************************************************
 * 										Exception									*

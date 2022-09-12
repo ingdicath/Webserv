@@ -25,6 +25,16 @@ public:
 	void setUpload(const std::string &upload);
 	void setIndex(const std::string &index);
 
+	//Getters
+	bool isAutoindex() const;
+	const std::string &getPathLocation() const;
+	const std::string &getUpload() const;
+	const std::string &getRoot() const;
+	const std::string &getIndex() const;
+	const std::set<std::string> &getAcceptedMethods() const;
+	const std::map<int, std::string> &getRedirection() const;
+	const std::pair<std::string, std::string> &getCgi() const;
+
 	void addRedirection(const std::pair<int, std::string> &redirection);
 
 private:
