@@ -278,8 +278,8 @@ void Server::addLocation(Location location) {
 
 static int chunkedEnd(const std::string &str){
     std::string endStr = "0\r\n\r\n";
-    size_t i = str.size();
-    size_t j = endStr.size();
+    int i = static_cast<int>(str.size());
+    int j = static_cast<int>(endStr.size());
 
     while (j > 0) {
         i--;
