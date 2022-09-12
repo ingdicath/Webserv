@@ -40,7 +40,7 @@ int     main(int argc, char* argv[]) {
 	catch (std::exception &e) {
 		std::cout << RED << e.what() << RESET << std::endl;
 		webserver.clear();
-			while (true){} // check leaks, delete later
+//			while (true){} // check leaks, delete later
 	}
 	return EXIT_SUCCESS;
 }
