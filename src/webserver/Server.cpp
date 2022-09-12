@@ -62,10 +62,6 @@ Server &Server::operator=(const Server &rhs) {
 }
 
 Server::~Server() {
-//	for (std::vector<Location>::iterator loc = _locations.begin(); loc != _locations.end(); loc++) {
-//		_locations.erase(loc);
-//	}
-//	_locations.clear();
 }
 
 const char *Server::setupException::what() const throw() {
@@ -196,6 +192,10 @@ const std::map<int, std::string> &Server::getErrorPage() const {
 	return _errorPage;
 }
 
+bool Server::getIsDefault() const {
+	return _isDefault;
+}
+
 int Server::getServerSocket(void) const {
 	return _serverSocket;
 }
@@ -234,6 +234,10 @@ void Server::setServerName(const std::vector<std::string> &serverName) {
 
 void Server::setClientMaxBodySize(long clientMaxBodySize) {
 	_clientMaxBodySize = clientMaxBodySize;
+}
+
+void Server::setIsDefault(bool isDefault) {
+	_isDefault = isDefault;
 }
 
 void Server::_setDefaultErrorPages() {
@@ -369,3 +373,4 @@ void    Server::processRequest(int socket) {
     }
     _requests.erase(socket);
 }
+

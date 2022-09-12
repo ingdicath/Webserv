@@ -330,7 +330,7 @@ bool Parser::_isValidStatusCode(const std::string &statusCode, const std::string
 }
 
 
-bool Parser::_isValidPath(std::string path, const std::string &directive) {
+bool Parser::_isValidPath(const std::string &path, const std::string &directive) {
 	if (path.find_last_of('/') == path.size() - 1 && path.size() != 1 && directive != "location") {
 		std::cerr << RED ERROR " Invalid syntax for '" + directive +
 					 "', remove the last '/': '" + path + "'." RESET << std::endl;
@@ -636,17 +636,22 @@ std::string Parser::_checkUpload(std::vector<std::string> upload) {
 	return upload[0];
 }
 
-void Parser::_setDefaultServer(std::vector<Server> *serverBlocks) {
-	for (std::vector<Server>::iterator itFirst = serverBlocks->begin(); itFirst != serverBlocks->end(); itFirst++){
-		for(std::vector<Server>::iterator itSecond = serverBlocks->begin() + 1; itFirst != serverBlocks->end() - 1; itSecond++){
-
-		}
-
+void Parser::setDefaultServer(std::vector<Server> *serverBlocks) {
+	std::vector<Server>::iterator itEval = serverBlocks->begin();
+	std::vector<Server>::iterator itCurrent = serverBlocks->begin();
+	if (!serverBlocks->empty()) {
+		itEval->setIsDefault(true);
 	}
-//	if ( std::find(vec.begin(), vec.end(), item) != vec.end() )
-//		//do_this();
-//	else
-//		//do_that();
+	for (itEval++; itEval != serverBlocks->end(); itEval++) {
+		for (itCurrent = serverBlocks->begin(); itCurrent != itEval; itCurrent++) {
+			if (itEval->getPort() == itCurrent->getPort()) {
+				break;
+			}
+		}
+		if (itEval == itCurrent) {
+			itEval->setIsDefault(true);
+		}
+	}
 }
 
 

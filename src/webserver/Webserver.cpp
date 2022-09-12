@@ -2,8 +2,6 @@
 // Created by Diani on 20/06/2022, last update by Anna 08/07/2022.
 //
 
-// TODO: Keep aware of all 'new' objects added to servers or locations. These should be deleted in order to avoid memory leaks
-
 #include <cstring>
 #include <cstdlib>
 #include <cstdio>
@@ -56,9 +54,8 @@ Webserver::~Webserver(void) {
 void	Webserver::loadConfiguration(const std::string& configFile) {
 	Parser parser;
 	parser.validateConfiguration(configFile, &_servers);
+	parser.setDefaultServer(&_servers);
 }
-
-//TODO: Check ports, is not working setting up just one port (15Aug)
 
 /*
 ** DESCRIPTION

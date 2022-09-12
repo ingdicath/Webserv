@@ -64,6 +64,7 @@ public:
 	void					setHost(std::string host);
 	void					setServerName(const std::vector<std::string> &serverName);
 	void					setClientMaxBodySize(long clientMaxBodySize);
+	void					setIsDefault(bool isDefault);
 
 	void					addErrorPage(const std::pair<int, std::string> &errorPage);
 	void					addLocation(Location location);
@@ -71,7 +72,7 @@ public:
     int     recvRequest(int clientId);
     void    processRequest(int clientId);
     void    processChunk(int clientId);
-
+	bool getIsDefault() const;
 private:
 // Configuration file
 	int							_port;
