@@ -6,7 +6,7 @@
 /*   By: aheister <aheister@student.codam.nl>         +#+                     */
 /*                                                   +#+                      */
 /*   Created: 2022/07/07 13:40:13 by aheister      #+#    #+#                 */
-/*   Updated: 2022/07/20 16:19:52 by aheister      ########   odam.nl         */
+/*   Updated: 2022/09/12 11:24:10 by aheister      ########   odam.nl         */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -44,7 +44,8 @@ struct sockaddr_in  Client::getClientAddress(void) const {
 	return _clientAddr;
 }
 
-long long Client::getClientTimeStamp(void) const {
+//long long Client::getClientTimeStamp(void) const {
+uint32_t Client::getClientTimeStamp(void) const {
 	return _clientTimeStamp;
 }
 

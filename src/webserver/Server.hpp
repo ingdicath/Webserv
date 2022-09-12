@@ -56,7 +56,7 @@ public:
 
 	int								getServerSocket(void) const;
 	std::vector<Client>				getClients(void) const;
-	long long						getTimeout(void) const;
+	uint32_t						getTimeout(void) const;
 
 
 	//Set functions

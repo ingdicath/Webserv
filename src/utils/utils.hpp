@@ -32,4 +32,3 @@ namespace utils {
 	std::vector<std::string>
 	splitByWhiteSpaces(const std::string &string, const std::string &whiteSp); // add 29Aug by Diana
 }
-//

@@ -250,7 +250,7 @@ void Webserver::clear(void) {
 */
 void Webserver::checkTimeout(void) {
 	struct		timeval tv;
-	long long	seconds;
+	uint32_t	seconds;
 	int			clientSocket;
 
 	for (std::vector<Server>::iterator itServer = _servers.begin(); itServer < _servers.end(); itServer++) {

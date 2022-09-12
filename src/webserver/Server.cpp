@@ -6,7 +6,7 @@
 /*   By: aheister <aheister@student.codam.nl>         +#+                     */
 /*                                                   +#+                      */
 /*   Created: 2022/07/11 15:09:47 by aheister      #+#    #+#                 */
-/*   Updated: 2022/08/30 11:16:55 by aheister      ########   odam.nl         */
+/*   Updated: 2022/09/12 11:26:56 by aheister      ########   odam.nl         */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -207,7 +207,7 @@ std::vector<Client> Server::getClients(void) const {
 	return _clients;
 }
 
-long long Server::getTimeout(void) const {
+uint32_t Server::getTimeout(void) const {
 	return _timeOut;
 }
 

@@ -6,14 +6,14 @@
 #    By: aheister <aheister@student.codam.nl>         +#+                      #
 #                                                    +#+                       #
 #    Created: 2022/07/10 09:01:00 by aheister      #+#    #+#                  #
-#    Updated: 2022/08/02 13:12:48 by hlin          ########   odam.nl          #
+#    Updated: 2022/09/12 11:11:07 by aheister      ########   odam.nl          #
 #                                                                              #
 # **************************************************************************** #
 
 NAME		=	webserv
 
-# CFLAGS	=	-Wall -Werror -Wextra -Iincludes -pedantic -std=c++98
-CFLAGS		=	-Wall -Werror -Iincludes -std=c++98
+CFLAGS	=	-Wall -Werror -Wextra -Iincludes -pedantic -std=c++98
+#CFLAGS		=	-Wall -Werror -Wextra -Iincludes -std=c++98
 CC			=	c++
 
 SRC_DIR		=	src

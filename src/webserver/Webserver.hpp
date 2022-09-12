@@ -13,7 +13,7 @@ enum e_typeMax
 	ADD,
 	REMOVE,
 	WRITE,
-	READ,
+	READ
 };
 
 class Webserver {
