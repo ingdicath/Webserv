@@ -60,6 +60,8 @@ public:
     std::string writeHeaders();
     std::string writeBody();
 
+    std::string getResponse();
+
 private:
     //status line
     std::string _protocol;
@@ -68,7 +70,7 @@ private:
     //headers zero or more, followed by CRLF
     long _length;
     std::string _type;
-    bool _connection;
+//    bool _connection;
     std::string _location;
     std::string _server; //our own name?
     // std::string  _date;

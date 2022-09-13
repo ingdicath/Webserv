@@ -25,8 +25,9 @@ SRC			=	main.cpp \
 				Server.cpp \
 				Webserver.cpp \
 				Location.cpp \
-				Request.cpp\
-				Parser.cpp\
+				Request.cpp \
+				Response.cpp \
+				Parser.cpp \
 				FileUtils.cpp
 
 # SRC_PATH	=	$(addprefix $(SRC_DIR), $(SRC))

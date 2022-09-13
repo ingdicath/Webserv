@@ -151,7 +151,8 @@ void    Webserver::runWebserver(void) {
 						for (std::vector<Client>::iterator itClient = clients.begin(); itClient < clients.end(); itClient++) {
 							if (i == itClient->getClientSocket()) {
 								//std::cout << i << " = readyWrite" << ", ready = " << ready << std::endl; // test: delete later
-								writeResponse(i);
+								//writeResponse(i);
+                                itServer->sendResponse(i);
 								itServer->removeClient(i);
 								updateSockets(i, REMOVE, WRITE);
 								ready--;

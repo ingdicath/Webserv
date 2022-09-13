@@ -144,11 +144,18 @@ std::string Response::writeBody() {
     return body;
 }
 
-int main() {
-    Response    response;
-    std::string output = response.writeStatusLine(200);
-    output.append(response.writeHeaders());
-    output.append(response.writeBody());
-    std::cout << output << std::endl;
-    return 0;
+std::string Response::getResponse() {
+    std::string responseStr = writeStatusLine(200);
+    responseStr.append(writeHeaders());
+    responseStr.append(writeBody());
+    return responseStr;
 }
+
+//int main() {
+//    Response    response;
+//    std::string output = response.writeStatusLine(200);
+//    output.append(response.writeHeaders());
+//    output.append(response.writeBody());
+//    std::cout << output << std::endl;
+//    return 0;
+//}

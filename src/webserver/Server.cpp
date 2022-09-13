@@ -370,7 +370,28 @@ void    Server::processRequest(int socket) {
     if (_requests[socket] != "") {
         Request request(_requests[socket], _clientMaxBodySize);
         std::cout << request << std::endl;
+        Response    response;
+        _responses.insert(std::make_pair(socket, response.getResponse()));
     }
     _requests.erase(socket);
+}
+
+int Server::sendResponse(int socket) {
+    std::cout << "Response: " <<  _responses[socket] << std::endl;
+    int ret = send(socket, _responses[socket].c_str(), _responses[socket].size(), 0);
+    if (ret == -1) { //send failed
+        close(socket);
+        _responses.erase(socket);
+        return -1;
+    }
+    else {
+        if (static_cast<unsigned long>(ret) >= _responses[socket].size()) {
+            _responses.erase(socket);
+            return 0;
+        }
+        else {
+            return 1;
+        }
+    }
 }
 

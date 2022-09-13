@@ -8,6 +8,7 @@
 #include "Client.hpp"
 #include "../utils/settings.hpp"
 #include "../http/Request.hpp"
+#include "../http/Response.hpp"
 
 #include <sys/socket.h>
 #include <sys/select.h>
@@ -70,9 +71,11 @@ public:
 	void					addLocation(Location location);
 
     // functions for take request and then send the response
-    int                      recvRequest(int clientId);
-    void                     processRequest(int clientId);
-    void                     processChunk(int clientId);
+    int                     recvRequest(int socket);
+    void                    processRequest(int socket);
+    void                    processChunk(int socket);
+
+    int                     sendResponse(int socket);
 
 	bool getIsDefault() const;
 
@@ -100,7 +103,7 @@ private:
 	std::vector<Client>			_clients;
 
     std::map<int, std::string>  _requests;
-    std::map<int, std::string>  _response;
+    std::map<int, std::string>  _responses;
 
 	void	_setDefaultErrorPages();
 };
