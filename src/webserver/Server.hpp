@@ -51,7 +51,7 @@ public:
 	std::vector<Location>			*getLocations();
 	const std::vector<std::string>	&getServerName() const;
 	const std::string				&getIndex() const;
-	long							getClientMaxBodySize() const;
+	unsigned long					getClientMaxBodySize() const;
 	const							std::map<int, std::string> &getErrorPage() const;
 
 	int								getServerSocket(void) const;
@@ -63,23 +63,26 @@ public:
 	void					setPort(int port);
 	void					setHost(std::string host);
 	void					setServerName(const std::vector<std::string> &serverName);
-	void					setClientMaxBodySize(long clientMaxBodySize);
+	void					setClientMaxBodySize(unsigned long clientMaxBodySize);
 	void					setIsDefault(bool isDefault);
 
 	void					addErrorPage(const std::pair<int, std::string> &errorPage);
 	void					addLocation(Location location);
 
-    int     recvRequest(int clientId);
-    void    processRequest(int clientId);
-    void    processChunk(int clientId);
+    // functions for take request and then send the response
+    int                      recvRequest(int clientId);
+    void                     processRequest(int clientId);
+    void                     processChunk(int clientId);
+
 	bool getIsDefault() const;
+
 private:
 // Configuration file
 	int							_port;
 	std::string					_host;
 	std::vector<std::string>	_serverName;
 	std::map<int, std::string>	_errorPage;					// Explore how this works
-	long						_clientMaxBodySize;
+	unsigned long				_clientMaxBodySize;
 	std::vector<Location>		_locations;				// Explore how this works
 
 // Flag to set default port in case multiples ports with the same value
@@ -97,6 +100,7 @@ private:
 	std::vector<Client>			_clients;
 
     std::map<int, std::string>  _requests;
+    std::map<int, std::string>  _response;
 
 	void	_setDefaultErrorPages();
 };
