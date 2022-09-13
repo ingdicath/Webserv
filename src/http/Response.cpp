@@ -86,7 +86,6 @@ std::string Response::getStatusMsg(int statusCode) {
 
 Response::Response() {
     _protocol = "HTTP/1.1";
-    _server = "Connecting Kitten's Webserver";
 }
 
 Response::~Response() {
@@ -98,14 +97,71 @@ Response::Response(const Response &obj) {
 
 Response &Response::operator=(const Response &obj) {
     _protocol = obj._protocol;
-    _status = obj._status;
-    _length = obj._length;
-    _type = obj._type;
-    _location = obj._location;
-    _server = obj._server;
+    _statusCode = obj._statusCode;
+//    _length = obj._length;
+//    _type = obj._type;
+//    _location = obj._location;
+//    _server = obj._server;
     _body = obj._body;
     return *this;
 }
+
+void    Response::setPort(int port) {
+    _port = port;
+}
+
+void    Response::setHost(std::string host) {
+    _host = host;
+}
+
+void    Response::setAutoIndex(bool autoIndex) {
+    _autoIndex = autoIndex;
+}
+
+void    Response::setPath(std::string path) {
+    _path = path;
+}
+
+void    Response::setMethod(std::string method) {
+    _method = method;
+}
+
+void    Response::setStatusCode(int code) {
+    _statusCode = code;
+}
+
+void    Response::setErrorPages(std::map<int, std::string> errorPages) {
+    _errorPages = errorPages;
+}
+
+bool    Response::getAutoindex() const {
+    return _autoIndex;
+}
+
+const int   &Response::getPort() const {
+    return _port;
+}
+
+const std::string   &Response::getHost() const {
+    return _host;
+}
+
+const std::string   &Response::getPath() const {
+    return _path;
+}
+
+const std::string   &Response::getMethod() const {
+    return _method;
+}
+
+const int   &Response::getStatusCode() const {
+    return _statusCode;
+}
+
+const std::map<int, std::string> &Response::getErrorPages() const {
+    return _errorPages;
+}
+
 
 static std::string  codeToStr(int code) {
     std::string res;
@@ -151,11 +207,25 @@ std::string Response::getResponse() {
     return responseStr;
 }
 
-//int main() {
-//    Response    response;
-//    std::string output = response.writeStatusLine(200);
-//    output.append(response.writeHeaders());
-//    output.append(response.writeBody());
-//    std::cout << output << std::endl;
-//    return 0;
-//}
+// overload function for testing
+std::ostream	&operator<<(std::ostream &os, const Response &response) {
+    os << BLUE << "--------- Response Object Info ----------" << std::endl;
+    os << "Port: " << response.getPort() << std::endl;
+    os << "Host: " << response.getHost() << std::endl;
+    if (response.getAutoindex() == true) {
+        os << "AutoIndex: true" << std::endl;
+    } else {
+        os << "AutoIndex: false" << std::endl;
+    }
+    os << "Path: " << response.getPath() << std::endl;
+    os << "Method: " << response.getMethod() << std::endl;
+    os << "StatusCode: " << response.getStatusCode() << std::endl;
+    os << "ErrorPages:" << std::endl;
+    std::map<int, std::string>	errorPages = response.getErrorPages();
+    for(std::map<int, std::string>::const_iterator it = errorPages.begin(); it != errorPages.end(); ++it) {
+        os << it->first << ": " << it->second << std::endl;
+    }
+    os <<  "------- Response Object Info Done --------" << RESET << std::endl;
+    return os;
+}
+

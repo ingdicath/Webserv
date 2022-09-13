@@ -371,6 +371,9 @@ void    Server::processRequest(int socket) {
         Request request(_requests[socket], _clientMaxBodySize);
         std::cout << request << std::endl;
         Response    response;
+        setupResponse(response, request);
+        //output for testing
+        std::cout << response << std::endl;
         _responses.insert(std::make_pair(socket, response.getResponse()));
     }
     _requests.erase(socket);
@@ -392,6 +395,19 @@ int Server::sendResponse(int socket) {
         else {
             return 1;
         }
+    }
+}
+
+void    Server::setupResponse(Response &response, Request &request) {
+    response.setPort(_port);
+    response.setHost(_host);
+    response.setAutoIndex(_locations[0].isAutoindex()); //have to check which location in the vector is used here
+    response.setErrorPages(_errorPage);
+    response.setPath(request.getPath());
+    response.setMethod(request.getMethod());
+    response.setStatusCode(request.getRet());
+    if (_locations[0].getAcceptedMethods().find(request.getMethod()) == _locations[0].getAcceptedMethods().end()) {
+        response.setStatusCode(405);
     }
 }
 

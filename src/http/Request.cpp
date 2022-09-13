@@ -22,12 +22,14 @@ Request::Request(const Request &obj) {
 }
 
 Request &Request::operator=(const Request &obj) {
-    _method = obj._method;
-    _path = obj._path;
-    _version = obj._version;
-    _headers = obj._headers;
-    _body = obj._body;
-    _host = obj._host;
+    if (this != &obj) {
+        _method = obj._method;
+        _path = obj._path;
+        _version = obj._version;
+        _headers = obj._headers;
+        _body = obj._body;
+        _host = obj._host;
+    }
     return *this;
 }
 
@@ -56,11 +58,11 @@ int Request::parseRawRequest(const std::string &rawRequest) {
 }
 
 // Getters, for testing now, may use later for handling
-Request::method  Request::getMethod() const {
+std::string  Request::getMethod() const {
     return _method;
 }
 
-std::vector<std::string>    Request::getPath() const {
+std::string    Request::getPath() const {
     return _path;
 }
 
@@ -80,50 +82,24 @@ std::string Request::getBody() const {
     return _body;
 }
 
-void    Request::parseMethod(std::stringstream &ss) {
-    std::string method;
+int Request::getRet() const {
+    return _ret;
+}
 
-    ss >> method;
-    if (method == "GET") {
-        _method = GET;
+
+void    Request::parseMethod(std::stringstream &ss) {
+    ss >> _method;
+    if (_method == "GET" || _method == "POST" || _method == "DELETE") {
+        return;
     }
-    else if (method == "POST") {
-        _method = POST;
-    }
-    else if (method == "DELETE") {
-        _method = DELETE;
-    }
-    else if (method == "HEAD" || method == "PUT" || method == "CONNECT" ||
-            method == "OPTIONS" || method == "TRACE" || method == "PATCH") {
+    else if (_method == "HEAD" || _method == "PUT" || _method == "CONNECT" ||
+            _method == "OPTIONS" || _method == "TRACE" || _method == "PATCH") {
         _ret = 501;
         throw MethodNotSupportedException();
     }
     else {
         _ret = 400;
         throw MethodInvalidException();
-    }
-}
-
-void Request::setPath(std::string line) {
-    size_t i = 0;
-    size_t slash;
-
-    if (line[i] != '/') {
-        return;
-    }
-    while (i < line.length()) {
-        slash = line.find_first_of("/", i);
-        if (slash == std::string::npos) {
-            _path.push_back(line.substr(i, line.length()));
-            break;
-        }
-        else {
-            if (i != slash - i) {
-                _path.push_back(line.substr(i, slash - i));
-            }
-            _path.push_back(line.substr(slash, 1));
-            i = slash + 1;
-        }
     }
 }
 
@@ -145,8 +121,8 @@ void    Request::parsePath(std::stringstream &ss) {
         requestPath.replace(pos, 3, " ");
     }
 
-    setPath(requestPath);
-    if (_path[0] != "/") {
+    _path = requestPath;
+    if (_path[0] != '/') {
         _ret = 400;
         throw UriInvalidException();
     }
@@ -164,13 +140,6 @@ void    Request::parseVersion(std::stringstream &ss) {
         throw VersionInvalidException();
     }
 }
-
-//static std::string lowerCases(std::string str) {
-//    for (size_t i = 0; i < str.size(); i++) {
-//        str[i] = tolower(str[i]);
-//    }
-//    return str;
-//}
 
 void    Request::parseHeaders(std::stringstream &ss) {
     std::string line;
@@ -215,22 +184,8 @@ void    Request::parseBody(std::stringstream &ss, const std::string &requestStr)
 // overload function for testing
 std::ostream	&operator<<(std::ostream &os, const Request &request) {
 	os << BLUE << "--------- Request Object Info ----------" << std::endl;
-	Request::method	method = request.getMethod();
-	if (method == 0) {
-		os << "Method: GET" << std::endl;
-	} else if (method == 1) {
-		os << "Method: POST" << std::endl;
-	} else if (method == 2) {
-		os << "Method: DELETE" << std::endl;
-	}
-	
-	std::vector<std::string>	path = request.getPath();
- 	os << "Path: ";
-    for (unsigned long i = 0; i < path.size(); i++) {
-        os << path[i] << " ";
-    }
-	os << std::endl;
-
+    os << "Method: " << request.getMethod() << std::endl;
+ 	os << "Path: " << request.getPath() << std::endl;
 	os << "HTTP Version: " << request.getVersion() << std::endl;
 
 	os << "HEADERS:" << std::endl;
@@ -241,6 +196,7 @@ std::ostream	&operator<<(std::ostream &os, const Request &request) {
 
 	os << "Host: " << request.getHost() << std::endl;
 	os << "Body: " << std::endl << request.getBody() << std::endl;
+    os << "Ret:  " << request.getRet() << std::endl;
     os <<  "------- Request Object Info Done --------" << RESET << std::endl;
 	return os;
 }

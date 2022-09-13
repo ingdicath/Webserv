@@ -80,13 +80,6 @@ void    Webserver::createConnection(void) {
 		throw (std::logic_error("There are no active servers"));
 }
 
-void	 Webserver::writeResponse(int clientFD) {
-    char	buff[MAXLINE + 1];
-
-    snprintf((char*)buff, sizeof(buff), "HTTP/1.1 200 OK\r\n\r\n<HTML>Hello</HTML>");
-    write(clientFD, (char*)buff, strlen((char*)buff));
-}
-
 /*
 ** DESCRIPTION
 ** Function that in a loop checks the select function to find sockets that are ready to read or write. When there is one

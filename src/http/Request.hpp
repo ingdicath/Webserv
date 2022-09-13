@@ -15,15 +15,10 @@
 #define HOST "Host"
 
 class Request {
-public:
-    enum method {
-        GET, POST, DELETE
-    };
-
 private:
     unsigned long                       _clientMaxBodySize;
-    method                              _method;
-    std::vector<std::string>            _path;
+    std::string                         _method;
+    std::string                         _path;
     std::string                         _version;
     std::map<std::string, std::string>  _headers;
 	std::string                         _host;
@@ -31,7 +26,6 @@ private:
     int                                 _ret;
 
 	void    parseMethod(std::stringstream &ss);
-    void	setPath(std::string line);
 	void    parsePath(std::stringstream &ss);
 	void    parseVersion(std::stringstream &ss);
 	void    parseHeaders(std::stringstream &ss);
@@ -49,12 +43,13 @@ public:
     int parseRawRequest(const std::string &rawRequest);
 
     //getters
-    method  getMethod() const;
-    std::vector<std::string>    getPath() const;
-	std::string	getVersion() const;
+    std::string  getMethod() const;
+    std::string getPath() const;
+    std::string	getVersion() const;
 	std::map<std::string, std::string>	getHeaders() const;
     std::string getHost() const;
     std::string getBody() const;
+    int         getRet() const;
 
     class   HeadersIncorrectException : public std::exception {
     public:

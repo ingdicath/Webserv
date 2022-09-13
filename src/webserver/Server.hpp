@@ -75,6 +75,7 @@ public:
     void                    processRequest(int socket);
     void                    processChunk(int socket);
 
+    void                    setupResponse(Response &response, Request &request);
     int                     sendResponse(int socket);
 
 	bool getIsDefault() const;
