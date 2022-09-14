@@ -8,6 +8,7 @@
 #include "Client.hpp"
 #include "../utils/settings.hpp"
 #include "../http/Request.hpp"
+#include "../http/HttpData.hpp"
 #include "../http/Response.hpp"
 
 #include <sys/socket.h>
@@ -74,7 +75,8 @@ public:
     int                     recvRequest(int socket);
     void                    processRequest(int socket);
     void                    processChunk(int socket);
-
+    HttpData                setHttpData(Request &request);
+    int                     findRequestLocation(HttpData httpData);
     void                    setupResponse(Response &response, Request &request);
     int                     sendResponse(int socket);
 

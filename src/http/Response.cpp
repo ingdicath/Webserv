@@ -96,13 +96,15 @@ Response::Response(const Response &obj) {
 }
 
 Response &Response::operator=(const Response &obj) {
-    _protocol = obj._protocol;
-    _statusCode = obj._statusCode;
+    if (this != &obj) {
+        _protocol = obj._protocol;
+        _statusCode = obj._statusCode;
 //    _length = obj._length;
 //    _type = obj._type;
 //    _location = obj._location;
 //    _server = obj._server;
-    _body = obj._body;
+        _body = obj._body;
+    }
     return *this;
 }
 
@@ -165,9 +167,9 @@ const std::map<int, std::string> &Response::getErrorPages() const {
 
 static std::string  codeToStr(int code) {
     std::string res;
-
     for (int i = 0; i < 3; i++) {
-        res.insert(0, 1, ((code % 10) + '0'));
+        char c = (code % 10) + '0';
+        res.insert(0, 1, c);
         code = code / 10;
     }
     return res;
