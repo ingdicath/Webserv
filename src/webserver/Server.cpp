@@ -453,7 +453,7 @@ int Server::findRequestLocation(HttpData httpData) { //may have to do it with a 
         if (locationPath == requestPath) {
             return i;
         }
-        else if (locationPath.back() == '/' && locationPath.size() != 1) {
+        else if (locationPath[locationPath.size() - 1] == '/' && locationPath.size() != 1) {
             if (locationPath.substr(0, (locationPath.size() - 1)) == requestPath) {
                 return i;
             }

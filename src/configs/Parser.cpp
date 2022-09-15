@@ -55,6 +55,8 @@ void Parser::validateConfiguration(const std::string &configFile, std::vector<Se
 		throw ConfigFileException("Open unbalanced curly braces.");
 	} else if (sectionBlock.empty() && !utils::trim(line).empty()) {
 		throw ConfigFileException("Found invalid characters outside blocks: '" + utils::trim(line) + "'.");
+	} else if (!_isValidPortServerNameDupla(servers)) {
+		throw ConfigFileException("Found same port(s) with same server name(s).");
 	}
 	fileUtils.closeFile(_file);
 }
@@ -651,6 +653,45 @@ void Parser::setDefaultServer(std::vector<Server> *serverBlocks) {
 		if (itEval == itCurrent) {
 			itEval->setIsDefault(true);
 		}
+	}
+}
+
+bool Parser::_isValidPortServerNameDupla(std::vector<Server> *serverBlocks) {
+	std::vector<Server>::iterator itEval = serverBlocks->begin();
+	std::vector<Server>::iterator itCurrent = serverBlocks->begin();
+	std::vector<std::string> res;
+	for (itEval++; itEval != serverBlocks->end(); itEval++) {
+		for (itCurrent = serverBlocks->begin(); itCurrent != itEval; itCurrent++) {
+			if (itEval->getPort() == itCurrent->getPort()) {
+				std::vector<std::string> inter = _findIntersection(itEval->getServerName(), itCurrent->getServerName());
+				if (!inter.empty()) {
+					std::cerr << RED ERROR " Conflicting server_name '"
+							  << inter[0] //TODO: print all the intersection
+							  << "' on port: '" << itEval->getPort() << "'." RESET << std::endl;
+					return false;
+				}
+				break;
+			}
+		}
+	}
+	return true;
+}
+
+std::vector<std::string> Parser::_findIntersection(std::vector<std::string> v1, std::vector<std::string> v2) {
+	std::set<std::string> s1(v1.begin(), v1.end());
+	std::set<std::string> s2(v2.begin(), v2.end());
+	std::vector<std::string> v3;
+	std::set_intersection(s1.begin(), s1.end(), s2.begin(), s2.end(), std::back_inserter(v3));
+//	if (!v3.empty()) {
+//		for (std::vector<std::string>::iterator it = v3.begin(); it != v3.end(); it++)
+//			std::cout << *it << ' ';
+//	}
+	return v3;
+}
+void Parser::_printVector(std::vector<std::string> input) {
+	if (!input.empty()) {
+		for (std::vector<std::string>::iterator it = input.begin(); it != input.end(); it++)
+			std::cout << *it << ' ';
 	}
 }
 
