@@ -121,7 +121,7 @@ void    RequestTester::longPOSTRequest(int &sock) {
 
 void    RequestTester::invalidMethod(int &sock) {
     std::string rqs =
-            "TEST / HTTP/1.1\r\n"\
+            "HEAD / HTTP/1.1\r\n"\
 		"Host: localhost\r\n"\
 		"\r\n";
     send(sock, rqs.c_str(), strlen(rqs.c_str()), 0);

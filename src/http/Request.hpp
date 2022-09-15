@@ -51,69 +51,6 @@ public:
     std::string getBody() const;
     int         getRet() const;
 
-    class   HeadersIncorrectException : public std::exception {
-    public:
-        const char *what() const throw() {
-            return "Incorrect HTTP headers";
-        }
-    };
-
-    class   MethodInvalidException : public std::exception {
-    public:
-        const char *what() const throw() {
-            return "Invalid method";
-        }
-    };
-
-    class   MethodNotSupportedException : public std::exception {
-    public:
-        const char *what() const throw() {
-            return "This method is not supported";
-        }
-    };
-
-    class   VersionInvalidException : public std::exception {
-    public:
-        const char *what() const throw() {
-            return "Invalid HTTP version";
-        }
-    };
-
-    class   VersionNotSupportedException : public std::exception {
-    public:
-        const char *what() const throw() {
-            return "This HTTP version is not supported";
-        }
-    };
-
-    class   UriInvalidException : public std::exception {
-    public:
-        const char *what() const throw() {
-            return "URI format invalid";
-        }
-    };
-
-    class   UriTooLongException : public std::exception {
-    public:
-        const char *what() const throw() {
-            return "URI too long";
-        }
-    };
-
-    class   MaxClientBodyException : public std::exception {
-    public:
-        const char *what() const throw() {
-            return "Exceeded max client body";
-        }
-    };
-
-    class   BodyLengthIncorrectException : public std::exception {
-    public:
-        const char *what() const throw() {
-            return "Body length does not match content length";
-        }
-    };
-};
 
 // for testing delete later
 std::ostream	&operator<<(std::ostream &os, const Request &request);

@@ -9,8 +9,10 @@
 #include <string>
 #include <map>
 #include <time.h>
+#include <fstream>
 #include "../utils/settings.hpp"
 #include "Request.hpp"
+#include "HttpData.hpp"
 
 class Response {
 public:
@@ -47,64 +49,52 @@ public:
 //    static const std::map<int, const std::string>   statusMsg; // can't assign it with =, don't know why
 //    static const std::map<std::string, const std::string> contentType;
 
-    Response();
+    Response(HttpData &httpData, Request &request);
     virtual ~Response();
     Response(const Response &obj);
     Response &operator=(const Response &obj);
 
+    //getters
+    const std::string   &getPath() const;
+    const std::string   &getMethod() const;
+    const bool          &ifCloseConnection() const;
+    const HttpData      &getHttpData() const;
+    const std::string   &getProtocol() const;
+    const int           &getStatusCode() const;
+
+    // generate the response string
     std::string writeStatusLine(int statusCode);
     std::string writeHeaders();
     std::string writeBody();
+    void        setErrorBody();
+    std::string generateErrorResponse();
 
     std::string getResponse();
 
-    //setters
-    void    setPort(int port);
-    void    setHost(std::string host);
-    void    setAutoIndex(bool autoIndex);
-    void    setPath(std::string path);
-    void    setMethod(std::string method);
-    void    setStatusCode(int code);
-    void    setErrorPages(std::map<int, std::string> errorPages);
-
-    //getters
-    bool                getAutoindex() const;
-    const int           &getPort() const;
-    const std::string   &getHost() const;
-    const std::string   &getPath() const;
-    const std::string   &getMethod() const;
-    const int           &getStatusCode() const;
-    const std::map<int, std::string> &getErrorPages() const;
-
-
 private:
-    int         _port;
-    std::string _host;
-    bool        _autoIndex;
     std::string _path;
     std::string _method;
+    HttpData    _httpData;
+    bool        _closeConnection;
 
     //status line
     std::string     _protocol;
-//    e_statusCode    _status;
     int             _statusCode;
-    std::map<int, std::string>  _errorPages;
-
     //headers zero or more, followed by CRLF
-//    long _length;
-//    std::string _type;
-//    bool _connection;
-//    std::string _location;
-//    std::string _server;
-    // std::string  _date;
-    // std::string  _lastModified;
+//    unsigned long   _length;
+    std::string     _type;
+    std::string     _location;
+    std::string     _server;
+    std::string     _date;
+    std::string     _lastModified;
     //an empty line preceding the CRLF
     //body, optional
     std::string _body;
 
+    Response();
     std::string getStatusMsg(int statusCode); //use it becaus cannot use the map
+    int findRequestLocation();
 };
 
 // for testing delete later
 std::ostream	&operator<<(std::ostream &os, const Response &reponse);
-

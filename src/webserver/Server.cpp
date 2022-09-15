@@ -371,34 +371,10 @@ void    Server::processRequest(int socket) {
         Request request(_requests[socket], _clientMaxBodySize);
         std::cout << request << std::endl;
         HttpData    httpData = setHttpData(request);
-        int locationIndex = findRequestLocation(httpData);
-        std::cout << "location index: " << locationIndex << std::endl; //testing
-        if (locationIndex == -1) {
-            std::cout << "Internal_server_error, 500" << std::endl; //need to initial response here
-        }
-        // have to figure out what to do with redirection
-//        else if (httpData.getLocations()[locationIndex].getRedirection()) {
-//        }
-        else {
-            Location    location = httpData.getLocations()[locationIndex];
-            if (location.getAcceptedMethods().find(request.getMethod()) == location.getAcceptedMethods().end()) {
-                std::cout << "Method not Allowed, 405" << std::endl;
-                //need to initial response here;
-            }
-            else {
-                //handle the response here
-                Response    response;
-                setupResponse(response, request);
-                //output for testing
-                std::cout << response << std::endl;
-                _responses.insert(std::make_pair(socket, response.getResponse()));
-            }
-        }
-//        Response    response;
-//        setupResponse(response, request);
-//        //output for testing
-//        std::cout << response << std::endl;
-//        _responses.insert(std::make_pair(socket, response.getResponse()));
+        Response    response(httpData, request);
+        //output for testing
+        std::cout << response << std::endl;
+        _responses.insert(std::make_pair(socket, response.getResponse()));
     }
     _requests.erase(socket);
 }
@@ -427,7 +403,7 @@ HttpData    Server::setHttpData(Request &request) {
     httpData.setPort(_port);
     httpData.setHost(_host);
     httpData.setMaxClientBody(_clientMaxBodySize);
-    httpData.setPath(request.getPath());
+//    httpData.setPath(request.getPath());
     httpData.setErrorPages(_errorPage);
     httpData.setLocations(_locations);
     std::string hostName = request.getHost().substr(0, request.getHost().find_last_of(":"));
@@ -441,38 +417,3 @@ HttpData    Server::setHttpData(Request &request) {
     }
     return httpData;
 }
-
-int Server::findRequestLocation(HttpData httpData) { //may have to do it with a vector
-    std::vector<Location>    locationVector = httpData.getLocations();
-    std::string requestPath = httpData.getPath();
-    std::cout << "requestPath: " << requestPath << std::endl;
-
-    for(size_t i = 0; i < locationVector.size(); i++) {
-        std::string locationPath = locationVector[i].getPathLocation();
-        std::cout << "locationPath: " << locationPath << " [" << i << "]" << std::endl;
-        if (locationPath == requestPath) {
-            return i;
-        }
-        else if (locationPath.back() == '/' && locationPath.size() != 1) {
-            if (locationPath.substr(0, (locationPath.size() - 1)) == requestPath) {
-                return i;
-            }
-        }
-    }
-    return -1;
-}
-
-
-void    Server::setupResponse(Response &response, Request &request) {
-    response.setPort(_port);
-    response.setHost(_host);
-    response.setAutoIndex(_locations[0].isAutoindex()); //have to check which location in the vector is used here
-    response.setErrorPages(_errorPage);
-    response.setPath(request.getPath());
-    response.setMethod(request.getMethod());
-    response.setStatusCode(request.getRet());
-    if (_locations[0].getAcceptedMethods().find(request.getMethod()) == _locations[0].getAcceptedMethods().end()) {
-        response.setStatusCode(405);
-    }
-}
-

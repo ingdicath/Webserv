@@ -56,36 +56,15 @@ std::string Response::getStatusMsg(int statusCode) {
     return statusMsg;
 }
 
-//const std::map<int, const std::string> Response::statusMsg =
-//        {
-//                { 200, "OK" },
-//                { 201, "Created" },
-//                { 202, "Accepted" },
-//                { 204, "No Content" },
-//                { 301, "Moved Permanently" },
-//                { 302, "Found" },
-//                { 303, "See Other" },
-//                { 307, "Temporary Redirect" },
-//                { 400, "Bad Request" },
-//                { 403, "Forbidden" },
-//                { 404, "Not Found" },
-//                { 405, "Method Not Allowed" },
-//                { 408, "Request Timeout" },
-//                { 410, "Gone" },
-//                { 411, "Length Required" },
-//                { 413, "Payload Too Large" },
-//                { 414, "URI Too Long" },
-//                { 418, "I'm a teapot" },
-//                { 429, "Too Many Requests" },
-//                { 431, "Request Header Fields Too Large" },
-//                { 500, "Internal Server Error" },
-//                { 501, "Not Implemented" },
-//                { 505, "HTTP Version Not Supported" }
-//                // ...
-//        };
-
 Response::Response() {
-    _protocol = "HTTP/1.1";
+}
+
+Response::Response(HttpData &httpData, Request &request) :
+        _httpData(httpData), _closeConnection(false), _protocol("HTTP/1.1") {
+    _path = request.getPath();
+    _method = request.getMethod();
+    _statusCode = request.getRet();
+    _body = "";
 }
 
 Response::~Response() {
@@ -108,46 +87,6 @@ Response &Response::operator=(const Response &obj) {
     return *this;
 }
 
-void    Response::setPort(int port) {
-    _port = port;
-}
-
-void    Response::setHost(std::string host) {
-    _host = host;
-}
-
-void    Response::setAutoIndex(bool autoIndex) {
-    _autoIndex = autoIndex;
-}
-
-void    Response::setPath(std::string path) {
-    _path = path;
-}
-
-void    Response::setMethod(std::string method) {
-    _method = method;
-}
-
-void    Response::setStatusCode(int code) {
-    _statusCode = code;
-}
-
-void    Response::setErrorPages(std::map<int, std::string> errorPages) {
-    _errorPages = errorPages;
-}
-
-bool    Response::getAutoindex() const {
-    return _autoIndex;
-}
-
-const int   &Response::getPort() const {
-    return _port;
-}
-
-const std::string   &Response::getHost() const {
-    return _host;
-}
-
 const std::string   &Response::getPath() const {
     return _path;
 }
@@ -155,15 +94,41 @@ const std::string   &Response::getPath() const {
 const std::string   &Response::getMethod() const {
     return _method;
 }
+const HttpData  &Response::getHttpData() const {
+    return _httpData;
+}
+
+const bool  &Response::ifCloseConnection() const {
+    return _closeConnection;
+}
+
+const std::string   &Response::getProtocol() const {
+    return _protocol;
+}
 
 const int   &Response::getStatusCode() const {
     return _statusCode;
 }
 
-const std::map<int, std::string> &Response::getErrorPages() const {
-    return _errorPages;
-}
+int Response::findRequestLocation() { //may have to do it with a vector
+    std::vector<Location>    locationVector = _httpData.getLocations();
+    std::string requestPath = _path;
+    std::cout << "requestPath: " << requestPath << std::endl;
 
+    for(size_t i = 0; i < locationVector.size(); i++) {
+        std::string locationPath = locationVector[i].getPathLocation();
+        std::cout << "locationPath: " << locationPath << " [" << i << "]" << std::endl;
+        if (locationPath == requestPath) {
+            return static_cast<int>(i);
+        }
+        else if (locationPath[locationPath.size() - 1] == '/' && locationPath.size() != 1) {
+            if (locationPath.substr(0, (locationPath.size() - 1)) == requestPath) {
+                return static_cast<int>(i);
+            }
+        }
+    }
+    return -1;
+}
 
 static std::string  codeToStr(int code) {
     std::string res;
@@ -189,44 +154,116 @@ std::string Response::writeStatusLine(int statusCode) {
 }
 
 std::string Response::writeHeaders() {
-    std::string headers;
+    char        buffer[100];
+    time_t      rawTime;
+    struct tm   *tm;
+    std::string headers = "";
 
+    if (_closeConnection) {
+        headers += "connection: Closed\r\n";
+    }
+//    if (_body != "") {
+//        headers += "Content-Length: " + _body.length() + "\r\n";
+//    }
+//    headers += "Location: " + _path + "\r\n"; // may change after rediection
+    headers += "Content-Type: " + _type + "\r\n";
+    headers += "Server: " + _server + "\r\n";
+
+    time(&rawTime);
+    tm = gmtime(&rawTime);
+    strftime(buffer, 100, "%a, %d %b %G %T GMT", tm);
+    std::string timeStr = static_cast<std::string>(buffer);
+    headers += "Date: " + timeStr + "\r\n";
+    headers += "Last-Modified: " + timeStr + "\r\n"; //will change through modify
     headers.append("\r\n");
     return headers;
 }
 
 std::string Response::writeBody() {
-    _body = "<HTML>Hello</HTML>";
+    if (_body == "") {
+        _body = "<HTML>Hello</HTML>";
+    }
+    return _body;
+}
 
-    std::string body = _body;
-    return body;
+void    Response::setErrorBody() {
+    _type = "text/html";
+    std::map<int, std::string>	errorPage = _httpData.getErrorPages();
+    if (errorPage.find(_statusCode) != errorPage.end()) {
+        std::ofstream       file;
+        std::stringstream   buffer;
+        std::string         errorPagePath = "www" + errorPage[_statusCode];
+        std::cout << "Error Page Path: " << errorPagePath << std::endl;
+        file.open(errorPagePath.c_str(), std::ifstream::in);
+        if (file.is_open() == false) {
+            _body = "<!DOCTYPE html>\n<html><title>40404</title><body>There was an error finding your error page</body></html>\n";
+        }
+        else {
+            buffer << file.rdbuf();
+            file.close();
+            _body = buffer.str();
+        }
+    }
+    else {
+        _body = "<html><body><h1>" + codeToStr(_statusCode) + " " + getStatusMsg(_statusCode) + "</h1></body></head></html>";
+    }
+}
+
+std::string Response::generateErrorResponse() {
+    if (_statusCode == 413) {
+        _closeConnection = true; //payload too large, need to close the connection
+    }
+    setErrorBody();
+    std::string responseStr = writeStatusLine(_statusCode);
+    responseStr.append(writeHeaders());
+    responseStr.append(writeBody());
+    return responseStr;
 }
 
 std::string Response::getResponse() {
-    std::string responseStr = writeStatusLine(200);
-    responseStr.append(writeHeaders());
-    responseStr.append(writeBody());
+    std::string responseStr = "";
+    if (_statusCode != 200) { //there is an error
+        responseStr.append(generateErrorResponse());
+        return responseStr;
+    }
+    int locationIndex = findRequestLocation();
+    std::cout << "location index: " << locationIndex << std::endl; //testing
+    if (locationIndex == -1) {
+        _statusCode = 500; // internal server error
+    }
+    // have to figure out what to do with redirection
+//  else if (httpData.getLocations()[locationIndex].getRedirection()) {
+//  }
+    else {
+       Location    location = _httpData.getLocations()[locationIndex];
+       if (location.getAcceptedMethods().find(_method) == location.getAcceptedMethods().end()) {
+           _statusCode = 405;
+       }
+    }
+    if (_statusCode >= 400) { //there is an error
+        responseStr.append(generateErrorResponse());
+        return responseStr;
+    }
+    else {
+        responseStr.append(writeStatusLine(200));
+        responseStr.append(writeHeaders());
+        responseStr.append(writeBody());
+    }
     return responseStr;
 }
 
 // overload function for testing
 std::ostream	&operator<<(std::ostream &os, const Response &response) {
     os << BLUE << "--------- Response Object Info ----------" << std::endl;
-    os << "Port: " << response.getPort() << std::endl;
-    os << "Host: " << response.getHost() << std::endl;
-    if (response.getAutoindex() == true) {
-        os << "AutoIndex: true" << std::endl;
-    } else {
-        os << "AutoIndex: false" << std::endl;
-    }
     os << "Path: " << response.getPath() << std::endl;
     os << "Method: " << response.getMethod() << std::endl;
-    os << "StatusCode: " << response.getStatusCode() << std::endl;
-    os << "ErrorPages:" << std::endl;
-    std::map<int, std::string>	errorPages = response.getErrorPages();
-    for(std::map<int, std::string>::const_iterator it = errorPages.begin(); it != errorPages.end(); ++it) {
-        os << it->first << ": " << it->second << std::endl;
+    if (response.ifCloseConnection() == true) {
+        os << "Close Connection: yes" << std::endl;
+    } else {
+        os << "Close Connection: no" << std::endl;
     }
+    os << "StatusCode: " << response.getStatusCode() << std::endl;
+    os << "HttpData:" << response.getHttpData() << std::endl;
     os <<  "------- Response Object Info Done --------" << RESET << std::endl;
     return os;
 }

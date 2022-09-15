@@ -76,8 +76,6 @@ public:
     void                    processRequest(int socket);
     void                    processChunk(int socket);
     HttpData                setHttpData(Request &request);
-    int                     findRequestLocation(HttpData httpData);
-    void                    setupResponse(Response &response, Request &request);
     int                     sendResponse(int socket);
 
 	bool getIsDefault() const;

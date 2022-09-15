@@ -95,11 +95,9 @@ void    Request::parseMethod(std::stringstream &ss) {
     else if (_method == "HEAD" || _method == "PUT" || _method == "CONNECT" ||
             _method == "OPTIONS" || _method == "TRACE" || _method == "PATCH") {
         _ret = 501;
-        throw MethodNotSupportedException();
     }
     else {
         _ret = 400;
-        throw MethodInvalidException();
     }
 }
 
@@ -109,7 +107,6 @@ void    Request::parsePath(std::stringstream &ss) {
     ss >> requestPath;
     if (requestPath.length() > 2048) {
         _ret = 414;
-        throw UriTooLongException();
     }
 
     // space in uri is %20, so need decode it first
@@ -124,7 +121,6 @@ void    Request::parsePath(std::stringstream &ss) {
     _path = requestPath;
     if (_path[0] != '/') {
         _ret = 400;
-        throw UriInvalidException();
     }
 }
 
@@ -133,11 +129,9 @@ void    Request::parseVersion(std::stringstream &ss) {
 
     if (_version == "HTTP/2.0" || _version == "HTTP/2" || _version == "HTTP/3.0") {
         _ret = 505;
-        throw VersionNotSupportedException();
     }
     else if (_version != "HTTP/1.1") {
         _ret = 400;
-        throw VersionInvalidException();
     }
 }
 
@@ -151,12 +145,10 @@ void    Request::parseHeaders(std::stringstream &ss) {
         }
         std::string key, value;
         std::getline(header, key, ':');
-//        key = lowerCases(key);
         std::getline(header, value);
         value = value.substr(1,value.size() - 2);
         if (key.empty() || value.empty()) {
             _ret = 400;
-            throw HeadersIncorrectException();
         }
         _headers.insert(std::pair<std::string, std::string>(key, value));
     }
@@ -177,7 +169,6 @@ void    Request::parseBody(std::stringstream &ss, const std::string &requestStr)
     }
     if (_body.size() != 0 && _clientMaxBodySize != 0 && _body.size() > _clientMaxBodySize) {
         _ret = 431;
-        throw MaxClientBodyException();
     }
 }
 

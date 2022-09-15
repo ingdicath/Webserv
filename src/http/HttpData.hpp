@@ -14,7 +14,7 @@ private:
     int             _port;
     std::string     _host;
     unsigned long   _maxClientBody;
-    std::string     _path;
+//    std::string     _path;
     std::string     _serverName;
     std::map<int, std::string>  _errorPage;
     std::vector<Location>       _locations;
@@ -29,7 +29,7 @@ public:
     void    setPort(int port);
     void    setHost(std::string host);
     void    setMaxClientBody(unsigned long maxClientBody);
-    void    setPath(std::string path);
+//    void    setPath(std::string path);
     void    setServerName(std::string serverName);
     void    setErrorPages(std::map<int, std::string> errorPages);
     void    setLocations(std::vector<Location> locations);
@@ -38,8 +38,11 @@ public:
     const int           &getPort() const;
     const std::string   &getHost() const;
     const unsigned long &getMaxClientBody() const;
-    const std::string   &getPath() const;
+//    const std::string   &getPath() const;
     const std::string   &getServerName() const;
     const std::map<int, std::string> &getErrorPages() const;
     const std::vector<Location>      &getLocations() const;
 };
+
+// overload function for testing
+std::ostream	&operator<<(std::ostream &os, const HttpData &httpData);
