@@ -14,6 +14,8 @@ add_executable(Webserv src/main.cpp
         src/http/Request.hpp
         src/http/Response.cpp
         src/http/Response.hpp
+        src/http/HttpData.cpp
+        src/http/HttpData.hpp
         src/utils/settings.hpp
         src/utils/utils.hpp
         src/utils/utils.cpp

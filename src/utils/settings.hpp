@@ -39,7 +39,7 @@
 /** Default server values **/
 #define DEFAULT_PORT 80
 #define DEFAULT_HOST "0.0.0.0"
-#define DEFAULT_CLIENT_MAX_BODY_SIZE 10 // in Megabytes
+#define DEFAULT_CLIENT_MAX_BODY_SIZE 10000000 // 10 Megabytes
 #define DEFAULT_ROOT "/www"
 #define DEFAULT_INDEX "index.html"
 #define DEFAULT_SERVER_NAME ""

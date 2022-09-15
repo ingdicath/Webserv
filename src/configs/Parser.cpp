@@ -533,7 +533,7 @@ long Parser::_checkBodySize(std::vector<std::string> bodySize) {
 	bodySize[0].at(lastPos) =
 			char(std::toupper(static_cast<unsigned char>(bodySize[0].at(lastPos))));
 	bodySize[0] = utils::deleteLastOf('M', bodySize[0]);
-	long res = utils::stringToLong(bodySize[0]);
+	long res = utils::stringToLong(bodySize[0]) * 1000000;
 	return res;
 }
 
