@@ -70,7 +70,7 @@ void    RequestTester::basicPOSTRequest(int &sock) {
 
 void    RequestTester::longGetRequest(int &sock) {
     std::string rqs =
-            "GET /images HTTP/1.1\r\n"
+            "GET / HTTP/1.1\r\n"
             "Host: localhost:8085\r\n"
             "Connection: keep-alive\r\n"
             "sec-ch-ua: \"Chromium\";v=\"104\", \" Not A;Brand\";v=\"99\", \"Google Chrome\";v=\"104\"\r\n"
@@ -101,7 +101,7 @@ void    RequestTester::longGetRequest(int &sock) {
 
 void    RequestTester::longPOSTRequest(int &sock) {
     std::string rqs =
-            "POST /basicPOSTRequest.txt HTTP/1.1\r\n"\
+            "POST /images HTTP/1.1\r\n"\
         "Content-Length: 445\r\n"\
         "Host: localhost\r\n"\
         "\r\n"\

@@ -92,4 +92,9 @@ private:
 	std::pair<std::string, std::string> _checkCGI(std::vector<std::string> cgi);
 	std::set<std::string> _checkAcceptedMethods(std::vector<std::string> methods);
 	Location *_checkLocation(const std::string &line, const int &posPath);
+
+	bool _isValidPortServerNameDupla(std::vector<Server> *serverBlocks);
+
+	std::vector<std::string> _findIntersection(std::vector<std::string> v1, std::vector<std::string> v2); //could be in utils
+	void _printVector(std::vector<std::string> input);
 };
