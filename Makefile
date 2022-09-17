@@ -27,6 +27,7 @@ SRC			=	main.cpp \
 				Location.cpp \
 				Request.cpp \
 				HttpData.cpp \
+				ResponseHeaders.cpp \
 				Response.cpp \
 				Parser.cpp \
 				FileUtils.cpp

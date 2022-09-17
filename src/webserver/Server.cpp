@@ -368,13 +368,13 @@ void    Server::processRequest(int socket) {
     }
 
     if (_requests[socket] != "") {
-        Request request(_requests[socket], _clientMaxBodySize);
+        Request request(_requests[socket]);
         std::cout << request << std::endl;
         HttpData    httpData = setHttpData(request);
         Response    response(httpData, request);
         //output for testing
         std::cout << response << std::endl;
-        _responses.insert(std::make_pair(socket, response.getResponse()));
+        _responses.insert(std::make_pair(socket, response.getResponse(request)));
     }
     _requests.erase(socket);
 }

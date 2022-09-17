@@ -9,8 +9,8 @@
 Request::Request() {
 }
 
-Request::Request(const std::string &requestStr, unsigned long clientMaxBodySize) :
-    _clientMaxBodySize(clientMaxBodySize), _body(""), _ret(200) {
+Request::Request(const std::string &requestStr) :
+    _body(""), _ret(200) {
     parseRawRequest(requestStr);
     if (_ret != 200) {
         std::cerr << RED "Request parsing error: " << _ret << RESET << std::endl;
@@ -166,9 +166,6 @@ void    Request::parseBody(std::stringstream &ss, const std::string &requestStr)
     if (currentPos != -1 && static_cast<unsigned long>(currentPos) < requestStr.size()) {
         std::string	restInput = requestStr.substr(currentPos, requestStr.size() - currentPos);
         _body.assign(restInput);
-    }
-    if (_body.size() != 0 && _clientMaxBodySize != 0 && _body.size() > _clientMaxBodySize) {
-        _ret = 431;
     }
 }
 

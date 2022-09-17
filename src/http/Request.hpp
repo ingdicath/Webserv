@@ -16,7 +16,6 @@
 
 class Request {
 private:
-    unsigned long _clientMaxBodySize;
     std::string _method;
     std::string _path;
     std::string _version;
@@ -38,7 +37,7 @@ private:
     Request();
 
 public:
-    Request(const std::string &requesStr, unsigned long clientMaxBodySize);
+    Request(const std::string &requesStr);
 
     virtual ~Request();
 

@@ -10,9 +10,13 @@
 #include <map>
 #include <time.h>
 #include <fstream>
+#include <sys/types.h>
+#include <sys/stat.h>
+#include <unistd.h>
 #include "../utils/settings.hpp"
 #include "Request.hpp"
 #include "HttpData.hpp"
+#include "ResponseHeaders.hpp"
 
 class Response {
 public:
@@ -46,8 +50,6 @@ public:
 //        HTTP_VERSION_NOT_SUPPORTED = 505
 //    };
 
-//    static const std::map<int, const std::string>   statusMsg; // can't assign it with =, don't know why
-//    static const std::map<std::string, const std::string> contentType;
 
     Response(HttpData &httpData, Request &request);
     virtual ~Response();
@@ -63,13 +65,14 @@ public:
     const int           &getStatusCode() const;
 
     // generate the response string
-    std::string writeStatusLine(int statusCode);
-    std::string writeHeaders();
-    std::string writeBody();
     void        setErrorBody();
-    std::string generateErrorResponse();
-
-    std::string getResponse();
+    void        processGetMethod(Request &request);
+    void        processPostMethod(Request &request);
+    std::string processDeleteMethod(Request &request, std::string location);
+//    int         readContent(void);
+//    int         writeContent(std::string content);
+//    int         fileExists(std::string path);
+    std::string getResponse(Request &request);
 
 private:
     std::string _path;
@@ -94,6 +97,7 @@ private:
     Response();
     std::string getStatusMsg(int statusCode); //use it becaus cannot use the map
     int findRequestLocation();
+    int isFile(const std::string &path);
 };
 
 // for testing delete later

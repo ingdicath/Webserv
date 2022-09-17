@@ -4,58 +4,6 @@
 
 #include "Response.hpp"
 
-std::string Response::getStatusMsg(int statusCode) {
-    std::string statusMsg;
-    if (statusCode == 200) {
-        statusMsg = "OK";
-    } else if (statusCode == 201) {
-        statusMsg = "Created";
-    } else if (statusCode == 202) {
-        statusMsg = "Accepted";
-    } else if (statusCode == 204) {
-        statusMsg = "No Content";
-    } else if (statusCode == 301) {
-        statusMsg = "Moved Permanently";
-    } else if (statusCode == 302) {
-        statusMsg = "Found";
-    } else if (statusCode == 303) {
-        statusMsg = "See Other";
-    } else if (statusCode == 307) {
-        statusMsg = "Temporary Redirect";
-    } else if (statusCode == 400) {
-        statusMsg = "Bad Request";
-    } else if (statusCode == 404) {
-        statusMsg = "Not Found";
-    } else if (statusCode == 403) {
-        statusMsg = "Forbidden";
-    } else if (statusCode == 405) {
-        statusMsg = "Method Not Allowed";
-    } else if (statusCode == 408) {
-        statusMsg = "Request Timeout";
-    } else if (statusCode == 410) {
-        statusMsg = "Gone";
-    } else if (statusCode == 411) {
-        statusMsg = "Length Required";
-    } else if (statusCode == 413) {
-        statusMsg = "Payload Too Large";
-    } else if (statusCode == 414) {
-        statusMsg = "URI Too Long";
-    } else if (statusCode == 418) {
-        statusMsg = "I'm a teapot";
-    } else if (statusCode == 429) {
-        statusMsg = "Too Many Requests";
-    } else if (statusCode == 431) {
-        statusMsg = "Request Header Fields Too Large";
-    } else if (statusCode == 500) {
-        statusMsg = "Internal Server Error";
-    } else if (statusCode == 501) {
-        statusMsg = "Not Implemented";
-    } else if (statusCode == 505) {
-        statusMsg = "HTTP Version Not Supported";
-    }
-    return statusMsg;
-}
-
 Response::Response() {
 }
 
@@ -130,62 +78,6 @@ int Response::findRequestLocation() { //may have to do it with a vector
     return -1;
 }
 
-static std::string  codeToStr(int code) {
-    std::string res;
-    for (int i = 0; i < 3; i++) {
-        char c = (code % 10) + '0';
-        res.insert(0, 1, c);
-        code = code / 10;
-    }
-    return res;
-}
-
-std::string Response::writeStatusLine(int statusCode) {
-    std::string statusMsg = getStatusMsg(statusCode);
-
-    std::string statusLine;
-    statusLine.append(_protocol);
-    statusLine.append(" ");
-    statusLine.append(codeToStr(statusCode));
-    statusLine.append(" ");
-    statusLine.append(statusMsg);
-    statusLine.append("\r\n");
-    return statusLine;
-}
-
-std::string Response::writeHeaders() {
-    char        buffer[100];
-    time_t      rawTime;
-    struct tm   *tm;
-    std::string headers = "";
-
-    if (_closeConnection) {
-        headers += "connection: Closed\r\n";
-    }
-//    if (_body != "") {
-//        headers += "Content-Length: " + _body.length() + "\r\n";
-//    }
-//    headers += "Location: " + _path + "\r\n"; // may change after rediection
-    headers += "Content-Type: " + _type + "\r\n";
-    headers += "Server: " + _server + "\r\n";
-
-    time(&rawTime);
-    tm = gmtime(&rawTime);
-    strftime(buffer, 100, "%a, %d %b %G %T GMT", tm);
-    std::string timeStr = static_cast<std::string>(buffer);
-    headers += "Date: " + timeStr + "\r\n";
-    headers += "Last-Modified: " + timeStr + "\r\n"; //will change through modify
-    headers.append("\r\n");
-    return headers;
-}
-
-std::string Response::writeBody() {
-    if (_body == "") {
-        _body = "<HTML>Hello</HTML>";
-    }
-    return _body;
-}
-
 void    Response::setErrorBody() {
     _type = "text/html";
     std::map<int, std::string>	errorPage = _httpData.getErrorPages();
@@ -205,50 +97,92 @@ void    Response::setErrorBody() {
         }
     }
     else {
-        _body = "<html><body><h1>" + codeToStr(_statusCode) + " " + getStatusMsg(_statusCode) + "</h1></body></head></html>";
+        _body = "<!DOCTYPE html>\n<html><title>40404</title><body>There was an error finding your error page</body></html>\n";
     }
 }
 
-std::string Response::generateErrorResponse() {
-    if (_statusCode == 413) {
-        _closeConnection = true; //payload too large, need to close the connection
+std::string Response::getResponse(Request &request) {
+    std::string responseStr = "";
+    ResponseHeaders  headers;
+    int locationIndex = findRequestLocation();
+    std::cout << "location index: " << locationIndex << std::endl; //testing
+    if (_statusCode == 200) {
+        if (locationIndex == -1) {
+            _statusCode = 500; // internal server error
+        }
+        else {
+            Location    location = _httpData.getLocations()[locationIndex];
+            if (location.getAcceptedMethods().find(_method) == location.getAcceptedMethods().end()) {
+                _statusCode = 405;
+            }
+            else if (_httpData.getMaxClientBody() < request.getBody().size()) {
+                _statusCode = 413;
+            }
+        }
     }
-    setErrorBody();
-    std::string responseStr = writeStatusLine(_statusCode);
-    responseStr.append(writeHeaders());
-    responseStr.append(writeBody());
+    if (_statusCode == 405 || _statusCode == 413) {
+        Location    location = _httpData.getLocations()[locationIndex];
+        setErrorBody();
+        if (_statusCode == 405) {
+            responseStr = headers.getHeaderNotAllowed(_body.size(), location.getAcceptedMethods(), location.getPathLocation(), _statusCode, _type);
+        } else {
+            responseStr = headers.getHeaderError(_body.size(), location.getPathLocation(), _statusCode, _type);
+        }
+        responseStr.append(_body);
+        return responseStr;
+    }
+    else if (_statusCode != 200) {
+        setErrorBody();
+        responseStr = headers.getHeaderError(_body.size(), _path, _statusCode, _type); //not sure if it is 500
+        responseStr.append(_body);
+        return responseStr;
+    }
+    else {
+        responseStr = "Http/1.1 200 OK\r\n<HTML>Hello</HTML>";
+    }
     return responseStr;
 }
 
-std::string Response::getResponse() {
-    std::string responseStr = "";
-    if (_statusCode != 200) { //there is an error
-        responseStr.append(generateErrorResponse());
-        return responseStr;
-    }
-    int locationIndex = findRequestLocation();
-    std::cout << "location index: " << locationIndex << std::endl; //testing
-    if (locationIndex == -1) {
-        _statusCode = 500; // internal server error
-    }
-    // have to figure out what to do with redirection
-//  else if (httpData.getLocations()[locationIndex].getRedirection()) {
-//  }
-    else {
-       Location    location = _httpData.getLocations()[locationIndex];
-       if (location.getAcceptedMethods().find(_method) == location.getAcceptedMethods().end()) {
-           _statusCode = 405;
-       }
-    }
-    if (_statusCode >= 400) { //there is an error
-        responseStr.append(generateErrorResponse());
-        return responseStr;
+int Response::isFile(const std::string &path) {
+    struct stat s;
+    if (stat(path.c_str(), &s) == 0 ) {
+        if (s.st_mode & S_IFDIR) {
+            return 0;
+        }
+        else if (s.st_mode & S_IFREG) {
+            return 1;
+        }
+        else {
+            return 0;
+        }
     }
     else {
-        responseStr.append(writeStatusLine(200));
-        responseStr.append(writeHeaders());
-        responseStr.append(writeBody());
+        return 0;
     }
+}
+
+std::string    Response::processDeleteMethod(Request &request, std::string location) {
+    ResponseHeaders headers;
+    (void)request;
+    std::string     responseStr;
+
+    _body = "";
+    if (isFile(_path)) {
+        if (remove(_path.c_str()) == 0) {
+            _statusCode = 204;
+        }
+        else {
+            _statusCode = 403;
+        }
+    }
+    else {
+        _statusCode = 404;
+    }
+    if (_statusCode == 403 || _statusCode == 404) {
+        setErrorBody();
+    }
+    responseStr = headers.getHeader(_body.size(), _path, _statusCode, _type, location);
+    responseStr.append(_body);
     return responseStr;
 }
 
