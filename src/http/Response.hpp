@@ -61,14 +61,16 @@ public:
     const std::string   &getMethod() const;
     const bool          &ifCloseConnection() const;
     const HttpData      &getHttpData() const;
-    const std::string   &getProtocol() const;
+//    const std::string   &getProtocol() const;
     const int           &getStatusCode() const;
+    const std::string   &getBody() const;
 
     // generate the response string
-    void        setErrorBody();
-    void        processGetMethod(Request &request);
-    void        processPostMethod(Request &request);
-    std::string processDeleteMethod(Request &request, std::string location);
+    void    setErrorBody();
+    void    readContent();
+    void    processGetMethod();
+    void    processPostMethod();
+    void    processDeleteMethod(Request &request);
 //    int         readContent(void);
 //    int         writeContent(std::string content);
 //    int         fileExists(std::string path);
@@ -81,15 +83,17 @@ private:
     bool        _closeConnection;
 
     //status line
-    std::string     _protocol;
+//    std::string     _protocol;
     int             _statusCode;
     //headers zero or more, followed by CRLF
 //    unsigned long   _length;
     std::string     _type;
     std::string     _location;
-    std::string     _server;
-    std::string     _date;
-    std::string     _lastModified;
+    Location        _serverLocation;
+    bool            _autoindex;
+    //    std::string     _server;
+//    std::string     _date;
+//    std::string     _lastModified;
     //an empty line preceding the CRLF
     //body, optional
     std::string _body;

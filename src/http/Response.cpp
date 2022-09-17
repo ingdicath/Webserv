@@ -8,7 +8,7 @@ Response::Response() {
 }
 
 Response::Response(HttpData &httpData, Request &request) :
-        _httpData(httpData), _closeConnection(false), _protocol("HTTP/1.1") {
+        _httpData(httpData), _closeConnection(false) {
     _path = request.getPath();
     _method = request.getMethod();
     _statusCode = request.getRet();
@@ -24,11 +24,13 @@ Response::Response(const Response &obj) {
 
 Response &Response::operator=(const Response &obj) {
     if (this != &obj) {
-        _protocol = obj._protocol;
+//        _protocol = obj._protocol;
         _statusCode = obj._statusCode;
 //    _length = obj._length;
 //    _type = obj._type;
-//    _location = obj._location;
+    _location = obj._location;
+    _serverLocation = obj._serverLocation;
+    _autoindex = obj._autoindex;
 //    _server = obj._server;
         _body = obj._body;
     }
@@ -50,12 +52,12 @@ const bool  &Response::ifCloseConnection() const {
     return _closeConnection;
 }
 
-const std::string   &Response::getProtocol() const {
-    return _protocol;
-}
-
 const int   &Response::getStatusCode() const {
     return _statusCode;
+}
+
+const std::string &Response::getBody() const {
+    return _body;
 }
 
 int Response::findRequestLocation() { //may have to do it with a vector
@@ -84,7 +86,7 @@ void    Response::setErrorBody() {
     if (errorPage.find(_statusCode) != errorPage.end()) {
         std::ofstream       file;
         std::stringstream   buffer;
-        std::string         errorPagePath = "www" + errorPage[_statusCode];
+        std::string         errorPagePath =errorPage[_statusCode];
         std::cout << "Error Page Path: " << errorPagePath << std::endl;
         file.open(errorPagePath.c_str(), std::ifstream::in);
         if (file.is_open() == false) {
@@ -106,13 +108,16 @@ std::string Response::getResponse(Request &request) {
     ResponseHeaders  headers;
     int locationIndex = findRequestLocation();
     std::cout << "location index: " << locationIndex << std::endl; //testing
+    if (locationIndex != -1) {
+        _serverLocation = _httpData.getLocations()[locationIndex];
+        _autoindex = _serverLocation.isAutoindex();
+    }
     if (_statusCode == 200) {
         if (locationIndex == -1) {
             _statusCode = 500; // internal server error
         }
         else {
-            Location    location = _httpData.getLocations()[locationIndex];
-            if (location.getAcceptedMethods().find(_method) == location.getAcceptedMethods().end()) {
+            if (_serverLocation.getAcceptedMethods().find(_method) == _serverLocation.getAcceptedMethods().end()) {
                 _statusCode = 405;
             }
             else if (_httpData.getMaxClientBody() < request.getBody().size()) {
@@ -121,12 +126,11 @@ std::string Response::getResponse(Request &request) {
         }
     }
     if (_statusCode == 405 || _statusCode == 413) {
-        Location    location = _httpData.getLocations()[locationIndex];
         setErrorBody();
         if (_statusCode == 405) {
-            responseStr = headers.getHeaderNotAllowed(_body.size(), location.getAcceptedMethods(), location.getPathLocation(), _statusCode, _type);
+            responseStr = headers.getHeaderNotAllowed(_body.size(), _serverLocation.getAcceptedMethods(), _serverLocation.getPathLocation(), _statusCode, _type);
         } else {
-            responseStr = headers.getHeaderError(_body.size(), location.getPathLocation(), _statusCode, _type);
+            responseStr = headers.getHeaderError(_body.size(), _serverLocation.getPathLocation(), _statusCode, _type);
         }
         responseStr.append(_body);
         return responseStr;
@@ -138,16 +142,28 @@ std::string Response::getResponse(Request &request) {
         return responseStr;
     }
     else {
-        responseStr = "Http/1.1 200 OK\r\n<HTML>Hello</HTML>";
+        responseStr = "Http/1.1 200 OK\r\n\r\n<HTML>Hello</HTML>";
+        if (_method == "GET") {
+            processGetMethod();
+        } else if (_method == "DELETE") {
+            processDeleteMethod(request);
+        }
+        if (_statusCode != 200) {
+            responseStr = headers.getHeaderError(_body.size(), _path, _statusCode, _type);
+        } else {
+            responseStr = headers.getHeader(_body.size(), _path, _statusCode, _type, _serverLocation.getPathLocation());
+        }
+        responseStr.append(_body);
+        return responseStr;
     }
     return responseStr;
 }
 
-int Response::isFile(const std::string &path) {
+int Response::isFile(const std::string &path) { //return 1 if is file, return 2 if is directory
     struct stat s;
     if (stat(path.c_str(), &s) == 0 ) {
         if (s.st_mode & S_IFDIR) {
-            return 0;
+            return 2;
         }
         else if (s.st_mode & S_IFREG) {
             return 1;
@@ -161,7 +177,46 @@ int Response::isFile(const std::string &path) {
     }
 }
 
-std::string    Response::processDeleteMethod(Request &request, std::string location) {
+void Response::Response::readContent() {
+    std::ofstream       file;
+    std::stringstream   buffer;
+    int i = isFile(_path);
+    if (i > 0) {
+        if (i == 2) {
+            _path = _serverLocation.getRoot() + "/" + _serverLocation.getIndex();
+        }
+        file.open(_path.c_str(), std::ifstream::in);
+        if (file.is_open() == false) {
+            _statusCode = 403;
+            setErrorBody();
+        } else {
+            buffer << file.rdbuf();
+            _body = buffer.str();
+            file.close();
+        }
+    }
+    //have to generagte autoindex here
+//    else if (_autoindex) {
+//    }
+    else {
+        _statusCode = 404;
+        setErrorBody();
+    }
+}
+
+
+void     Response::processGetMethod() {
+    ResponseHeaders headers;
+    std::string     responseStr;
+
+    if (_statusCode == 200) {
+        readContent();
+    } else {
+        setErrorBody();
+    }
+}
+
+void     Response::processDeleteMethod(Request &request) {
     ResponseHeaders headers;
     (void)request;
     std::string     responseStr;
@@ -181,9 +236,6 @@ std::string    Response::processDeleteMethod(Request &request, std::string locat
     if (_statusCode == 403 || _statusCode == 404) {
         setErrorBody();
     }
-    responseStr = headers.getHeader(_body.size(), _path, _statusCode, _type, location);
-    responseStr.append(_body);
-    return responseStr;
 }
 
 // overload function for testing
@@ -197,7 +249,8 @@ std::ostream	&operator<<(std::ostream &os, const Response &response) {
         os << "Close Connection: no" << std::endl;
     }
     os << "StatusCode: " << response.getStatusCode() << std::endl;
-    os << "HttpData:" << response.getHttpData() << std::endl;
+//    os << "HttpData:" << response.getHttpData() << std::endl;
+    os << "Body: \n" << response.getBody() << std::endl;
     os <<  "------- Response Object Info Done --------" << RESET << std::endl;
     return os;
 }
