@@ -8,10 +8,17 @@ Response::Response() {
 }
 
 Response::Response(HttpData &httpData, Request &request) :
-        _httpData(httpData), _closeConnection(false) {
+        _httpData(httpData), _autoindex(false) {
     _path = request.getPath();
     _method = request.getMethod();
     _statusCode = request.getRet();
+    _closeConnection = false;
+    if (request.getHeaders().find("Connection") == request.getHeaders().end()) {
+        if (request.getHeaders()["Connection"] == "close") {
+            _closeConnection = true;
+        }
+    }
+    _type = "";
     _body = "";
 }
 
@@ -24,14 +31,15 @@ Response::Response(const Response &obj) {
 
 Response &Response::operator=(const Response &obj) {
     if (this != &obj) {
-//        _protocol = obj._protocol;
+        _path = obj._path;
+        _method = obj._method;
+        _httpData = obj._httpData;
+        _closeConnection = obj._closeConnection;
         _statusCode = obj._statusCode;
-//    _length = obj._length;
-//    _type = obj._type;
-    _location = obj._location;
-    _serverLocation = obj._serverLocation;
-    _autoindex = obj._autoindex;
-//    _server = obj._server;
+        _type = obj._type;
+        _location = obj._location;
+        _serverLocation = obj._serverLocation;
+        _autoindex = obj._autoindex;
         _body = obj._body;
     }
     return *this;
@@ -60,20 +68,50 @@ const std::string &Response::getBody() const {
     return _body;
 }
 
-int Response::findRequestLocation() { //may have to do it with a vector
-    std::vector<Location>    locationVector = _httpData.getLocations();
-    std::string requestPath = _path;
-    std::cout << "requestPath: " << requestPath << std::endl;
+std::vector<std::string>    Response::setPathVector(std::string pathStr) {
+    size_t i = 0;
+    size_t slashPos;
+    std::vector<std::string>    path;
 
-    for(size_t i = 0; i < locationVector.size(); i++) {
-        std::string locationPath = locationVector[i].getPathLocation();
-        std::cout << "locationPath: " << locationPath << " [" << i << "]" << std::endl;
-        if (locationPath == requestPath) {
-            return static_cast<int>(i);
+    while (i < pathStr.length()) {
+        slashPos = pathStr.find_first_of("/", i);
+        if (slashPos == std::string::npos) {
+            path.push_back(pathStr.substr(i, pathStr.length()));
+            break;
         }
-        else if (locationPath[locationPath.size() - 1] == '/' && locationPath.size() != 1) {
-            if (locationPath.substr(0, (locationPath.size() - 1)) == requestPath) {
-                return static_cast<int>(i);
+        else {
+            if (i != slashPos - i) {
+                path.push_back(pathStr.substr(i, slashPos - i));
+            }
+            path.push_back(pathStr.substr(slashPos, 1));
+            i = slashPos + 1;
+        }
+    }
+    return path;
+}
+
+int Response::findRequestLocation() {
+    std::vector<Location>    locationVector = _httpData.getLocations();
+    std::vector<std::string>    requestPath = setPathVector(_path);
+    size_t lenRequestPath = requestPath.size();
+    if (requestPath[lenRequestPath - 1] != "/") {
+        lenRequestPath--;
+    }
+
+    for (size_t i = 0; i < locationVector.size(); i++) {
+        std::vector<std::string>    locationPath = setPathVector(locationVector[i].getPathLocation());
+        size_t lenLocationPath = locationPath.size();
+        if (lenLocationPath != lenRequestPath) {
+            continue;
+        }
+        else {
+            for (size_t j = 0; j < lenLocationPath; j++) {
+                if (locationPath[j] != requestPath[j]) {
+                    continue;
+                }
+                if (j == lenLocationPath - 1) {
+                    return static_cast<int>(i);
+                }
             }
         }
     }
@@ -86,7 +124,7 @@ void    Response::setErrorBody() {
     if (errorPage.find(_statusCode) != errorPage.end()) {
         std::ofstream       file;
         std::stringstream   buffer;
-        std::string         errorPagePath =errorPage[_statusCode];
+        std::string         errorPagePath = "www" + errorPage[_statusCode];
         std::cout << "Error Page Path: " << errorPagePath << std::endl;
         file.open(errorPagePath.c_str(), std::ifstream::in);
         if (file.is_open() == false) {
@@ -122,6 +160,7 @@ std::string Response::getResponse(Request &request) {
             }
             else if (_httpData.getMaxClientBody() < request.getBody().size()) {
                 _statusCode = 413;
+                _closeConnection = true;
             }
         }
     }
@@ -135,20 +174,21 @@ std::string Response::getResponse(Request &request) {
         responseStr.append(_body);
         return responseStr;
     }
-    else if (_statusCode != 200) {
+    else if (_statusCode >= 400) {
         setErrorBody();
         responseStr = headers.getHeaderError(_body.size(), _path, _statusCode, _type); //not sure if it is 500
         responseStr.append(_body);
         return responseStr;
     }
     else {
-        responseStr = "Http/1.1 200 OK\r\n\r\n<HTML>Hello</HTML>";
         if (_method == "GET") {
             processGetMethod();
+        } else if (_method == "POST") {
+            processPostMethod();
         } else if (_method == "DELETE") {
             processDeleteMethod(request);
         }
-        if (_statusCode != 200) {
+        if (_statusCode >= 200) {
             responseStr = headers.getHeaderError(_body.size(), _path, _statusCode, _type);
         } else {
             responseStr = headers.getHeader(_body.size(), _path, _statusCode, _type, _serverLocation.getPathLocation());
@@ -180,12 +220,18 @@ int Response::isFile(const std::string &path) { //return 1 if is file, return 2 
 void Response::Response::readContent() {
     std::ofstream       file;
     std::stringstream   buffer;
-    int i = isFile(_path);
+    std::string         contentPath = _serverLocation.getRoot();
+
+    size_t  found = _path.find_last_of("/");
+    contentPath = contentPath + _path.substr(found);
+    std::cout << "PATH: " << contentPath << std::endl; //testing
+    int i = isFile(contentPath);
     if (i > 0) {
         if (i == 2) {
-            _path = _serverLocation.getRoot() + "/" + _serverLocation.getIndex();
+            contentPath = contentPath + _serverLocation.getIndex();
         }
-        file.open(_path.c_str(), std::ifstream::in);
+        _path = contentPath;
+        file.open(contentPath.c_str(), std::ifstream::in);
         if (file.is_open() == false) {
             _statusCode = 403;
             setErrorBody();
@@ -204,10 +250,8 @@ void Response::Response::readContent() {
     }
 }
 
-
 void     Response::processGetMethod() {
-    ResponseHeaders headers;
-    std::string     responseStr;
+//    ResponseHeaders headers;
 
     if (_statusCode == 200) {
         readContent();
@@ -216,10 +260,15 @@ void     Response::processGetMethod() {
     }
 }
 
+void    Response::processPostMethod() { //need to implement more
+//    ResponseHeaders headers;
+    _statusCode = 204;
+    _body = "";
+}
+
 void     Response::processDeleteMethod(Request &request) {
     ResponseHeaders headers;
     (void)request;
-    std::string     responseStr;
 
     _body = "";
     if (isFile(_path)) {
@@ -249,8 +298,7 @@ std::ostream	&operator<<(std::ostream &os, const Response &response) {
         os << "Close Connection: no" << std::endl;
     }
     os << "StatusCode: " << response.getStatusCode() << std::endl;
-//    os << "HttpData:" << response.getHttpData() << std::endl;
-    os << "Body: \n" << response.getBody() << std::endl;
+//    os << "Body: \n" << response.getBody() << std::endl;
     os <<  "------- Response Object Info Done --------" << RESET << std::endl;
     return os;
 }

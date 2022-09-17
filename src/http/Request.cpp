@@ -154,7 +154,7 @@ void    Request::parseHeaders(std::stringstream &ss) {
     }
 
     if (_headers.find(HOST) == _headers.end()) {
-        _host = "NAV";
+        _ret = 400;
     }
     else {
         _host = _headers[HOST];
