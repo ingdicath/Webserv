@@ -101,7 +101,14 @@ int Response::findRequestLocation() {
     for (size_t i = 0; i < locationVector.size(); i++) {
         std::vector<std::string>    locationPath = setPathVector(locationVector[i].getPathLocation());
         size_t lenLocationPath = locationPath.size();
-        if (lenLocationPath != lenRequestPath) {
+        if (lenLocationPath == 1 && locationPath[0] == "/") {
+            if (lenRequestPath == 1 && requestPath[0] == "/") {
+                return static_cast<int>(i);
+            } else {
+                continue;
+            }
+        }
+        if (lenLocationPath > lenRequestPath) {
             continue;
         }
         else {
@@ -222,15 +229,18 @@ void Response::Response::readContent() {
     std::stringstream   buffer;
     std::string         contentPath = _serverLocation.getRoot();
 
-    size_t  found = _path.find_last_of("/");
-    contentPath = contentPath + _path.substr(found);
-    std::cout << "ContentPath: " << contentPath << std::endl;
+    contentPath = contentPath + _path.substr(_serverLocation.getPathLocation().size() - 1);
+    std::cout << "ContentPath: " << contentPath << std::endl; //testing
     int i = isFile(contentPath);
     if (i > 0) {
         if (i == 2) {
             contentPath = contentPath + _serverLocation.getIndex();
         }
         _path = contentPath;
+        std::string fileExtension = _path.substr(_path.find_last_of("."));
+        if (fileExtension == ".py") { //cgi part
+            std::cout << RED << "It is a SNACK!!! RUNN!!!!" << RESET << std::endl;
+        }
         file.open(contentPath.c_str(), std::ifstream::in);
         if (file.is_open() == false) {
             _statusCode = 403;
