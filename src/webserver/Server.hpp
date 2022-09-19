@@ -46,7 +46,6 @@ public:
 		virtual const char *what() const throw();
 	};
 
-
 	//Get functions
 	int								getPort(void) const;
 	const std::string				&getHost() const;
@@ -66,10 +65,10 @@ public:
 	void					setHost(std::string host);
 	void					setServerName(const std::vector<std::string> &serverName);
 	void					setClientMaxBodySize(unsigned long clientMaxBodySize);
-	void					setIsDefault(bool isDefault);
-
+	void					setDefaultErrorPages();
 	void					addErrorPage(const std::pair<int, std::string> &errorPage);
 	void					addLocation(Location location);
+	void					addRelatedServers(Server server);
 
     // functions for take request and then send the response
     int                     recvRequest(int socket);
@@ -78,7 +77,8 @@ public:
     HttpData                setHttpData(Request &request);
     int                     sendResponse(int socket);
 
-	bool getIsDefault() const;
+	// Finds if a server has same port same host
+	bool 	isSameListen(const Server& other);
 
 private:
 // Configuration file
@@ -88,9 +88,8 @@ private:
 	std::map<int, std::string>	_errorPage;					// Explore how this works
 	unsigned long				_clientMaxBodySize;
 	std::vector<Location>		_locations;				// Explore how this works
-
-// Flag to set default port in case multiples ports with the same value
-	bool						_isDefault;
+	std::vector<Server>			_relatedServers; // Regroup servers with same port different server name
+	std::set<std::string>       _serverNameSet;  //Validate duplicate servername same listen
 
 	// Variables that help to validate duplicate values
 	bool						_flagPort; // option #1 for validate duplicate directives
@@ -105,6 +104,4 @@ private:
 
     std::map<int, std::string>  _requests;
     std::map<int, std::string>  _responses;
-
-	void	_setDefaultErrorPages();
 };

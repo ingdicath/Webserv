@@ -14,7 +14,7 @@ public:
 	Parser();
 	virtual ~Parser();
 	void validateConfiguration(const std::string &configFile, std::vector<Server> *servers);
-	void setDefaultServer(std::vector<Server> *serverBlocks);
+	void _solveRelatedServer(std::vector<Server> *serverBlocks);
 
 	class ConfigFileException : public std::exception {
 	public:
@@ -68,7 +68,7 @@ private:
 	bool _isValidServerName(std::string serverName);
 	bool _areValidServerNames(const std::vector<std::string> &serverNames);
 	bool _isValidStatusCode(const std::string &statusCode, const std::string &directive);
-	bool _isValidPath(const std::string& path, const std::string &directive);
+	bool _isValidPath(const std::string &path, const std::string &directive);
 	bool _isValidPathLocation(std::string path, const std::string &directive);
 	bool _isValidErrorPage(std::vector<std::string> values);
 	bool _isValidIndex(const std::string &index);
@@ -92,9 +92,4 @@ private:
 	std::pair<std::string, std::string> _checkCGI(std::vector<std::string> cgi);
 	std::set<std::string> _checkAcceptedMethods(std::vector<std::string> methods);
 	Location *_checkLocation(const std::string &line, const int &posPath);
-
-	bool _isValidPortServerNameDupla(std::vector<Server> *serverBlocks);
-
-	std::vector<std::string> _findIntersection(std::vector<std::string> v1, std::vector<std::string> v2); //could be in utils
-	void _printVector(std::vector<std::string> input);
 };

@@ -23,11 +23,10 @@ Server::Server(void) :
 		_port(DEFAULT_PORT),
 		_host(DEFAULT_HOST),
 		_clientMaxBodySize(DEFAULT_CLIENT_MAX_BODY_SIZE),
-		_isDefault(false),
 		_timeOut(DEFAULT_TIMEOUT),
 		_serverSocket(-1) {
 	_serverName.push_back(DEFAULT_SERVER_NAME);
-	_setDefaultErrorPages();
+	setDefaultErrorPages();
 	_flagPort = false;
 	_flagHost = false;
 }
@@ -40,7 +39,7 @@ Server::Server(int port) :
 		_serverSocket(-1) {
 }
 
-Server::Server(const Server &src) : _port(), _clientMaxBodySize(), _isDefault(),
+Server::Server(const Server &src) : _port(), _clientMaxBodySize(),
 									_flagPort(), _flagHost(), _timeOut(),
 									_serverSocket(), _serverAddr() {
 	*this = src;
@@ -53,8 +52,9 @@ Server &Server::operator=(const Server &rhs) {
 		_serverName = rhs._serverName;
 		_errorPage = rhs._errorPage;
 		_clientMaxBodySize = rhs._clientMaxBodySize;
-		_isDefault = rhs._isDefault;
 		_locations = rhs._locations;
+		_relatedServers = rhs._relatedServers;
+		_serverNameSet = rhs._serverNameSet;
 		_timeOut = rhs._timeOut;
 		_serverSocket = rhs._serverSocket;
 	}
@@ -130,7 +130,7 @@ int Server::acceptConnection(void) {
 		throw (std::runtime_error("Accept incoming connection failed"));
 	} else {
 		this->addClient(newSocket, clientAddr);
-        _requests.insert(std::make_pair(newSocket, ""));
+		_requests.insert(std::make_pair(newSocket, ""));
 	}
 	return newSocket;
 }
@@ -160,7 +160,7 @@ void Server::removeClient(int thisSocket) {
 			std::cout << RED "Client " << it->getClientSocket() << " removed" RESET << std::endl; // test: delete later
 			close(it->getClientSocket());
 			_clients.erase(it);
-            _requests.erase(thisSocket);
+			_requests.erase(thisSocket);
 		}
 	}
 }
@@ -190,10 +190,6 @@ unsigned long Server::getClientMaxBodySize() const {
 
 const std::map<int, std::string> &Server::getErrorPage() const {
 	return _errorPage;
-}
-
-bool Server::getIsDefault() const {
-	return _isDefault;
 }
 
 int Server::getServerSocket(void) const {
@@ -230,17 +226,14 @@ void Server::setHost(std::string host) {
 
 void Server::setServerName(const std::vector<std::string> &serverName) {
 	_serverName = serverName;
+	_serverNameSet.insert(serverName.begin(),serverName.end());
 }
 
 void Server::setClientMaxBodySize(unsigned long clientMaxBodySize) {
 	_clientMaxBodySize = clientMaxBodySize;
 }
 
-void Server::setIsDefault(bool isDefault) {
-	_isDefault = isDefault;
-}
-
-void Server::_setDefaultErrorPages() {
+void Server::setDefaultErrorPages() {
 	_errorPage.insert(std::pair<int, std::string>(400, "/errors/400.html"));
 	_errorPage.insert(std::pair<int, std::string>(403, "/errors/403.html"));
 	_errorPage.insert(std::pair<int, std::string>(404, "/errors/404.html"));
@@ -277,88 +270,87 @@ void Server::addLocation(Location location) {
 	_locations.push_back(location);
 }
 
-static int chunkedEnd(const std::string &str){
-    std::string endStr = "0\r\n\r\n";
-    int i = static_cast<int>(str.size());
-    int j = static_cast<int>(endStr.size());
 
-    while (j > 0) {
-        i--;
-        j--;
-        if (i < 0 || str[i] != endStr[j]) {
-            return (1);
-        }
-    }
-    return (0);
+static int chunkedEnd(const std::string &str) {
+	std::string endStr = "0\r\n\r\n";
+	int i = static_cast<int>(str.size());
+	int j = static_cast<int>(endStr.size());
+
+	while (j > 0) {
+		i--;
+		j--;
+		if (i < 0 || str[i] != endStr[j]) {
+			return (1);
+		}
+	}
+	return (0);
 }
 
 //return 0 is finished, return -1 when closing the conncetion
-int     Server::recvRequest(int socket) {
-    char    buffer[MAXLINE + 1] = {0};
-    int     ret;
+int Server::recvRequest(int socket) {
+	char buffer[MAXLINE + 1] = {0};
+	int ret;
 
-    ret = recv(socket, buffer, MAXLINE - 1, 0);
-    if (ret == 0) {
-        std::cout << "Connection was closed by client." << std::endl;
-        return EXIT_FAILURE;
-    }
-    else if (ret == -1) {
-        std::cout << "recv error, closing connection" << std::endl;
-        return EXIT_FAILURE;
-    }
+	ret = recv(socket, buffer, MAXLINE - 1, 0);
+	if (ret == 0) {
+		std::cout << "Connection was closed by client." << std::endl;
+		return EXIT_FAILURE;
+	} else if (ret == -1) {
+		std::cout << "recv error, closing connection" << std::endl;
+		return EXIT_FAILURE;
+	}
 
-    _requests[socket] += std::string(buffer);
+	_requests[socket] += std::string(buffer);
 
-    size_t i = _requests[socket].find("\r\n\r\n"); // find the end of the headers
-    if (i != std::string::npos) { //there is a body
-        if (_requests[socket].find("Content-Length: ") == std::string::npos) { //no info about content length
-            if (_requests[socket].find("Transfer-Encoding: chunked") != std::string::npos) { //it is chunked encoding
-                if (chunkedEnd(_requests[socket]) == 0) { //chunked finished
-                    return EXIT_SUCCESS;
-                } else {
-                    return -1; //chunked not finished
-                }
-            }
-            else { //no content length and not chunked encoding
-                return EXIT_SUCCESS;
-            }
-        }
-        else { //there is content length
-            size_t	len = std::atoi(_requests[socket].substr(_requests[socket].find("Content-Length: ") + 16, 10).c_str());
-            if (_requests[socket].size() >= len + i + 4) {
-                return EXIT_SUCCESS;
-            } else {
-                return -1; //content length does not match the body size
-            }
-        }
-    }
-    return -1;
+	size_t i = _requests[socket].find("\r\n\r\n"); // find the end of the headers
+	if (i != std::string::npos) { //there is a body
+		if (_requests[socket].find("Content-Length: ") == std::string::npos) { //no info about content length
+			if (_requests[socket].find("Transfer-Encoding: chunked") != std::string::npos) { //it is chunked encoding
+				if (chunkedEnd(_requests[socket]) == 0) { //chunked finished
+					return EXIT_SUCCESS;
+				} else {
+					return -1; //chunked not finished
+				}
+			} else { //no content length and not chunked encoding
+				return EXIT_SUCCESS;
+			}
+		} else { //there is content length
+			size_t len = std::atoi(
+					_requests[socket].substr(_requests[socket].find("Content-Length: ") + 16, 10).c_str());
+			if (_requests[socket].size() >= len + i + 4) {
+				return EXIT_SUCCESS;
+			} else {
+				return -1; //content length does not match the body size
+			}
+		}
+	}
+	return -1;
 }
 
-void    Server::processChunk(int socket) {
-    std::string heads = _requests[socket].substr(0, _requests[socket].find("\r\n\r\n"));
-    std::string	chunks = _requests[socket].substr(_requests[socket].find("\r\n\r\n") + 4, _requests[socket].size() - 1);
-    std::string subChunk = chunks.substr(0,100);
-    std::string body = "";
-    int chunkSize = strtol(subChunk.c_str(), NULL, 16);
-    size_t i = 0;
+void Server::processChunk(int socket) {
+	std::string heads = _requests[socket].substr(0, _requests[socket].find("\r\n\r\n"));
+	std::string chunks = _requests[socket].substr(_requests[socket].find("\r\n\r\n") + 4, _requests[socket].size() - 1);
+	std::string subChunk = chunks.substr(0, 100);
+	std::string body = "";
+	int chunkSize = strtol(subChunk.c_str(), NULL, 16);
+	size_t i = 0;
 
-    while(chunkSize) {
-        i = chunks.find("\r\n", i) + 2;
-        body += chunks.substr(i, chunkSize);
-        i += chunkSize + 2;
-        subChunk = chunks.substr(i, 100);
-        chunkSize = strtol(subChunk.c_str(), NULL, 16);
-    }
-    _requests[socket] = heads + "\r\n\r\n" + body + "\r\n\r\n";
+	while (chunkSize) {
+		i = chunks.find("\r\n", i) + 2;
+		body += chunks.substr(i, chunkSize);
+		i += chunkSize + 2;
+		subChunk = chunks.substr(i, 100);
+		chunkSize = strtol(subChunk.c_str(), NULL, 16);
+	}
+	_requests[socket] = heads + "\r\n\r\n" + body + "\r\n\r\n";
 }
 
-void    Server::processRequest(int socket) {
+void Server::processRequest(int socket) {
 
-    if (_requests[socket].find("Transfer-Encoding: chunked") != std::string::npos &&
-            _requests[socket].find("Transfer-Encoding: chunked") < _requests[socket].find("\r\n\r\n")) {
-        processChunk(socket);
-    }
+	if (_requests[socket].find("Transfer-Encoding: chunked") != std::string::npos &&
+		_requests[socket].find("Transfer-Encoding: chunked") < _requests[socket].find("\r\n\r\n")) {
+		processChunk(socket);
+	}
 
     //output for testing
 //    if (_requests[socket].size() < 1000) {
@@ -397,22 +389,35 @@ int Server::sendResponse(int socket) {
     }
 }
 
-HttpData    Server::setHttpData(Request &request) {
-    HttpData    httpData;
-    httpData.setPort(_port);
-    httpData.setHost(_host);
-    httpData.setMaxClientBody(_clientMaxBodySize);
+HttpData Server::setHttpData(Request &request) {
+	HttpData httpData;
+	httpData.setPort(_port);
+	httpData.setHost(_host);
+	httpData.setMaxClientBody(_clientMaxBodySize);
 //    httpData.setPath(request.getPath());
-    httpData.setErrorPages(_errorPage);
-    httpData.setLocations(_locations);
-    std::string hostName = request.getHost().substr(0, request.getHost().find_last_of(":"));
-    std::vector<std::string>::iterator it = std::find(_serverName.begin(), _serverName.end(), hostName);
-    if (it != _serverName.end()) {
-        httpData.setServerName(hostName);
-    }
-    else { //have to figure out what to do here
-        std::cout << "Server name not find in config" << std::endl;
-        httpData.setServerName("NF");
-    }
-    return httpData;
+	httpData.setErrorPages(_errorPage);
+	httpData.setLocations(_locations);
+	std::string hostName = request.getHost().substr(0, request.getHost().find_last_of(":"));
+	std::vector<std::string>::iterator it = std::find(_serverName.begin(), _serverName.end(), hostName);
+	if (it != _serverName.end()) {
+		httpData.setServerName(hostName);
+	} else { //have to figure out what to do here
+		std::cout << "Server name not find in config" << std::endl;
+		httpData.setServerName("NF");
+	}
+	return httpData;
+}
+
+bool Server::isSameListen(const Server &other) {
+	return _port == other.getPort() && _host == other.getHost();
+}
+
+void Server::addRelatedServers(Server server) {
+	_relatedServers.push_back(server);
+	std::set<std::string>::iterator it = server._serverNameSet.begin();
+	for (; it != server._serverNameSet.end(); it++) {
+		if (!_serverNameSet.insert(*it).second) {
+			throw std::invalid_argument(ERROR "Duplicate server names" RESET);
+		}
+	}
 }
