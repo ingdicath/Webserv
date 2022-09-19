@@ -85,9 +85,9 @@ private:
 	int							_port;
 	std::string					_host;
 	std::vector<std::string>	_serverName;
-	std::map<int, std::string>	_errorPage;					// Explore how this works
+	std::map<int, std::string>	_errorPage;
 	unsigned long				_clientMaxBodySize;
-	std::vector<Location>		_locations;				// Explore how this works
+	std::vector<Location>		_locations;
 	std::vector<Server>			_relatedServers; // Regroup servers with same port different server name
 	std::set<std::string>       _serverNameSet;  //Validate duplicate servername same listen
 
