@@ -107,7 +107,7 @@ int Response::findRequestLocation() {
         else {
             for (size_t j = 0; j < lenLocationPath; j++) {
                 if (locationPath[j] != requestPath[j]) {
-                    continue;
+                    break;
                 }
                 if (j == lenLocationPath - 1) {
                     return static_cast<int>(i);
@@ -224,6 +224,7 @@ void Response::Response::readContent() {
 
     size_t  found = _path.find_last_of("/");
     contentPath = contentPath + _path.substr(found);
+    std::cout << "ContentPath: " << contentPath << std::endl;
     int i = isFile(contentPath);
     if (i > 0) {
         if (i == 2) {
