@@ -6,7 +6,7 @@
 /*   By: aheister <aheister@student.codam.nl>         +#+                     */
 /*                                                   +#+                      */
 /*   Created: 2022/07/11 15:09:47 by aheister      #+#    #+#                 */
-/*   Updated: 2022/09/12 11:26:56 by aheister      ########   odam.nl         */
+/*   Updated: 2022/09/19 16:00:32 by aheister      ########   odam.nl         */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -366,6 +366,7 @@ void Server::processRequest(int socket) {
         Response    response(httpData, request);
         _responses.insert(std::make_pair(socket, response.getResponse(request)));
         std::cout << response << std::endl;
+		// std::cout << "Response:\n" << _responses[socket] << std::endl;
     }
     _requests.erase(socket);
 }

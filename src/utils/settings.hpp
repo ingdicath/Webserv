@@ -47,3 +47,4 @@
 #define DEFAULT_TIMEOUT 10 // added: 60 seconds is default nginx timeout: change later
 
 #define MAXLINE 4096
+#define CGI_BUFSIZE 65536

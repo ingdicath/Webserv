@@ -3,6 +3,7 @@
 //
 
 #include "Response.hpp"
+#include "CGI.hpp"
 
 Response::Response() {
 }
@@ -288,10 +289,19 @@ void Response::readContent() {
     }
     if (i > 0) {
         _path = contentPath;
-        std::string fileExtension = _path.substr(_path.find_last_of("."));
-        if (fileExtension == ".py") { //cgi part
-            std::cout << RED << "It is a SNACK!!! RUNN!!!!" << RESET << std::endl;
+
+        // CGI TEST
+        std::string fileName = _path.substr(_path.find_last_of("/"));
+        std::string fileExtension = fileName.substr(fileName.find_last_of("."));
+        if (fileExtension == _serverLocation.getCgi().first) { //cgi part
+            CGI cgi;
+            cgi.addPath(fileName, _serverLocation);
+            _body = cgi.execute();
+            // insert function to find type and remove first 2 lines of _body
+            _type = "text/html";
+            return;
         }
+        // How do we handle other extensions like .php and .bla which cannot be executed?
         file.open(contentPath.c_str(), std::ifstream::in);
         if (file.is_open() == false) {
             _statusCode = 403;
