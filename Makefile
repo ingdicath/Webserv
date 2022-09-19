@@ -6,7 +6,7 @@
 #    By: aheister <aheister@student.codam.nl>         +#+                      #
 #                                                    +#+                       #
 #    Created: 2022/07/10 09:01:00 by aheister      #+#    #+#                  #
-#    Updated: 2022/09/12 11:11:07 by aheister      ########   odam.nl          #
+#    Updated: 2022/09/19 13:32:41 by aheister      ########   odam.nl          #
 #                                                                              #
 # **************************************************************************** #
 
@@ -30,7 +30,8 @@ SRC			=	main.cpp \
 				ResponseHeaders.cpp \
 				Response.cpp \
 				Parser.cpp \
-				FileUtils.cpp
+				FileUtils.cpp \
+				CGI.cpp
 
 # SRC_PATH	=	$(addprefix $(SRC_DIR), $(SRC))
 # OBJ_FILES	=	$(SRC_PATH:$(SRC_DIR)%.cpp=$(OBJ_DIR)%.o)
