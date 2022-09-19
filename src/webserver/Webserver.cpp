@@ -54,7 +54,7 @@ Webserver::~Webserver(void) {
 void	Webserver::loadConfiguration(const std::string& configFile) {
 	Parser parser;
 	parser.validateConfiguration(configFile, &_servers);
-	parser.setDefaultServer(&_servers);
+	parser._solveRelatedServer(&_servers);
 }
 
 /*
