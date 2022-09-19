@@ -12,6 +12,9 @@ Response::Response(HttpData &httpData, Request &request) :
     _path = request.getPath();
     _method = request.getMethod();
     _statusCode = request.getRet();
+    if (httpData.getServerName() == "NF") {
+        _statusCode = 404; //server not found
+    }
     _closeConnection = false;
     if (request.getHeaders().find("Connection") == request.getHeaders().end()) {
         if (request.getHeaders()["Connection"] == "close") {

@@ -71,7 +71,7 @@ void    ResponseHeaders::setContentType(std::string type, std::string path) {
         return ;
     }
     type = path.substr(path.rfind(".") + 1, path.size() - path.rfind("."));
-    if (type == "html")
+    if (type == "html" || type == "htm")
         _contentType = "text/html";
     else if (type == "css")
         _contentType = "text/css";

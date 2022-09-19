@@ -391,20 +391,33 @@ int Server::sendResponse(int socket) {
 
 HttpData Server::setHttpData(Request &request) {
 	HttpData httpData;
-	httpData.setPort(_port);
-	httpData.setHost(_host);
-	httpData.setMaxClientBody(_clientMaxBodySize);
-//    httpData.setPath(request.getPath());
-	httpData.setErrorPages(_errorPage);
-	httpData.setLocations(_locations);
-	std::string hostName = request.getHost().substr(0, request.getHost().find_last_of(":"));
-	std::vector<std::string>::iterator it = std::find(_serverName.begin(), _serverName.end(), hostName);
-	if (it != _serverName.end()) {
-		httpData.setServerName(hostName);
-	} else { //have to figure out what to do here
-		std::cout << "Server name not find in config" << std::endl;
-		httpData.setServerName("NF");
-	}
+    std::string hostName = request.getHost().substr(0, request.getHost().find_last_of(":"));
+
+    std::vector<std::string>::iterator it = std::find(_serverName.begin(), _serverName.end(), hostName);
+    if (it != _serverName.end()) {
+        httpData.setServerName(hostName);
+        httpData.setPort(_port);
+        httpData.setHost(_host);
+        httpData.setMaxClientBody(_clientMaxBodySize);
+        httpData.setErrorPages(_errorPage);
+        httpData.setLocations(_locations);
+    } else {
+        for (size_t i = 0; i < _relatedServers.size(); i++) {
+            std::vector<std::string>    serverNames = _relatedServers[i].getServerName();
+            std::vector<std::string>::iterator it = std::find(serverNames.begin(), serverNames.end(), hostName);
+            if (it != serverNames.end()) {
+                httpData.setServerName(hostName);
+                httpData.setPort(_relatedServers[i].getPort());
+                httpData.setHost(_relatedServers[i].getHost());
+                httpData.setMaxClientBody(_relatedServers[i].getClientMaxBodySize());
+                httpData.setErrorPages(_relatedServers[i].getErrorPage());
+                httpData.setLocations(*(_relatedServers[i].getLocations()));
+                return httpData;
+            }
+        }
+        std::cout << "Server name not find in config" << std::endl;
+        httpData.setServerName("NF");
+    }
 	return httpData;
 }
 
