@@ -224,7 +224,6 @@ void Response::Response::readContent() {
 
     size_t  found = _path.find_last_of("/");
     contentPath = contentPath + _path.substr(found);
-    std::cout << "PATH: " << contentPath << std::endl; //testing
     int i = isFile(contentPath);
     if (i > 0) {
         if (i == 2) {
