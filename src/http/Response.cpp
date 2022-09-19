@@ -224,7 +224,46 @@ int Response::isFile(const std::string &path) { //return 1 if is file, return 2 
     }
 }
 
-void Response::Response::readContent() {
+std::string Response::autoIndexGenerator(std::string path, std::string directory) {
+    DIR *dir = opendir(path.c_str());
+    struct dirent* dirEntry;
+    std::vector<std::string> dirVector;
+    std::vector<std::string> fileVector;
+
+    std::string res;
+    res = "<!DOCTYPE html>\n<html>\n<head>\n" \
+            "<title>" + directory + "</title>\n</head>\n";
+
+    if (dir == NULL) {
+        std::cerr << RED << "Error: could not open directory: " << dir << RESET << std::endl;
+        res += "<body>\n<h1>Error: could not open directory</h1>\n</body>\n</html>\n";
+        return res;
+    }
+
+    while ((dirEntry = readdir(dir)) != NULL) {
+        if (dirEntry->d_type == DT_DIR) {
+            std::string line = "<a href=\"" + directory + dirEntry->d_name + "/\">" + dirEntry->d_name + "/" + "</a><br>";
+            dirVector.push_back(line);
+        } else {
+            std::string line = "<a href=\"" + directory + dirEntry->d_name + "\">" + dirEntry->d_name + "</a><br>";
+            fileVector.push_back(line);
+        }
+    }
+    closedir(dir);
+    res += "<body>\n<h1> Index of " + directory + "</h1>\n<h2>";
+    std::sort(dirVector.begin(), dirVector.end());
+    for (std::vector<std::string>::iterator it = dirVector.begin(); it != dirVector.end(); it++) {
+        res += *it;
+    }
+    std::sort(fileVector.begin(), fileVector.end());
+    for (std::vector<std::string>::iterator it = fileVector.begin(); it != fileVector.end(); it++) {
+        res += *it;
+    }
+    res += "</h2>\n</body>\n</html>\n";
+    return res;
+}
+
+void Response::readContent() {
     std::ofstream       file;
     std::stringstream   buffer;
     std::string         contentPath = _serverLocation.getRoot();
@@ -232,10 +271,19 @@ void Response::Response::readContent() {
     contentPath = contentPath + _path.substr(_serverLocation.getPathLocation().size() - 1);
     std::cout << "ContentPath: " << contentPath << std::endl; //testing
     int i = isFile(contentPath);
-    if (i > 0) {
-        if (i == 2) {
+    if (i == 2) { //it is a dirctory
+        // https://serverfault.com/questions/940276/force-nginx-to-always-autoindex-and-ignore-index-html-files
+        if (isFile(contentPath + _serverLocation.getIndex()) == 0 && _autoindex) {
+            std::cout << RED << autoIndexGenerator(contentPath, _path) << RESET << std::endl;
+            _body = buffer.str();
+            _type = "text/html";
+            return;
+        } else {
             contentPath = contentPath + _serverLocation.getIndex();
+            i = isFile(contentPath);
         }
+    }
+    if (i > 0) {
         _path = contentPath;
         std::string fileExtension = _path.substr(_path.find_last_of("."));
         if (fileExtension == ".py") { //cgi part
@@ -251,9 +299,6 @@ void Response::Response::readContent() {
             file.close();
         }
     }
-    //have to generagte autoindex here
-//    else if (_autoindex) {
-//    }
     else {
         _statusCode = 404;
         setErrorBody();

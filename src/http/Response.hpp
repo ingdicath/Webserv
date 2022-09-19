@@ -13,6 +13,7 @@
 #include <sys/types.h>
 #include <sys/stat.h>
 #include <unistd.h>
+#include <dirent.h>
 #include "../utils/settings.hpp"
 #include "Request.hpp"
 #include "HttpData.hpp"
@@ -35,6 +36,7 @@ private:
     std::vector<std::string> setPathVector(std::string pathStr);
     int findRequestLocation();
     int isFile(const std::string &path);
+    std::string autoIndexGenerator(std::string path, std::string dir);
 
 public:
     Response(HttpData &httpData, Request &request);
