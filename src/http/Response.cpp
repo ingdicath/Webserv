@@ -355,8 +355,10 @@ void    Response::processPostMethod(Request &request) {
 }
 
 void     Response::processDeleteMethod() {
-    if (isFile(_path) ==  1) {
-        if (remove(_path.c_str()) == 0) {
+    std::string filePath = _serverLocation.getRoot() + _path.substr(_serverLocation.getPathLocation().size() - 1);;
+    std::cout << RED << "File Path: " << filePath << std::endl; //testing
+    if (isFile(filePath) ==  1) {
+        if (std::remove(filePath.c_str()) == 0) {
             _statusCode = 200;
             _body = "<html><body><h1>File deleted at URL: " + _path + "</h1></body></head></html>";
             _type = "text/html";

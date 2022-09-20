@@ -30,6 +30,7 @@ public:
     // long GET and POSt request
     void    longGetRequest(int &sock);
     void    longPOSTRequest(int &sock);
+    void    DELETERequest(int &sock);
 
     // basic invalid request tests
     void    invalidMethod(int &sock);
