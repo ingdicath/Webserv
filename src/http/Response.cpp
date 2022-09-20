@@ -68,6 +68,10 @@ const int   &Response::getStatusCode() const {
     return _statusCode;
 }
 
+const std::string &Response::getType() const {
+    return _type;
+}
+
 const std::string &Response::getBody() const {
     return _body;
 }
@@ -136,10 +140,9 @@ void    Response::setErrorBody() {
         std::ofstream       file;
         std::stringstream   buffer;
         std::string         errorPagePath = "www" + errorPage[_statusCode];
-        std::cout << "Error Page Path: " << errorPagePath << std::endl;
         file.open(errorPagePath.c_str(), std::ifstream::in);
         if (file.is_open() == false) {
-            _body = "<!DOCTYPE html>\n<html><title>40404</title><body>There was an error finding your error page</body></html>\n";
+            _body = "<!DOCTYPE html>\n<html><title>404</title><body>There was an error finding your error page</body></html>\n";
         }
         else {
             buffer << file.rdbuf();
@@ -148,7 +151,7 @@ void    Response::setErrorBody() {
         }
     }
     else {
-        _body = "<!DOCTYPE html>\n<html><title>40404</title><body>There was an error finding your error page</body></html>\n";
+        _body = "<!DOCTYPE html>\n<html><title>404</title><body>There was an error finding your error page</body></html>\n";
     }
 }
 
@@ -175,7 +178,7 @@ std::string Response::getResponse(Request &request) {
             }
         }
     }
-    if (_statusCode == 405 || _statusCode == 413) {
+    if (_statusCode == 405 || _statusCode == 413) { //have to make this part simple
         setErrorBody();
         if (_statusCode == 405) {
             responseStr = headers.getHeaderNotAllowed(_body.size(), _serverLocation.getAcceptedMethods(), _serverLocation.getPathLocation(), _statusCode, _type);
@@ -190,21 +193,24 @@ std::string Response::getResponse(Request &request) {
         responseStr = headers.getHeaderError(_body.size(), _path, _statusCode, _type); //not sure if it is 500
         responseStr.append(_body);
         return responseStr;
-    }
+    } //have to make this part simple
     else {
         if (_method == "GET") {
             processGetMethod();
         } else if (_method == "POST") {
-            processPostMethod();
+            processPostMethod(request);
         } else if (_method == "DELETE") {
-            processDeleteMethod(request);
+            processDeleteMethod();
         }
-        if (_statusCode >= 200) {
+        if (_statusCode >= 400) {
+            setErrorBody();
             responseStr = headers.getHeaderError(_body.size(), _path, _statusCode, _type);
         } else {
             responseStr = headers.getHeader(_body.size(), _path, _statusCode, _type, _serverLocation.getPathLocation());
         }
-        responseStr.append(_body);
+        if (_body != "") {
+            responseStr.append(_body);
+        }
         return responseStr;
     }
     return responseStr;
@@ -267,7 +273,7 @@ std::string Response::autoIndexGenerator(std::string path, std::string directory
     return res;
 }
 
-void Response::readContent() {
+void Response::processGetMethod() {
     std::ofstream       file;
     std::stringstream   buffer;
     std::string         contentPath = _serverLocation.getRoot();
@@ -305,7 +311,6 @@ void Response::readContent() {
         file.open(contentPath.c_str(), std::ifstream::in);
         if (file.is_open() == false) {
             _statusCode = 403;
-            setErrorBody();
         } else {
             buffer << file.rdbuf();
             _body = buffer.str();
@@ -314,34 +319,47 @@ void Response::readContent() {
     }
     else {
         _statusCode = 404;
-        setErrorBody();
     }
 }
 
-void     Response::processGetMethod() {
-//    ResponseHeaders headers;
-
-    if (_statusCode == 200) {
-        readContent();
+void    Response::processPostMethod(Request &request) {
+    std::string filePath = _serverLocation.getRoot() + _path.substr(_serverLocation.getPathLocation().size() - 1);;
+    std::cout << RED << "File Path: " << filePath << std::endl; //testing
+    if (isFile(filePath) == 1) { //file already exists
+        std::cout << RED << "file exist" << std::endl; //testing
+        _statusCode = 403; // to be confirmed
+        setErrorBody();
     } else {
-        setErrorBody();
+        std::string dirPath = filePath.substr(0, filePath.find_last_of('/'));
+        std::cout << RED << "File Dir: " << dirPath << std::endl; //testing
+        if (isFile(dirPath) != 2) { //could not find the directory to create this file
+            std::cout << RED << "cannot find dir" << std::endl; //testing
+            _statusCode = 403; // to be confirmed
+            return;
+        }
+
+        std::ofstream file;
+        //cgi here?
+        file.open(filePath, std::ifstream::out); //std::ios::out | std::ios::binary
+        if (file.is_open() == false) {
+            std::cout << RED << "cannot write to file" << std::endl; //testing
+            _statusCode = 403; // to be confirmed
+            return;
+        } else {
+            file << request.getBody(); //do we need to delete it later?
+            file.close();
+            _body = "<html><body><h1>File created at URL: " + _path + "</h1></body></head></html>";
+            _type = "text/html";
+        }
     }
 }
 
-void    Response::processPostMethod() { //need to implement more
-//    ResponseHeaders headers;
-    _statusCode = 204;
-    _body = "";
-}
-
-void     Response::processDeleteMethod(Request &request) {
-    ResponseHeaders headers;
-    (void)request;
-
-    _body = "";
-    if (isFile(_path)) {
+void     Response::processDeleteMethod() {
+    if (isFile(_path) ==  1) {
         if (remove(_path.c_str()) == 0) {
-            _statusCode = 204;
+            _statusCode = 200;
+            _body = "<html><body><h1>File deleted at URL: " + _path + "</h1></body></head></html>";
+            _type = "text/html";
         }
         else {
             _statusCode = 403;
@@ -349,9 +367,6 @@ void     Response::processDeleteMethod(Request &request) {
     }
     else {
         _statusCode = 404;
-    }
-    if (_statusCode == 403 || _statusCode == 404) {
-        setErrorBody();
     }
 }
 
@@ -366,7 +381,9 @@ std::ostream	&operator<<(std::ostream &os, const Response &response) {
         os << "Close Connection: no" << std::endl;
     }
     os << "StatusCode: " << response.getStatusCode() << std::endl;
-//    os << "Body: \n" << response.getBody() << std::endl;
+    if (response.getType() == "text/html") {
+        os << "Body: \n" << response.getBody() << std::endl;
+    }
     os <<  "------- Response Object Info Done --------" << RESET << std::endl;
     return os;
 }

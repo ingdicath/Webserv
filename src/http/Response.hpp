@@ -50,14 +50,14 @@ public:
     const bool          &ifCloseConnection() const;
     const HttpData      &getHttpData() const;
     const int           &getStatusCode() const;
+    const std::string   &getType() const;
     const std::string   &getBody() const;
 
     // generate the response string
     void    setErrorBody();
-    void    readContent();
     void    processGetMethod();
-    void    processPostMethod();
-    void    processDeleteMethod(Request &request);
+    void    processPostMethod(Request &request);
+    void    processDeleteMethod();
 
     std::string getResponse(Request &request);
 

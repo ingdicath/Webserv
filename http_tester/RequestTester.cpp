@@ -50,7 +50,7 @@ void    RequestTester::basicGetRequest(int &sock) {
 
 void    RequestTester::basicPOSTRequest(int &sock) {
     std::string rqs =
-        "POST /basicPOSTRequest.txt HTTP/1.1\r\n"\
+        "POST /testPOSTRequest.txt HTTP/1.1\r\n"\
         "Content-Length: 24\r\n"\
         "Host: localhost\r\n"\
         "\r\n"\
@@ -101,7 +101,7 @@ void    RequestTester::longGetRequest(int &sock) {
 
 void    RequestTester::longPOSTRequest(int &sock) {
     std::string rqs =
-            "POST /images HTTP/1.1\r\n"\
+            "POST /images/testPOSTRequest.txt HTTP/1.1\r\n"\
         "Content-Length: 445\r\n"\
         "Host: localhost\r\n"\
         "\r\n"\
