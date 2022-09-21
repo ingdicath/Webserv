@@ -69,11 +69,11 @@ void Location::setIndex(const std::string &index) {
 	_index = index;
 }
 
+void Location::setRedirection(const std::pair<int, std::string> &redirection) {
+	_redirection = redirection;
+}
 void Location::_setDefaultRedirectionPages() {
-	_redirection.insert(std::pair<int, std::string>(301, "/redirection/301.html"));
-	_redirection.insert(std::pair<int, std::string>(302, "/redirection/302.html"));
-	_redirection.insert(std::pair<int, std::string>(303, "/redirection/303.html"));
-	_redirection.insert(std::pair<int, std::string>(307, "/redirection/307.html"));
+	_redirection = std::make_pair(301, "/redirection/301.html");
 }
 
 void Location::_setDefaultAllowedMethods() {
@@ -89,14 +89,14 @@ void Location::_setDefaultRoot() {
 	_root = _root.append(DEFAULT_ROOT);
 }
 
-void Location::addRedirection(const std::pair<int, std::string> &redirection) {
-	std::map<int, std::string>::iterator it = _redirection.find(redirection.first);
-	if (it != _redirection.end()) {
-		_redirection.at(it->first) = redirection.second;
-	} else {
-		_redirection.insert(redirection);
-	}
-}
+//void Location::addRedirection(const std::pair<int, std::string> &redirection) {
+//	std::map<int, std::string>::iterator it = _redirection.find(redirection.first);
+//	if (it != _redirection.end()) {
+//		_redirection.at(it->first) = redirection.second;
+//	} else {
+//		_redirection.insert(redirection);
+//	}
+//}
 
 /**
  * GETTERS
@@ -120,9 +120,11 @@ bool Location::isAutoindex() const {
 const std::set<std::string> &Location::getAcceptedMethods() const {
 	return _acceptedMethods;
 }
-const std::map<int, std::string> &Location::getRedirection() const {
-	return _redirection;
-}
+
 const std::pair<std::string, std::string> &Location::getCgi() const {
 	return _cgi;
 }
+const std::pair<int, std::string> Location::geRedirection() const {
+	return _redirection;
+}
+

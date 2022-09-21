@@ -179,7 +179,7 @@ void Parser::_storeLocationDirective(const Parser::Directive &directive, Locatio
 			location->setUpload(_checkUpload(directive._value));
 			break;
 		case REDIRECTION:
-			location->addRedirection(_checkRedirection(directive._value));
+			location->setRedirection(_checkRedirection(directive._value));
 			break;
 		case INVALID:
 			std::cerr << RED ERROR " Invalid directive: '" + directive._key + "'." RESET << std::endl;

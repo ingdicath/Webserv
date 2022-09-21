@@ -18,6 +18,8 @@ add_executable(Webserv src/main.cpp
         src/http/HttpData.hpp
         src/http/ResponseHeaders.cpp
         src/http/ResponseHeaders.hpp
+        src/http/CGI.cpp
+        src/http/CGI.hpp
         src/utils/settings.hpp
         src/utils/utils.hpp
         src/utils/utils.cpp

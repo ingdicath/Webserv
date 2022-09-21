@@ -22,6 +22,7 @@ public:
 	void setMethods(const std::set<std::string> &acceptedMethods);
 	void setRoot(const std::string &root);
 	void setCGI(const std::pair<std::string, std::string> &cgi);
+	void setRedirection(const std::pair<int, std::string> &redirection);
 	void setUpload(const std::string &upload);
 	void setIndex(const std::string &index);
 
@@ -32,10 +33,10 @@ public:
 	const std::string &getRoot() const;
 	const std::string &getIndex() const;
 	const std::set<std::string> &getAcceptedMethods() const;
-	const std::map<int, std::string> &getRedirection() const;
+	const std::pair<int, std::string> geRedirection() const;
 	const std::pair<std::string, std::string> &getCgi() const;
 
-	void addRedirection(const std::pair<int, std::string> &redirection);
+//	void addRedirection(const std::pair<int, std::string> &redirection);
 
 private:
 	std::string _pathLocation;
@@ -44,7 +45,7 @@ private:
 	std::string _index;
 	bool _autoindex;
 	std::set<std::string> _acceptedMethods;
-	std::map<int, std::string> _redirection;
+	std::pair<int, std::string> _redirection;
 	std::pair<std::string, std::string> _cgi;
 
 	void	_setDefaultRedirectionPages();
