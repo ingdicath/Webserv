@@ -224,9 +224,9 @@ std::string Response::getResponse(Request &request) {
     } //have to make this part simple
     else {
         if (_serverLocation.getRedirection().first != -1) {
+            std::cout << "Redirecting......" << std::endl; //testing
             processRedirection(request);
-        }
-        else if (_method == "GET") {
+        } else if (_method == "GET") {
             processGetMethod();
         } else if (_method == "POST") {
             processPostMethod(request);
@@ -254,6 +254,7 @@ void Response::processRedirection(Request &request) {
         redirectionLocation.erase(pos, 4);
         redirectionLocation.append(request.getPath());
     }
+    std::cout << "Redirection Location: " << redirectionLocation << std::endl; //testing
     _path = redirectionLocation;
     _statusCode = _serverLocation.getRedirection().first;
     _body = "";
@@ -331,7 +332,8 @@ void Response::processGetMethod() {
     } 
     std::cout << "ContentPath: " << contentPath << std::endl; //testing
     int i = isFile(contentPath);
-    if (i == 2) { //it is a dirctory
+    if (i == 2) { //it is a directory
+        std::cout << "it is a directory" << std::endl; //testing
         // https://serverfault.com/questions/940276/force-nginx-to-always-autoindex-and-ignore-index-html-files
         if (isFile(contentPath + _serverLocation.getIndex()) == 0 && _autoindex) {
             std::cout << RED << autoIndexGenerator(contentPath, _path) << RESET << std::endl;
@@ -344,6 +346,7 @@ void Response::processGetMethod() {
         }
     }
     if (i > 0) {
+        std::cout << "it is a file" << std::endl; //testing
         _path = contentPath;
 
         //CGI TEST
@@ -367,6 +370,7 @@ void Response::processGetMethod() {
         }
     }
     else {
+        std::cout << "cannot find file" << std::endl; //testing
         _statusCode = 404;
     }
 }

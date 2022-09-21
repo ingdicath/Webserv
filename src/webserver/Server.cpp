@@ -366,13 +366,12 @@ void Server::processRequest(int socket) {
         Response    response(httpData, request);
         _responses.insert(std::make_pair(socket, response.getResponse(request)));
         std::cout << response << std::endl;
-		// std::cout << "Response:\n" << _responses[socket] << std::endl;
+//        std::cout << "Response:\n" << _responses[socket] << std::endl; //testing
     }
     _requests.erase(socket);
 }
 
 int Server::sendResponse(int socket) {
-//    std::cout << "Response: " <<  _responses[socket] << std::endl;
     int ret = send(socket, _responses[socket].c_str(), _responses[socket].size(), 0);
     if (ret == -1) { //send failed
         close(socket);

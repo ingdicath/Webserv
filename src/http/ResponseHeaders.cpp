@@ -17,19 +17,23 @@ ResponseHeaders::ResponseHeaders() {
     _retryAfter = "";
     _server = "";
     _transferEncoding = "";
-    _errors[100] = "Continue";
-    _errors[200] = "OK";
-    _errors[201] = "Created";
-    _errors[204] = "No Content";
-    _errors[400] = "Bad Request";
-    _errors[403] = "Forbidden";
-    _errors[404] = "Not Found";
-    _errors[405] = "Method Not Allowed";
-    _errors[413] = "Payload Too Large";
-    _errors[414] = "URI Too Long";
-    _errors[500] = "Internal Server Error";
-    _errors[501] = "Not Implemented";
-    _errors[505] = "HTTP Version Not Supported";
+    _statusMsg[100] = "Continue";
+    _statusMsg[200] = "OK";
+    _statusMsg[201] = "Created";
+    _statusMsg[204] = "No Content";
+    _statusMsg[301] = "Moved Permanently";
+    _statusMsg[302] = "Found";
+    _statusMsg[303] = "See Other";
+    _statusMsg[307] = "Temporary Redirect";
+    _statusMsg[400] = "Bad Request";
+    _statusMsg[403] = "Forbidden";
+    _statusMsg[404] = "Not Found";
+    _statusMsg[405] = "Method Not Allowed";
+    _statusMsg[413] = "Payload Too Large";
+    _statusMsg[414] = "URI Too Long";
+    _statusMsg[500] = "Internal Server Error";
+    _statusMsg[501] = "Not Implemented";
+    _statusMsg[505] = "HTTP Version Not Supported";
 }
 
 ResponseHeaders::ResponseHeaders(const ResponseHeaders &obj) {
@@ -53,7 +57,7 @@ ResponseHeaders &ResponseHeaders::operator=(const ResponseHeaders &obj) {
         _retryAfter = obj._retryAfter;
         _server = obj._server;
         _transferEncoding = obj._transferEncoding;
-        _errors = obj._errors;
+        _statusMsg = obj._statusMsg;
     }
     return *this;
 }
@@ -144,8 +148,8 @@ void    ResponseHeaders::setHeaders(size_t size, const std::string &path, int co
 }
 
 std::string		ResponseHeaders::getStatusMsg(int code) {
-    if (_errors.find(code) != _errors.end())
-        return _errors[code];
+    if (_statusMsg.find(code) != _statusMsg.end())
+        return _statusMsg[code];
     return "Unknown Code";
 }
 

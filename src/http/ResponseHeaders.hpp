@@ -44,7 +44,7 @@ private:
     std::string					_retryAfter;
     std::string					_server;
     std::string					_transferEncoding;
-    std::map<int, std::string>	_errors;
+    std::map<int, std::string>	_statusMsg;
 
     std::string numToStr(size_t n);
 };
