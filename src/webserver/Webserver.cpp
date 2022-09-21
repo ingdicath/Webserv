@@ -52,6 +52,7 @@ Webserver::~Webserver(void) {
 ** 1. follows...
 */
 void	Webserver::loadConfiguration(const std::string& configFile) {
+	std::cout << PURPLE "Webserver using: " << configFile << RESET << std::endl;
 	Parser parser;
 	parser.validateConfiguration(configFile, &_servers);
 	parser._solveRelatedServer(&_servers);
