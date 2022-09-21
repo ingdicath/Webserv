@@ -23,6 +23,7 @@ Response::Response(HttpData &httpData, Request &request) :
         }
     }
     _type = "";
+    _length = -1;
     _body = "";
 }
 
@@ -41,6 +42,7 @@ Response &Response::operator=(const Response &obj) {
         _closeConnection = obj._closeConnection;
         _statusCode = obj._statusCode;
         _type = obj._type;
+        _length = obj._length;
         _location = obj._location;
         _serverLocation = obj._serverLocation;
         _autoindex = obj._autoindex;
@@ -155,29 +157,56 @@ void    Response::setErrorBody() {
     }
 }
 
+int Response::responseValidation(Request &request) {
+    int locationIndex = findRequestLocation();
+    std::cout << "location index: " << locationIndex << std::endl; //testing
+    if (locationIndex == -1) {
+        return 500;
+    } else {
+        _serverLocation = _httpData.getLocations()[locationIndex];
+        _autoindex = _serverLocation.isAutoindex();
+        if (_serverLocation.getAcceptedMethods().find(_method) == _serverLocation.getAcceptedMethods().end()) {
+            return 405;
+        }
+        if (_httpData.getMaxClientBody() < request.getBody().size()) {
+            _closeConnection = true;
+            return 413;
+        }
+        if (_method == "POST") { //have to have content type and content length
+            std::map <std::string, std::string> headers = request.getHeaders();
+            if (headers.find("Content-Type") == headers.end()) {
+                return 400; //to be confirmed
+            } else {
+                _type = headers["Content-Type"];
+            }
+            if (headers.find("Content-Length") == headers.end()) {
+                if (headers.find("Transfer-Encoding") == headers.end()) {
+                    return 411;
+                } else {
+                    if (headers["Transfer-Encoding"] == "chunked") {
+                        _length = request.getBody().size();
+                    } else { //not chunked encoding
+                        return 411;
+                    }
+                }
+            } else {
+                std::string tmp = headers["Content-Length"];
+                _length = strtol(tmp.c_str(), NULL, 10);
+            }
+        }
+    }
+    return 200;
+}
+
 std::string Response::getResponse(Request &request) {
     std::string responseStr = "";
     ResponseHeaders  headers;
-    int locationIndex = findRequestLocation();
-    std::cout << "location index: " << locationIndex << std::endl; //testing
-    if (locationIndex != -1) {
-        _serverLocation = _httpData.getLocations()[locationIndex];
-        _autoindex = _serverLocation.isAutoindex();
-    }
+
     if (_statusCode == 200) {
-        if (locationIndex == -1) {
-            _statusCode = 500; // internal server error
-        }
-        else {
-            if (_serverLocation.getAcceptedMethods().find(_method) == _serverLocation.getAcceptedMethods().end()) {
-                _statusCode = 405;
-            }
-            else if (_httpData.getMaxClientBody() < request.getBody().size()) {
-                _statusCode = 413;
-                _closeConnection = true;
-            }
-        }
+        _statusCode = responseValidation(request);
     }
+    //redirectionn?
+    // handle errors: headers and error page
     if (_statusCode == 405 || _statusCode == 413) { //have to make this part simple
         setErrorBody();
         if (_statusCode == 405) {

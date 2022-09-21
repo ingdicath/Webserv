@@ -51,8 +51,9 @@ void    RequestTester::basicGetRequest(int &sock) {
 void    RequestTester::basicPOSTRequest(int &sock) {
     std::string rqs =
         "POST /testPOSTRequest.txt HTTP/1.1\r\n"\
-        "Content-Length: 24\r\n"\
         "Host: localhost\r\n"\
+        "Content-Type: text/plain\r\n"\
+        "Content-Length: 25\r\n"\
         "\r\n"\
         "the body of this request";
     send(sock, rqs.c_str(), strlen(rqs.c_str()), 0);
@@ -103,6 +104,7 @@ void    RequestTester::longPOSTRequest(int &sock) {
     std::string rqs =
             "POST /images/testPOSTRequest.txt HTTP/1.1\r\n"\
         "Content-Length: 445\r\n"\
+        "Content-Type: text/plain\r\n"\
         "Host: localhost\r\n"\
         "\r\n"\
         "Lorem ipsum dolor sit amet, consectetur adipiscing elit, sed do eiusmod tempor incididunt ut labore et dolore magna aliqua. Ut enim ad minim veniam, quis nostrud exercitation ullamco laboris nisi ut aliquip ex ea commodo consequat. Duis aute irure dolor in reprehenderit in voluptate velit esse cillum dolore eu fugiat nulla pariatur. Excepteur sint occaecat cupidatat non proident, sunt in culpa qui officia deserunt mollit anim id est laborum.";
@@ -195,6 +197,7 @@ void    RequestTester::chunkedRequest(int &sock) {
     std::string rqsFirst =
         "POST /chunksTest.txt HTTP/1.1\r\n"\
 		"Host: localhost\r\n"\
+        "Content-Type: text/plain\r\n"\
 		"Content-Length: 64\r\n"\
 		"\r\n"\
 		"the first chunk of this request\n";
@@ -219,7 +222,8 @@ void    RequestTester::chunkedRequest(int &sock) {
 void    RequestTester::chunkedEncoding(int &sock) {
 	std::string rqsFirst =
         "POST /chunksEncodingTest.txt HTTP/1.1\r\n"\
-		"host: localhost\r\n"\
+		"Host: localhost\r\n"\
+        "Content-Type: text/plain\r\n"\
         "Transfer-Encoding: chunked\r\n"\
 		"\r\n"\
 		"4\r\nWiki\r\n";

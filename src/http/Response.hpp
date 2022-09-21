@@ -27,12 +27,14 @@ private:
     bool        _closeConnection;
     int         _statusCode;
     std::string _type;
+    long        _length;
     std::string _location;
     Location    _serverLocation;
     bool        _autoindex;
     std::string _body;
 
     Response();
+    int responseValidation(Request &request);
     std::vector<std::string> setPathVector(std::string pathStr);
     int findRequestLocation();
     int isFile(const std::string &path);
