@@ -73,7 +73,7 @@ void Location::setRedirection(const std::pair<int, std::string> &redirection) {
 	_redirection = redirection;
 }
 void Location::_setDefaultRedirectionPages() {
-	_redirection = std::make_pair(301, "/redirection/301.html");
+	_redirection = std::make_pair(-1, "");
 }
 
 void Location::_setDefaultAllowedMethods() {
@@ -88,15 +88,6 @@ void Location::_setDefaultRoot() {
 	_root = res;
 	_root = _root.append(DEFAULT_ROOT);
 }
-
-//void Location::addRedirection(const std::pair<int, std::string> &redirection) {
-//	std::map<int, std::string>::iterator it = _redirection.find(redirection.first);
-//	if (it != _redirection.end()) {
-//		_redirection.at(it->first) = redirection.second;
-//	} else {
-//		_redirection.insert(redirection);
-//	}
-//}
 
 /**
  * GETTERS
@@ -127,4 +118,3 @@ const std::pair<std::string, std::string> &Location::getCgi() const {
 const std::pair<int, std::string> Location::geRedirection() const {
 	return _redirection;
 }
-
