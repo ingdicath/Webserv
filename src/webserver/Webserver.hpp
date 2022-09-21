@@ -8,7 +8,7 @@
 #include <vector>
 #include <algorithm>
 
-enum e_typeMax
+enum e_action
 {
 	ADD,
 	REMOVE,

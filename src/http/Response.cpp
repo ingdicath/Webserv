@@ -320,8 +320,15 @@ void Response::processGetMethod() {
     std::ofstream       file;
     std::stringstream   buffer;
     std::string         contentPath = _serverLocation.getRoot();
+    std::string         queryString;
 
     contentPath = contentPath + _path.substr(_serverLocation.getPathLocation().size() - 1);
+    std::size_t pos = contentPath.find('?');
+    if (pos != std::string::npos) {
+        queryString = contentPath.substr(pos+1);
+        std::cout << "QueryString: " << queryString << std::endl; //testing
+        contentPath = contentPath.substr(0, contentPath.find("?"));;
+    } 
     std::cout << "ContentPath: " << contentPath << std::endl; //testing
     int i = isFile(contentPath);
     if (i == 2) { //it is a dirctory
@@ -339,14 +346,13 @@ void Response::processGetMethod() {
     if (i > 0) {
         _path = contentPath;
 
-        // CGI TEST
-        std::string fileName = _path.substr(_path.find_last_of("/"));
-        std::string fileExtension = fileName.substr(fileName.find_last_of("."));
+        //CGI TEST
+        std::string fileExtension = contentPath.substr(contentPath.find_last_of("."));
         if (fileExtension == _serverLocation.getCgi().first) { //cgi part
-            CGI cgi;
-            cgi.addPath(fileName, _serverLocation);
+            CGI cgi(GET, contentPath, queryString);
+            //cgi.addPath(fileName, _serverLocation);
             _body = cgi.execute();
-            // insert function to find type and remove first 2 lines of _body
+            //insert function to find type and remove first 2 lines of _body
             _type = "text/html";
             return;
         }
