@@ -57,6 +57,7 @@ public:
 
     // generate the response string
     void    setErrorBody();
+    void    processRedirection(Request &request);
     void    processGetMethod();
     void    processPostMethod(Request &request);
     void    processDeleteMethod();

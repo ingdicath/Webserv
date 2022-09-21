@@ -115,6 +115,6 @@ const std::set<std::string> &Location::getAcceptedMethods() const {
 const std::pair<std::string, std::string> &Location::getCgi() const {
 	return _cgi;
 }
-const std::pair<int, std::string> Location::geRedirection() const {
+const std::pair<int, std::string> Location::getRedirection() const {
 	return _redirection;
 }

@@ -205,9 +205,8 @@ std::string Response::getResponse(Request &request) {
     if (_statusCode == 200) {
         _statusCode = responseValidation(request);
     }
-    //redirectionn?
-    // handle errors: headers and error page
-    if (_statusCode == 405 || _statusCode == 413) { //have to make this part simple
+    // handle errors: headers and error page, have to make this part simple
+    if (_statusCode == 405 || _statusCode == 413) {
         setErrorBody();
         if (_statusCode == 405) {
             responseStr = headers.getHeaderNotAllowed(_body.size(), _serverLocation.getAcceptedMethods(), _serverLocation.getPathLocation(), _statusCode, _type);
@@ -224,7 +223,10 @@ std::string Response::getResponse(Request &request) {
         return responseStr;
     } //have to make this part simple
     else {
-        if (_method == "GET") {
+        if (_serverLocation.getRedirection().first != -1) {
+            processRedirection(request);
+        }
+        else if (_method == "GET") {
             processGetMethod();
         } else if (_method == "POST") {
             processPostMethod(request);
@@ -243,6 +245,18 @@ std::string Response::getResponse(Request &request) {
         return responseStr;
     }
     return responseStr;
+}
+
+void Response::processRedirection(Request &request) {
+    std::string redirectionLocation = _serverLocation.getRedirection().second;
+    size_t pos = redirectionLocation.find("$uri");
+    if (pos != std::string::npos) {
+        redirectionLocation.erase(pos, 4);
+        redirectionLocation.append(request.getPath());
+    }
+    _path = redirectionLocation;
+    _statusCode = _serverLocation.getRedirection().first;
+    _body = "";
 }
 
 int Response::isFile(const std::string &path) { //return 1 if is file, return 2 if is directory

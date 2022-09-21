@@ -33,7 +33,7 @@ public:
 	const std::string &getRoot() const;
 	const std::string &getIndex() const;
 	const std::set<std::string> &getAcceptedMethods() const;
-	const std::pair<int, std::string> geRedirection() const;
+	const std::pair<int, std::string> getRedirection() const;
 	const std::pair<std::string, std::string> &getCgi() const;
 
 //	void addRedirection(const std::pair<int, std::string> &redirection);
