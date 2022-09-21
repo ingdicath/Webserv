@@ -6,7 +6,7 @@
 /*   By: aheister <aheister@student.codam.nl>         +#+                     */
 /*                                                   +#+                      */
 /*   Created: 2022/09/19 13:09:04 by aheister      #+#    #+#                 */
-/*   Updated: 2022/09/19 15:29:56 by aheister      ########   odam.nl         */
+/*   Updated: 2022/09/21 15:32:18 by aheister      ########   odam.nl         */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -20,20 +20,29 @@
 #include <map>
 #include "Response.hpp"
 
+enum e_method
+{
+	GET,
+	POST
+};
+
 class CGI {
 public:
-	CGI(void);
-	//CGI(CGI const & src);
-	//CGI& operator=(CGI const & rhs);
+	CGI(const e_method method, const std::string path, const std::string queryString);
+	CGI(CGI const & src);
+	CGI& operator=(CGI const & rhs);
 	virtual ~CGI(void);
 
-	void								addPath(std::string fileName, Location ServerLocation);
-	std::string							execute(void);
-	std::map<std::string, std::string>	fill_env_map(void);
-	char 								**fill_env(void);
-	int 								execute_cgi(char *arg, int tmp_fd, char *env[]);
+	std::string		execute(void);
+	char			**create_envp(void);
+	char 			**convert_map_to_array(std::map<std::string, std::string> env_map);
+	int 			execute_cgi(char *arg, int tmp_fd, char *env[]);
 
 private:
+	CGI(void);
+
+	e_method		_method;
 	std::string		_file;
+	std::string		_queryString;
 	Location		_serverLocation;
 };

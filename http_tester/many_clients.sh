@@ -3,6 +3,6 @@
 
 for N in {1..100}
 do
-    ./test 3 &
+    ./test 0 &
 done
 wait

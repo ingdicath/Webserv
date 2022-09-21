@@ -2,6 +2,8 @@
 // Created by Diani on 20/06/2022, last update by Anna 08/07/2022.
 //
 
+// TODO:	- Find why _activeClient is not updated anymore
+
 #include <cstring>
 #include <cstdlib>
 #include <cstdio>
@@ -102,6 +104,7 @@ void    Webserver::runWebserver(void) {
 	std::cout << GREEN "Webserver running" RESET << std::endl;
 	while (running) {
 		if (ready == 0) {
+			std::cout << "_activeClients = " << _activeClients << std::endl;
 			if (_activeClients == 0)
 				std::cout << CYAN "+++++++ Waiting for connection ++++++++" RESET << std::endl;
 			while (ready == 0)
