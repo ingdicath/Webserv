@@ -29,7 +29,6 @@ public:
     void    setPort(int port);
     void    setHost(std::string host);
     void    setMaxClientBody(unsigned long maxClientBody);
-//    void    setPath(std::string path);
     void    setServerName(std::string serverName);
     void    setErrorPages(std::map<int, std::string> errorPages);
     void    setLocations(std::vector<Location> locations);
@@ -38,7 +37,6 @@ public:
     const int           &getPort() const;
     const std::string   &getHost() const;
     const unsigned long &getMaxClientBody() const;
-//    const std::string   &getPath() const;
     const std::string   &getServerName() const;
     const std::map<int, std::string> &getErrorPages() const;
     const std::vector<Location>      &getLocations() const;

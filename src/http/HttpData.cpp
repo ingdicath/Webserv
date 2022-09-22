@@ -19,7 +19,6 @@ HttpData    &HttpData::operator=(const HttpData &obj) {
         _port = obj._port;
         _host = obj._host;
         _maxClientBody = obj._maxClientBody;
-//        _path = obj._path;
         _serverName = obj._serverName;
         _errorPage = obj._errorPage;
         _locations = obj._locations;
@@ -37,10 +36,6 @@ void    HttpData::setHost(std::string host) {
 void    HttpData::setMaxClientBody(unsigned long maxClientBody) {
     _maxClientBody = maxClientBody;
 }
-
-//void    HttpData::setPath(std::string path) {
-//    _path = path;
-//}
 
 void    HttpData::setServerName(std::string serverName) {
     _serverName = serverName;
@@ -65,10 +60,6 @@ const std::string   &HttpData::getHost() const {
 const unsigned long &HttpData::getMaxClientBody() const {
     return _maxClientBody;
 }
-
-//const std::string   &HttpData::getPath() const {
-//    return _path;
-//}
 
 const std::string   &HttpData::getServerName() const {
     return _serverName;

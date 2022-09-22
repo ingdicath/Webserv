@@ -17,7 +17,7 @@ Response::Response(HttpData &httpData, Request &request) :
         _statusCode = 404; //server not found
     }
     _closeConnection = false;
-    if (request.getHeaders().find("Connection") == request.getHeaders().end()) {
+    if (request.getHeaders().find("Connection") != request.getHeaders().end()) {
         if (request.getHeaders()["Connection"] == "close") {
             _closeConnection = true;
         }
@@ -198,30 +198,35 @@ int Response::responseValidation(Request &request) {
     return 200;
 }
 
-std::string Response::getResponse(Request &request) {
-    std::string responseStr = "";
+std::string Response::getResponseStr(int code) {
+    std::string res;
     ResponseHeaders  headers;
 
+    if (code == 405) {
+        res = headers.generateHeaderAllowed(code, _closeConnection, _body.size(), _type, _path, _serverLocation.getAcceptedMethods());
+    } else if (code >= 400) {
+        res = headers.generateHeaderError(code, _closeConnection, _body.size(), _type, _path);
+    } else if (code / 100 == 3) {
+        res = headers.generateHeaderRedirection(code, _closeConnection, _path);
+    } else {
+        std::string contentPath = _path.substr(_serverLocation.getRoot().size());
+        res = headers.generateHeader(code, _closeConnection, _body.size(), _type, contentPath, _path);
+    }
+    std::cout << RED << "Response Headers: \n" << res << std::endl;//testing
+    if (_body != "") {
+        res += _body;
+    }
+    return res;
+}
+
+std::string Response::getResponse(Request &request) {
     if (_statusCode == 200) {
         _statusCode = responseValidation(request);
     }
-    // handle errors: headers and error page, have to make this part simple
-    if (_statusCode == 405 || _statusCode == 413) {
+    if (_statusCode != 200) {
         setErrorBody();
-        if (_statusCode == 405) {
-            responseStr = headers.getHeaderNotAllowed(_body.size(), _serverLocation.getAcceptedMethods(), _serverLocation.getPathLocation(), _statusCode, _type);
-        } else {
-            responseStr = headers.getHeaderError(_body.size(), _serverLocation.getPathLocation(), _statusCode, _type);
-        }
-        responseStr.append(_body);
-        return responseStr;
+        return getResponseStr(_statusCode);
     }
-    else if (_statusCode >= 400) {
-        setErrorBody();
-        responseStr = headers.getHeaderError(_body.size(), _path, _statusCode, _type); //not sure if it is 500
-        responseStr.append(_body);
-        return responseStr;
-    } //have to make this part simple
     else {
         if (_serverLocation.getRedirection().first != -1) {
             std::cout << "Redirecting......" << std::endl; //testing
@@ -235,16 +240,9 @@ std::string Response::getResponse(Request &request) {
         }
         if (_statusCode >= 400) {
             setErrorBody();
-            responseStr = headers.getHeaderError(_body.size(), _path, _statusCode, _type);
-        } else {
-            responseStr = headers.getHeader(_body.size(), _path, _statusCode, _type, _serverLocation.getPathLocation());
         }
-        if (_body != "") {
-            responseStr.append(_body);
-        }
-        return responseStr;
+        return getResponseStr(_statusCode);
     }
-    return responseStr;
 }
 
 void Response::processRedirection(Request &request) {

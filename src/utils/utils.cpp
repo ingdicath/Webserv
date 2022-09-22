@@ -84,34 +84,6 @@ namespace utils {
 		return oString;
 	}
 
-	// added by lin for http
-	long strToLong(const char *str) {
-		int i = 0;
-		int sign = 1;
-		unsigned long res = 0;
-
-		while (str[i] == ' ' || (str[i] >= 9 && str[i] <= 13)) {
-			i++;
-		}
-		if (str[i] == '-') {
-			sign = -1;
-		}
-		if (str[i] == '-' || str[i] == '+') {
-			i++;
-		}
-		while (str[i] >= '0' && str[i] <= '9') {
-			res = res * 10 + (str[i] - '0');
-			if (res > 2147483648 && sign == -1) {
-				return 0;
-			}
-			if (res > 2147483647 && sign == 1) {
-				return -1;
-			}
-			i++;
-		}
-		return (static_cast<long>(res) * sign);
-	}
-
 	// added by diana for parsing config file
 	int stringToInt(const std::string &input) {
 		int res;

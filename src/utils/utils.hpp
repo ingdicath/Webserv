@@ -24,8 +24,6 @@ namespace utils {
 	std::string stringToUpper(std::string oString);
 	std::string stringToLower(std::string oString);
 
-	// added by lin for parsing HTTP
-	long strToLong(const char *str);
 	int stringToInt(const std::string &input);    // added by diana for parsing config file
 	long stringToLong(const std::string &input);  // added by diana for parsing config file
 	std::map<int, std::string> makeMap(int num, std::string string);    // added by diana for parsing config file

@@ -62,9 +62,10 @@ public:
     void    processPostMethod(Request &request);
     void    processDeleteMethod();
 
+    std::string getResponseStr(int code);
     std::string getResponse(Request &request);
 
 };
 
 // for testing delete later
-std::ostream	&operator<<(std::ostream &os, const Response &reponse);
+std::ostream	&operator<<(std::ostream &os, const Response &response);

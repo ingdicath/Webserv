@@ -7,7 +7,7 @@
 ResponseHeaders::ResponseHeaders() {
     _allow = "";
     _connection = "keep-alive";
-    _contentLanguage = "";
+    _contentLanguage = "en";
     _contentLength = "";
     _contentLocation = "";
     _contentType = "";
@@ -15,8 +15,8 @@ ResponseHeaders::ResponseHeaders() {
     _lastModified = "";
     _location = "";
     _retryAfter = "";
-    _server = "";
-    _transferEncoding = "";
+    _server = "Webserv/1.0";
+    _transferEncoding = "identity";
     _statusMsg[100] = "Continue";
     _statusMsg[200] = "OK";
     _statusMsg[201] = "Created";
@@ -114,43 +114,10 @@ void    ResponseHeaders::setLastModified(const std::string &path) {
     }
 }
 
-void    ResponseHeaders::setAllow(std::set<std::string> methods)
-{
-    std::set<std::string>::iterator it = methods.begin();
-    while (it != methods.end())
-    {
-        _allow += *(it++);
-        if (it != methods.end())
-            _allow += ", ";
-    }
-}
-
-void    ResponseHeaders::setHeaders(size_t size, const std::string &path, int code, std::string type, const std::string &contentLocation) {
-    if (code == 413) {
-        _connection = "close";
-    }
-    _contentLanguage = "en";
-    _contentLength = numToStr(size);
-    if (code != 404) {
-        _contentLocation = contentLocation;
-    }
-    setContentType(type, path);
-    setDate();
-    setLastModified(path);
-    if (code == 201 || code / 100 == 3) {
-        _location = path;
-    }
-    if (code == 503 || code == 429 || code == 301) {
-        _retryAfter = numToStr(3); //retry after 3 sec
-    }
-    _server = "Webserv/1.0";
-    _transferEncoding = "identity";
-}
-
 std::string		ResponseHeaders::getStatusMsg(int code) {
     if (_statusMsg.find(code) != _statusMsg.end())
         return _statusMsg[code];
-    return "Unknown Code";
+    return "Unknown Status Code";
 }
 
 std::string		ResponseHeaders::writeHeader() {
@@ -182,33 +149,76 @@ std::string		ResponseHeaders::writeHeader() {
     return headers;
 }
 
-std::string ResponseHeaders::getHeader(size_t size, const std::string &path, int code, std::string type, const std::string &contentLocation) {
-    std::string	headers;
+std::string ResponseHeaders::generateHeaderAllowed(int code, bool closeConnection, size_t size, std::string type,
+                                                   std::string path, std::set<std::string> methods) {
+    std::set<std::string>::iterator it = methods.begin();
+    while (it != methods.end()) {
+        _allow += *(it++);
+        if (it != methods.end()) {
+            _allow += ", ";
+        }
+    }
+    if (closeConnection) {
+        _connection = "close";
+    }
+    _contentLength = numToStr(size);
+    _contentLocation = path;
+    setContentType(type, path);
+    setDate();
 
-    setHeaders(size, path, code, type, contentLocation);
+    std::string	headers;
     headers = "HTTP/1.1 " + numToStr(code) + " " + getStatusMsg(code) + "\r\n";
     headers += writeHeader();
     headers += "\r\n";
     return headers;
 }
 
-std::string		ResponseHeaders::getHeaderNotAllowed(size_t size, std::set<std::string> methods, const std::string &path, int code, std::string type)
-{
-    std::string	headers;
+std::string ResponseHeaders::generateHeaderError(int code, bool closeConnection, size_t size,
+                                                 std::string type, std::string path) {
+    if (closeConnection || code == 413) {
+        _connection = "close";
+    }
+    _contentLength = numToStr(size);
+    setContentType(type, path);
+    setDate();
+    if (code == 503 || code == 429 || code == 413) {
+        _retryAfter = numToStr(10); //retry after 10 sec
+    }
 
-    setAllow(methods);
-    setHeaders(size, path, code, type, path);
+    std::string	headers;
     headers = "HTTP/1.1 " + numToStr(code) + " " + getStatusMsg(code) + "\r\n";
     headers += writeHeader();
     headers += "\r\n";
     return headers;
 }
 
-std::string		ResponseHeaders::getHeaderError(size_t size, const std::string &path, int code, std::string type)
-{
+std::string ResponseHeaders::generateHeaderRedirection(int code, bool closeConnection, std::string location) {
+    if (closeConnection) {
+        _connection = "close";
+    }
+    _location = location;
+    if (code == 301) {
+        _retryAfter = numToStr(10); //retry after 10 sec
+    }
     std::string	headers;
+    headers = "HTTP/1.1 " + numToStr(code) + " " + getStatusMsg(code) + "\r\n";
+    headers += writeHeader();
+    headers += "\r\n";
+    return headers;
+}
 
-    setHeaders(size, path, code, type, path);
+std::string ResponseHeaders::generateHeader(int code, bool closeConnection, size_t size, std::string type,
+                                            std::string path, std::string absolutePath) {
+    if (closeConnection) {
+        _connection = "close";
+    }
+    _contentLength = numToStr(size);
+    _contentLocation = path;
+    setContentType(type, absolutePath);
+    setLastModified(absolutePath);
+    setDate();
+
+    std::string	headers;
     headers = "HTTP/1.1 " + numToStr(code) + " " + getStatusMsg(code) + "\r\n";
     headers += writeHeader();
     headers += "\r\n";

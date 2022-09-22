@@ -36,37 +36,16 @@ Request &Request::operator=(const Request &obj) {
 Request::~Request() {
 }
 
-int Request::parseRawRequest(const std::string &rawRequest) {
-    if (rawRequest.find("\r\n\r\n") != std::string::npos) {
-        try {
-            std::stringstream ss(rawRequest);
-            parseMethod(ss);
-            parsePath(ss);
-            parseVersion(ss);
-            ss.ignore(2); // skip the \r\n
-            parseHeaders(ss);
-            parseBody(ss, rawRequest);
-        }
-        catch (std::exception &e) {
-            std::cout << e.what() << std::endl;
-        }
-    }
-    else {
-        _ret = 400;
-    }
-    return _ret;
-}
-
-// Getters, for testing now, may use later for handling
-std::string  Request::getMethod() const {
+// Getters
+const std::string  &Request::getMethod() const {
     return _method;
 }
 
-std::string    Request::getPath() const {
+const std::string    &Request::getPath() const {
     return _path;
 }
 
-std::string	Request::getVersion() const {
+const std::string	&Request::getVersion() const {
 	return _version;
 }
 
@@ -74,18 +53,32 @@ std::map<std::string, std::string>	Request::getHeaders() const {
 	return _headers;
 }
 
-std::string Request::getHost() const {
+const std::string &Request::getHost() const {
     return _host;
 }
 
-std::string Request::getBody() const {
+const std::string &Request::getBody() const {
     return _body;
 }
 
-int Request::getRet() const {
+const int &Request::getRet() const {
     return _ret;
 }
 
+int Request::parseRawRequest(const std::string &rawRequest) {
+    if (rawRequest.find("\r\n\r\n") != std::string::npos) {
+        std::stringstream ss(rawRequest);
+        parseMethod(ss);
+        parsePath(ss);
+        parseVersion(ss);
+        ss.ignore(2); // skip the \r\n
+        parseHeaders(ss);
+        parseBody(ss, rawRequest);
+    } else {
+        _ret = 400;
+    }
+    return _ret;
+}
 
 void    Request::parseMethod(std::stringstream &ss) {
     ss >> _method;
@@ -94,7 +87,7 @@ void    Request::parseMethod(std::stringstream &ss) {
     }
     else if (_method == "HEAD" || _method == "PUT" || _method == "CONNECT" ||
             _method == "OPTIONS" || _method == "TRACE" || _method == "PATCH") {
-        _ret = 501;
+        _ret = 501; //method not implemented
     }
     else {
         _ret = 400;
@@ -108,7 +101,6 @@ void    Request::parsePath(std::stringstream &ss) {
     if (requestPath.length() > 2048) {
         _ret = 414;
     }
-
     // space in uri is %20, so need decode it first
     while(true) {
         size_t pos = requestPath.find("%20");
@@ -128,7 +120,7 @@ void    Request::parseVersion(std::stringstream &ss) {
     ss >> _version;
 
     if (_version == "HTTP/2.0" || _version == "HTTP/2" || _version == "HTTP/3.0") {
-        _ret = 505;
+        _ret = 505; //http version not supported
     }
     else if (_version != "HTTP/1.1") {
         _ret = 400;
