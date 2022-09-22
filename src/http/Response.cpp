@@ -327,12 +327,11 @@ void Response::processGetMethod() {
     if (pos != std::string::npos) {
         queryString = contentPath.substr(pos+1);
         std::cout << "QueryString: " << queryString << std::endl; //testing
-        contentPath = contentPath.substr(0, contentPath.find("?"));;
+        contentPath = contentPath.substr(0, contentPath.find("?"));
     } 
     std::cout << "ContentPath: " << contentPath << std::endl; //testing
     int i = isFile(contentPath);
     if (i == 2) { //it is a directory
-        std::cout << "it is a directory" << std::endl; //testing
         // https://serverfault.com/questions/940276/force-nginx-to-always-autoindex-and-ignore-index-html-files
         if (isFile(contentPath + _serverLocation.getIndex()) == 0 && _autoindex) {
             std::cout << RED << autoIndexGenerator(contentPath, _path) << RESET << std::endl;
@@ -345,7 +344,6 @@ void Response::processGetMethod() {
         }
     }
     if (i > 0) {
-        std::cout << "it is a file" << std::endl; //testing
         _path = contentPath;
         std::string fileExtension = contentPath.substr(contentPath.find_last_of("."));
         if (fileExtension == _serverLocation.getCgi().first) { // cgi if extension is .py
@@ -374,7 +372,7 @@ void Response::processGetMethod() {
 }
 
 void    Response::processPostMethod(Request &request) {
-    std::string filePath = _serverLocation.getRoot() + _path.substr(_serverLocation.getPathLocation().size() - 1);;
+    std::string filePath = _serverLocation.getRoot() + _path.substr(_serverLocation.getPathLocation().size() - 1);
     std::cout << RED << "File Path: " << filePath << std::endl; //testing
 
     //CGI TEST
@@ -425,7 +423,7 @@ void    Response::processPostMethod(Request &request) {
 }
 
 void     Response::processDeleteMethod() {
-    std::string filePath = _serverLocation.getRoot() + _path.substr(_serverLocation.getPathLocation().size() - 1);;
+    std::string filePath = _serverLocation.getRoot() + _path.substr(_serverLocation.getPathLocation().size() - 1);
     std::cout << RED << "File Path: " << filePath << std::endl; //testing
     if (isFile(filePath) ==  1) {
         if (std::remove(filePath.c_str()) == 0) {
