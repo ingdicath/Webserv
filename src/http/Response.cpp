@@ -142,6 +142,7 @@ void    Response::setErrorBody() {
         std::ofstream       file;
         std::stringstream   buffer;
         std::string         errorPagePath = "www" + errorPage[_statusCode];
+        std::cout << BLUE << errorPagePath << RESET << std::endl;
         file.open(errorPagePath.c_str(), std::ifstream::in);
         if (file.is_open() == false) {
             _body = "<!DOCTYPE html>\n<html><title>404</title><body>There was an error finding your error page</body></html>\n";
@@ -346,14 +347,13 @@ void Response::processGetMethod() {
     if (i > 0) {
         std::cout << "it is a file" << std::endl; //testing
         _path = contentPath;
-
-        //CGI TEST
         std::string fileExtension = contentPath.substr(contentPath.find_last_of("."));
-        if (fileExtension == _serverLocation.getCgi().first) { //cgi part
-            CGI cgi(GET, contentPath, queryString);
-            //cgi.addPath(fileName, _serverLocation);
-            _body = cgi.execute();
-            //insert function to find type and remove first 2 lines of _body
+        if (fileExtension == _serverLocation.getCgi().first) { // cgi if extension is .py
+            CGI cgi(GET, contentPath);
+            _body = cgi.execute_GET(queryString);
+            std::cout << GREEN << _body << RESET << std::endl;
+            // insert function to find type and remove first 2 lines of _body
+            // and fill the _type with the correct type.
             _type = "text/html";
             return;
         }
@@ -376,6 +376,26 @@ void Response::processGetMethod() {
 void    Response::processPostMethod(Request &request) {
     std::string filePath = _serverLocation.getRoot() + _path.substr(_serverLocation.getPathLocation().size() - 1);;
     std::cout << RED << "File Path: " << filePath << std::endl; //testing
+
+    //CGI TEST
+    std::string fileExtension = filePath.substr(filePath.find_last_of("."));
+    if (fileExtension == _serverLocation.getCgi().first) { // cgi if extension is .py
+        CGI cgi(POST, filePath);
+        _body = cgi.execute_POST(_type, request.getBody());
+        if (_body.size() == 0) {
+            std::cout << "YES" << std::endl;
+            _statusCode = 403;
+            setErrorBody();
+            return;
+        }
+        else {
+        // insert function to find type and remove first 2 lines of _body
+        // and fill the _type with the correct type.
+            _type = "text/html";
+            return;
+        }
+    }
+
     if (isFile(filePath) == 1) { //file already exists
         std::cout << RED << "file exist" << std::endl; //testing
         _statusCode = 403; // to be confirmed
@@ -390,7 +410,6 @@ void    Response::processPostMethod(Request &request) {
         }
 
         std::ofstream file;
-        //cgi here?
         file.open(filePath, std::ifstream::out); //std::ios::out | std::ios::binary
         if (file.is_open() == false) {
             std::cout << RED << "cannot write to file" << std::endl; //testing
