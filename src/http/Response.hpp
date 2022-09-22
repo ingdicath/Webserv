@@ -28,17 +28,26 @@ private:
     int         _statusCode;
     std::string _type;
     long        _length;
-    std::string _location;
     Location    _serverLocation;
     bool        _autoindex;
     std::string _body;
 
     Response();
-    int responseValidation(Request &request);
+
     std::vector<std::string> setPathVector(std::string pathStr);
     int findRequestLocation();
+    int responseValidation(Request &request);
+
     int isFile(const std::string &path);
     std::string autoIndexGenerator(std::string path, std::string dir);
+    void    setErrorBody();
+
+    void    processRedirection(Request &request);
+    void    processGetMethod();
+    void    processPostMethod(Request &request);
+    void    processDeleteMethod();
+
+    std::string getResponseStr(int code);
 
 public:
     Response(HttpData &httpData, Request &request);
@@ -55,14 +64,6 @@ public:
     const std::string   &getType() const;
     const std::string   &getBody() const;
 
-    // generate the response string
-    void    setErrorBody();
-    void    processRedirection(Request &request);
-    void    processGetMethod();
-    void    processPostMethod(Request &request);
-    void    processDeleteMethod();
-
-    std::string getResponseStr(int code);
     std::string getResponse(Request &request);
 
 };

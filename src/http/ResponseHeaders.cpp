@@ -213,7 +213,9 @@ std::string ResponseHeaders::generateHeader(int code, bool closeConnection, size
         _connection = "close";
     }
     _contentLength = numToStr(size);
-    _contentLocation = path;
+    if (path != "/autoindex") {
+        _contentLocation = path;
+    }
     setContentType(type, absolutePath);
     setLastModified(absolutePath);
     setDate();

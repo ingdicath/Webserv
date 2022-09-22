@@ -43,7 +43,6 @@ Response &Response::operator=(const Response &obj) {
         _statusCode = obj._statusCode;
         _type = obj._type;
         _length = obj._length;
-        _location = obj._location;
         _serverLocation = obj._serverLocation;
         _autoindex = obj._autoindex;
         _body = obj._body;
@@ -135,29 +134,6 @@ int Response::findRequestLocation() {
     return -1;
 }
 
-void    Response::setErrorBody() {
-    _type = "text/html";
-    std::map<int, std::string>	errorPage = _httpData.getErrorPages();
-    if (errorPage.find(_statusCode) != errorPage.end()) {
-        std::ofstream       file;
-        std::stringstream   buffer;
-        std::string         errorPagePath = "www" + errorPage[_statusCode];
-        std::cout << BLUE << errorPagePath << RESET << std::endl;
-        file.open(errorPagePath.c_str(), std::ifstream::in);
-        if (file.is_open() == false) {
-            _body = "<!DOCTYPE html>\n<html><title>404</title><body>There was an error finding your error page</body></html>\n";
-        }
-        else {
-            buffer << file.rdbuf();
-            file.close();
-            _body = buffer.str();
-        }
-    }
-    else {
-        _body = "<!DOCTYPE html>\n<html><title>404</title><body>There was an error finding your error page</body></html>\n";
-    }
-}
-
 int Response::responseValidation(Request &request) {
     int locationIndex = findRequestLocation();
     std::cout << "location index: " << locationIndex << std::endl; //testing
@@ -197,66 +173,6 @@ int Response::responseValidation(Request &request) {
         }
     }
     return 200;
-}
-
-std::string Response::getResponseStr(int code) {
-    std::string res;
-    ResponseHeaders  headers;
-
-    if (code == 405) {
-        res = headers.generateHeaderAllowed(code, _closeConnection, _body.size(), _type, _path, _serverLocation.getAcceptedMethods());
-    } else if (code >= 400) {
-        res = headers.generateHeaderError(code, _closeConnection, _body.size(), _type, _path);
-    } else if (code / 100 == 3) {
-        res = headers.generateHeaderRedirection(code, _closeConnection, _path);
-    } else {
-        std::string contentPath = _path.substr(_serverLocation.getRoot().size());
-        res = headers.generateHeader(code, _closeConnection, _body.size(), _type, contentPath, _path);
-    }
-    std::cout << RED << "Response Headers: \n" << res << std::endl;//testing
-    if (_body != "") {
-        res += _body;
-    }
-    return res;
-}
-
-std::string Response::getResponse(Request &request) {
-    if (_statusCode == 200) {
-        _statusCode = responseValidation(request);
-    }
-    if (_statusCode != 200) {
-        setErrorBody();
-        return getResponseStr(_statusCode);
-    }
-    else {
-        if (_serverLocation.getRedirection().first != -1) {
-            std::cout << "Redirecting......" << std::endl; //testing
-            processRedirection(request);
-        } else if (_method == "GET") {
-            processGetMethod();
-        } else if (_method == "POST") {
-            processPostMethod(request);
-        } else if (_method == "DELETE") {
-            processDeleteMethod();
-        }
-        if (_statusCode >= 400) {
-            setErrorBody();
-        }
-        return getResponseStr(_statusCode);
-    }
-}
-
-void Response::processRedirection(Request &request) {
-    std::string redirectionLocation = _serverLocation.getRedirection().second;
-    size_t pos = redirectionLocation.find("$uri");
-    if (pos != std::string::npos) {
-        redirectionLocation.erase(pos, 4);
-        redirectionLocation.append(request.getPath());
-    }
-    std::cout << "Redirection Location: " << redirectionLocation << std::endl; //testing
-    _path = redirectionLocation;
-    _statusCode = _serverLocation.getRedirection().first;
-    _body = "";
 }
 
 int Response::isFile(const std::string &path) { //return 1 if is file, return 2 if is directory
@@ -316,6 +232,44 @@ std::string Response::autoIndexGenerator(std::string path, std::string directory
     return res;
 }
 
+void    Response::setErrorBody() {
+    _type = "text/html";
+    std::map<int, std::string>	errorPage = _httpData.getErrorPages();
+    if (errorPage.find(_statusCode) != errorPage.end()) {
+        std::ofstream       file;
+        std::stringstream   buffer;
+        std::string         errorPagePath = "www" + errorPage[_statusCode];
+        std::cout << BLUE << errorPagePath << RESET << std::endl;
+        file.open(errorPagePath.c_str(), std::ifstream::in);
+        if (file.is_open() == false) {
+            _body = "<!DOCTYPE html>\n<html><title>404</title><body>There was an error finding your error page</body></html>\n";
+        }
+        else {
+            buffer << file.rdbuf();
+            file.close();
+            _body = buffer.str();
+        }
+    }
+    else {
+        _body = "<!DOCTYPE html>\n<html><title>404</title><body>There was an error finding your error page</body></html>\n";
+    }
+}
+
+void Response::processRedirection(Request &request) {
+    std::string redirectionLocation = _serverLocation.getRedirection().second;
+    size_t pos = redirectionLocation.find("$uri");
+    if (pos != std::string::npos) {
+        redirectionLocation.erase(pos, 4);
+        redirectionLocation.append(request.getPath());
+    }
+    std::cout << "Redirection Location: " << redirectionLocation << std::endl; //testing
+    _path = redirectionLocation;
+    _statusCode = _serverLocation.getRedirection().first;
+    _body = "";
+}
+
+
+
 void Response::processGetMethod() {
     std::ofstream       file;
     std::stringstream   buffer;
@@ -334,9 +288,9 @@ void Response::processGetMethod() {
     if (i == 2) { //it is a directory
         // https://serverfault.com/questions/940276/force-nginx-to-always-autoindex-and-ignore-index-html-files
         if (isFile(contentPath + _serverLocation.getIndex()) == 0 && _autoindex) {
-            std::cout << RED << autoIndexGenerator(contentPath, _path) << RESET << std::endl;
-            _body = buffer.str();
+            _body = autoIndexGenerator(contentPath, _path);
             _type = "text/html";
+            _path = contentPath + "autoindex";
             return;
         } else {
             contentPath = contentPath + _serverLocation.getIndex();
@@ -437,6 +391,53 @@ void     Response::processDeleteMethod() {
     }
     else {
         _statusCode = 404;
+    }
+}
+
+std::string Response::getResponseStr(int code) {
+    std::string res;
+    ResponseHeaders  headers;
+
+    if (code == 405) {
+        res = headers.generateHeaderAllowed(code, _closeConnection, _body.size(), _type, _path, _serverLocation.getAcceptedMethods());
+    } else if (code >= 400) {
+        res = headers.generateHeaderError(code, _closeConnection, _body.size(), _type, _path);
+    } else if (code / 100 == 3) {
+        res = headers.generateHeaderRedirection(code, _closeConnection, _path);
+    } else {
+        std::string contentPath = _path.substr(_serverLocation.getRoot().size());
+        res = headers.generateHeader(code, _closeConnection, _body.size(), _type, contentPath, _path);
+    }
+    std::cout << RED << "Response Headers: \n" << res << std::endl;//testing
+    if (_body != "") {
+        res += _body;
+    }
+    return res;
+}
+
+std::string Response::getResponse(Request &request) {
+    if (_statusCode == 200) {
+        _statusCode = responseValidation(request);
+    }
+    if (_statusCode != 200) {
+        setErrorBody();
+        return getResponseStr(_statusCode);
+    }
+    else {
+        if (_serverLocation.getRedirection().first != -1) {
+            std::cout << "Redirecting......" << std::endl; //testing
+            processRedirection(request);
+        } else if (_method == "GET") {
+            processGetMethod();
+        } else if (_method == "POST") {
+            processPostMethod(request);
+        } else if (_method == "DELETE") {
+            processDeleteMethod();
+        }
+        if (_statusCode >= 400) {
+            setErrorBody();
+        }
+        return getResponseStr(_statusCode);
     }
 }
 

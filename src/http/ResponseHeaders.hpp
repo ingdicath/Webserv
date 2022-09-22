@@ -14,25 +14,6 @@
 #include "Request.hpp"
 
 class ResponseHeaders {
-public:
-    ResponseHeaders();
-    ResponseHeaders(const ResponseHeaders &obj);
-    virtual ~ResponseHeaders();
-    ResponseHeaders &operator=(const ResponseHeaders &obj);
-
-    void    setContentType(std::string type, std::string path);
-    void    setDate();
-    void    setLastModified(const std::string& path);
-
-    std::string getStatusMsg(int code);
-    std::string writeHeader();
-
-    std::string generateHeaderAllowed(int code, bool closeConnection, size_t size, std::string type, std::string path, std::set<std::string> methods);
-    std::string generateHeaderError(int code, bool closeConnection, size_t size, std::string type, std::string path);
-    std::string generateHeaderRedirection(int code, bool closeConnection, std::string location);
-    std::string generateHeader(int code, bool closeConnection, size_t size, std::string type, std::string path, std::string absolutePath);
-
-
 private:
     std::string					_allow; //used for 405, Method not allowed
     std::string                 _connection; //close or keep-alive
@@ -49,4 +30,22 @@ private:
     std::map<int, std::string>	_statusMsg;
 
     std::string numToStr(size_t n);
+
+    void    setContentType(std::string type, std::string path);
+    void    setDate();
+    void    setLastModified(const std::string& path);
+
+    std::string getStatusMsg(int code);
+    std::string writeHeader();
+
+public:
+    ResponseHeaders();
+    ResponseHeaders(const ResponseHeaders &obj);
+    virtual ~ResponseHeaders();
+    ResponseHeaders &operator=(const ResponseHeaders &obj);
+
+    std::string generateHeaderAllowed(int code, bool closeConnection, size_t size, std::string type, std::string path, std::set<std::string> methods);
+    std::string generateHeaderError(int code, bool closeConnection, size_t size, std::string type, std::string path);
+    std::string generateHeaderRedirection(int code, bool closeConnection, std::string location);
+    std::string generateHeader(int code, bool closeConnection, size_t size, std::string type, std::string path, std::string absolutePath);
 };
