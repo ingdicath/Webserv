@@ -268,8 +268,6 @@ void Response::processRedirection(Request &request) {
     _body = "";
 }
 
-
-
 void Response::processGetMethod() {
     std::ofstream       file;
     std::stringstream   buffer;
@@ -458,4 +456,3 @@ std::ostream	&operator<<(std::ostream &os, const Response &response) {
     os <<  "------- Response Object Info Done --------" << RESET << std::endl;
     return os;
 }
-
