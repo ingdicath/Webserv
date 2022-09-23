@@ -21,23 +21,31 @@
     background-attachment: fixed;
     background-position: center;
     background-size: 100% 100%;
-    font-family: sans-serif, standard, courier, arial, helvética">
-<div id="main">
-    <content>
-        <h1 style="text-align: center;"><span
-                style="color: inherit; font-family: inherit;">Welcome to our Webserver!</span><br><br>
-        </h1>
-        <h2 style="text-align: center;">
-            <legend>Valid responses</legend><br>
-            <a href="form/">Upload file - UNDER CONSTRUCTION</a><br><br>
-            <a href="add_get.html">Cgi GET</a><br><br>
-            <a href="add_post.html">Cgi POST - UNDER CONSTRUCTION</a><br><br>
-            <a href="redirection/">Redirection - UNDER CONSTRUCTION</a><br><br><br><br>
-            <legend>Invalid responses</legend><br>
-            <a href="error-method/">Method not allowed - UNDER CONSTRUCTION</a><br><br>
-        </h2>
-    </content>
-</div>
+    font-family: sans-serif, standard, courier, arial, helvética">       
+    <div style="width:800px; margin:0 auto;margin-top: 50px; ">
+        <h1 style="text-align: center; ">Welcome to our Webserver!</h1>
+        <table style="width: 100%;">
+            <tr>
+                <td style="width: 49%; padding: 20px; vertical-align: top; background-color: rgb(205, 242, 182); border-radius: 10px;">
+                    <h2 style="padding-left: 30px">Valid responses</h2>
+                    <ul>
+                        <li><a style="color: black;" href="form/"><b>Upload file - NOT YET</b></a></li><br>
+                        <li><a style="color: black;" href="add_get.html"><b>Cgi GET</b></a></li><br>
+                        <li><a style="color: black;" href="add_post.html"><b>Cgi POST</b></a></li><br>
+                        <li><a style="color: black;" href="redirection/"><b>Redirection - NOT YET</b></a></li><br>
+                    </ul>
+                </td>
+                <td style="width: 2%;">&nbsp</td>
+                <td style="width: 49%; padding: 20px; vertical-align: top; background-color: rgb(242, 218, 208); border-radius: 10px;">
+                    <h2 style="padding-left: 30px">Invalid responses</h2>
+                    <ul>
+                        <li><a style="color: black;" href="error-method/"><b>Method not allowed - NOT YET</b></a></li>
+                        <li><a style="color: black;" href="../cgi-bin/empty.py"><b>CGI - Bad gateway</b></a></li>
+                    </ul>
+                </td>
+            </tr>
+        </table>
+     </div>
 </body>
 <footer>
     <div class="footer">
