@@ -338,6 +338,7 @@ void    Response::processPostMethod(Request &request) {
     std::string fileExtension = filePath.substr(filePath.find_last_of("."));
     if (fileExtension == _serverLocation.getCgi().first) { // cgi if extension is .py
         CGI cgi(POST, filePath);
+        _path = filePath;
         _body = cgi.execute_POST(_type, request.getBody());
         // if (_body == "500") {
         //     _statusCode = 500;

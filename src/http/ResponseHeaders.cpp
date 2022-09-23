@@ -175,13 +175,13 @@ std::string ResponseHeaders::generateHeaderAllowed(int code, bool closeConnectio
 
 std::string ResponseHeaders::generateHeaderError(int code, bool closeConnection, size_t size,
                                                  std::string type, std::string path) {
-    if (closeConnection || code == 413) {
+    if (closeConnection) {
         _connection = "close";
     }
     _contentLength = numToStr(size);
     setContentType(type, path);
     setDate();
-    if (code == 503 || code == 429 || code == 413) {
+    if (code == 503 || code == 429) {
         _retryAfter = numToStr(10); //retry after 10 sec
     }
 
