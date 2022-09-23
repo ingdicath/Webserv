@@ -6,7 +6,7 @@
 /*   By: aheister <aheister@student.codam.nl>         +#+                     */
 /*                                                   +#+                      */
 /*   Created: 2022/09/19 13:09:04 by aheister      #+#    #+#                 */
-/*   Updated: 2022/09/22 16:01:16 by aheister      ########   odam.nl         */
+/*   Updated: 2022/09/22 17:47:15 by aheister      ########   odam.nl         */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -43,6 +43,7 @@ private:
 	std::string		_queryString;
 	std::string		_requestBody;
 	std::string 	_type;
+	std::string		_error;
 	char**			_arg;
 	long			_length;
 

@@ -280,8 +280,15 @@ void Response::processGetMethod() {
         queryString = contentPath.substr(pos+1);
         std::cout << "QueryString: " << queryString << std::endl; //testing
         contentPath = contentPath.substr(0, contentPath.find("?"));
-    } 
-    std::cout << "ContentPath: " << contentPath << std::endl; //testing
+    }
+    // TODO: uitzoeken hoe dit alleen bij errorpagina opgeroepen kan worden
+    // pos = contentPath.find("/cgi-bin");
+    // if (pos != std::string::npos) {
+    //     std::string end = contentPath.substr(pos+8);
+    //     std::string begin = contentPath.substr(0, contentPath.find("/cgi-bin"));
+    //     contentPath = begin + end;
+    // }
+    std::cout << GREEN << "ContentPath: " << contentPath << RESET << std::endl; //testing
     int i = isFile(contentPath);
     if (i == 2) { //it is a directory
         // https://serverfault.com/questions/940276/force-nginx-to-always-autoindex-and-ignore-index-html-files
@@ -324,26 +331,24 @@ void Response::processGetMethod() {
 }
 
 void    Response::processPostMethod(Request &request) {
-    std::string filePath = _serverLocation.getRoot() + _path.substr(_serverLocation.getPathLocation().size() - 1);
-    std::cout << RED << "File Path: " << filePath << std::endl; //testing
+    std::string filePath = _serverLocation.getRoot() + _path.substr(_serverLocation.getPathLocation().size() - 1);;
+    std::cout << RED << "File Path: " << filePath << RESET << std::endl; //testing
 
     //CGI TEST
     std::string fileExtension = filePath.substr(filePath.find_last_of("."));
     if (fileExtension == _serverLocation.getCgi().first) { // cgi if extension is .py
         CGI cgi(POST, filePath);
         _body = cgi.execute_POST(_type, request.getBody());
-        if (_body.size() == 0) {
-            std::cout << "YES" << std::endl;
-            _statusCode = 403;
-            setErrorBody();
-            return;
-        }
-        else {
+        // if (_body == "500") {
+        //     _statusCode = 500;
+        //     return;
+        // }
+        //else {
         // insert function to find type and remove first 2 lines of _body
         // and fill the _type with the correct type.
-            _type = "text/html";
-            return;
-        }
+        _type = "text/html";
+        return;
+        //}
     }
 
     if (isFile(filePath) == 1) { //file already exists

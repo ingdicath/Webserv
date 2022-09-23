@@ -6,7 +6,7 @@
 /*   By: aheister <aheister@student.codam.nl>         +#+                     */
 /*                                                   +#+                      */
 /*   Created: 2022/09/19 12:28:01 by aheister      #+#    #+#                 */
-/*   Updated: 2022/09/22 17:13:55 by aheister      ########   odam.nl         */
+/*   Updated: 2022/09/23 09:04:28 by aheister      ########   odam.nl         */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -18,9 +18,10 @@
 //              - 403 if program can't be executed
 //          - Handle memory management of array env
 //          - Handle memory management of array args
-//          - Find out how to use the other environment variables
-//			- Handle UPLOAD?? (don't know if that is done here)
+//          - Find out how to fill the other environment variables based on client and serverinfo
 //			- Remove type from result of cgi
+//			- Make the errorpages better: with link to homepage
+//			- Handle UPLOAD?? (don't know if that is done here)
 
 CGI::CGI(const e_method method, const std::string path) {
 	_method = method;
@@ -47,10 +48,8 @@ int CGI::execute_cgi(char *args[], int tmp_fd, char *env[])
 {
 	dup2(tmp_fd, STDIN_FILENO);
 	close(tmp_fd);
-	//(void)args;
-	//(void)env;
 	execve(args[0], args, env);
-	exit (EXIT_FAILURE);
+	exit(1);
 }
 
 char **CGI::create_envp(void)
@@ -61,7 +60,7 @@ char **CGI::create_envp(void)
 		env_map["QUERY_STRING"] = this->_queryString;
 	if (this->_method == POST) {
 		env_map["CONTENT_TYPE"] = this->_type;
-		env_map["CONTENT_LENGTH"] = this->_length;
+		env_map["CONTENT_LENGTH"] = _requestBody.size();
 	} 
 	env_map["GATEWAY_INTERFACE"] = "CGI/1.1";
 	env_map["PATH_INFO"] = "";                                      //path suffix, if appended to URL after program name and a slash
@@ -168,10 +167,16 @@ std::string CGI::execute(void) {
 	else
 	{
 		char	buffer[CGI_BUFSIZE] = {0};
+		int		chld_state;
 
 		ret = 1;
-		while(waitpid(-1, NULL, WUNTRACED) != -1)
+		while(waitpid(-1, &chld_state, WUNTRACED) != -1)
 			;
+		// TODO: uitzoeken hoe ik de exitcode kan vinden
+		// if (WIFEXITED(chld_state)) {
+    	// 	body = "500";
+		// 	return (body);
+  		// }
 		close(fd[1]);
 		close(tmp_fd);
 		while (ret > 0)
