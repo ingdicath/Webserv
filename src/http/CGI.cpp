@@ -6,7 +6,7 @@
 /*   By: aheister <aheister@student.codam.nl>         +#+                     */
 /*                                                   +#+                      */
 /*   Created: 2022/09/19 12:28:01 by aheister      #+#    #+#                 */
-/*   Updated: 2022/09/23 11:29:23 by aheister      ########   odam.nl         */
+/*   Updated: 2022/09/23 13:03:36 by aheister      ########   odam.nl         */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -49,9 +49,7 @@ int CGI::execute_cgi(char *args[], int tmp_fd, char *env[])
 {
 	dup2(tmp_fd, STDIN_FILENO);
 	close(tmp_fd);
-	(void)args;
-	(void)env;
-	//execve(args[0], args, env);
+	execve(args[0], args, env);
 	exit(1);
 }
 
@@ -90,7 +88,10 @@ char **CGI::create_args(void) {
 		size = 3;
 	else	
 		size = 2;
+	args = NULL;
 	args = (char **)malloc(size * sizeof(char *));
+	if (!args)
+		return (NULL);
 	args[0] = const_cast<char*>(_path.c_str());
 	if (_method == POST) {
 		args[1] = const_cast<char*>(_requestBody.c_str());
@@ -109,12 +110,16 @@ char **CGI::convert_map_to_array(std::map<std::string, std::string> env_map)
 
 	envp = NULL;
 	envp = (char **)malloc((env_map.size() + 1) * sizeof(char *));
+	if (!envp)
+		return (NULL);
 	i = 0;
 	for (std::map<std::string, std::string>::const_iterator it = env_map.begin(); it != env_map.end(); ++it)
 	{
 		envp[i] = strdup((it->first + "=" + it->second).c_str());
-		// if (envp[i] == NULL)
-		// 	throw("error happened");
+		if (envp[i] == NULL) {
+			// hier envp freeen
+			return (NULL);
+		}
 		i++;
 	}
 	envp[i] = NULL;
@@ -150,19 +155,22 @@ std::string CGI::execute(void) {
 
 	pid = 0;
 	envp = create_envp();
-	// error if envp = NULL
 	args = create_args();
-	// error if args = NULL
+	if (envp == NULL || args == NULL) {
+		// hier nog args en/of envp freeen
+		return ("500");
+	}
 	tmp_fd = dup(STDIN_FILENO);
-	// error if dup fails
-	pipe(fd);
-	// error if pipe fails
+	ret = pipe(fd);
 	pid = fork();
-	// error if fork fails
+	if (tmp_fd < 0 || pid < 0 || ret < 0) {
+		// hier nog args en envp freeen
+		return ("500");
+	}
 	if (pid == 0)
 	{
-		dup2(fd[1], STDOUT_FILENO);
-		// error if dup fails
+		if (dup2(fd[1], STDOUT_FILENO) < 0)
+			return ("500");
 		close(fd[0]);
 		close(fd[1]);
 		execute_cgi(args, tmp_fd, envp);
@@ -175,21 +183,16 @@ std::string CGI::execute(void) {
 		ret = 1;
 		while(waitpid(-1, &status, WUNTRACED) != -1)
 			;
-		if (WIFEXITED(status)) {
-        	int es = WEXITSTATUS(status);
-        	std::cout << "Exit status was " << es << std::endl;
-			if (es == 1) {
-				body = "502";
-				return (body);
-			}
-    	}
+		if (WEXITSTATUS(status) == 1)
+			return ("502");
 		close(fd[1]);
 		close(tmp_fd);
 		while (ret > 0)
 		{
 			memset(buffer, 0, CGI_BUFSIZE);
 			ret = read(fd[0], buffer, CGI_BUFSIZE - 1);
-			// error if read fails??
+			if (ret < 0)
+				return("500");
 			// think about checking fds for select here? Possible?
 			body += buffer;
 		}

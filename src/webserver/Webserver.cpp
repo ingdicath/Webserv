@@ -150,6 +150,7 @@ void    Webserver::runWebserver(void) {
 								//std::cout << i << " = readyWrite" << ", ready = " << ready << std::endl; // test: delete later
 								//writeResponse(i);
                                 itServer->sendResponse(i);
+								// TODO: change this part based on the request header value connection open
 								itServer->removeClient(i);
 								updateSockets(i, REMOVE, WRITE);
 								ready--;

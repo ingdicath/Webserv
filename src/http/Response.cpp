@@ -308,7 +308,10 @@ void Response::processGetMethod() {
         if (fileExtension == _serverLocation.getCgi().first) { // cgi if extension is .py
             CGI cgi(GET, contentPath);
             _body = cgi.execute_GET(queryString);
-            std::cout << GREEN << _body << RESET << std::endl; // testing
+            if (_body == "502") {
+                _statusCode = 502;
+            return;
+            }
             // insert function to find type and remove first 2 lines of _body
             // and fill the _type with the correct type.
             _type = "text/html";
