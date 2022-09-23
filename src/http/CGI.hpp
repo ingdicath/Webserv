@@ -6,7 +6,7 @@
 /*   By: aheister <aheister@student.codam.nl>         +#+                     */
 /*                                                   +#+                      */
 /*   Created: 2022/09/19 13:09:04 by aheister      #+#    #+#                 */
-/*   Updated: 2022/09/22 17:47:15 by aheister      ########   odam.nl         */
+/*   Updated: 2022/09/23 13:51:20 by aheister      ########   odam.nl         */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -52,6 +52,7 @@ private:
 	char			**create_args(void);
 	char 			**convert_map_to_array(std::map<std::string, std::string> env_map);
 	int 			execute_cgi(char *args[], int tmp_fd, char *env[]);
+	void			free_array(char **array);
 
 	//setters
 	void    setQueryString(std::string queryString);

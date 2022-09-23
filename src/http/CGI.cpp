@@ -6,23 +6,16 @@
 /*   By: aheister <aheister@student.codam.nl>         +#+                     */
 /*                                                   +#+                      */
 /*   Created: 2022/09/19 12:28:01 by aheister      #+#    #+#                 */
-/*   Updated: 2022/09/23 13:03:36 by aheister      ########   odam.nl         */
+/*   Updated: 2022/09/23 14:25:34 by aheister      ########   odam.nl         */
 /*                                                                            */
 /* ************************************************************************** */
 
 #include "CGI.hpp"
 #include "../webserver/Location.hpp"
 
-// TODO:    - Return error code if file cannot be executed or if other functions in CGI object fail
-//              - 500 if system function fails
-//              - 502 if program can't be executed
-//          - Handle memory management of array env
-//          - Handle memory management of array args
-//          - Find out how to fill the other environment variables based on client and serverinfo
-//			- Remove type from result of cgi
-//			- Make the errorpages better: with link to homepage
+// TODO:    - Find out how to fill the other environment variables based on client and serverinfo
+//			- Remove type and new line from result of cgi
 //			- Handle UPLOAD?? (don't know if that is done here)
-//			- Think of better example to make execute fail
 
 CGI::CGI(const e_method method, const std::string path) {
 	_method = method;
@@ -45,12 +38,26 @@ CGI& CGI::operator=(CGI const & rhs) {
 CGI::~CGI() {
 }
 
+void CGI::free_array(char **array) {
+	int i;
+	
+	i = 0;
+	if (array != NULL) {
+		while (array[i]) {
+			if (array[i])
+				free(array[i]);
+			i++;
+		}
+		free(array);
+	}
+}
+
 int CGI::execute_cgi(char *args[], int tmp_fd, char *env[])
 {
 	dup2(tmp_fd, STDIN_FILENO);
 	close(tmp_fd);
 	execve(args[0], args, env);
-	exit(1);
+	exit(2);
 }
 
 char **CGI::create_envp(void)
@@ -116,10 +123,8 @@ char **CGI::convert_map_to_array(std::map<std::string, std::string> env_map)
 	for (std::map<std::string, std::string>::const_iterator it = env_map.begin(); it != env_map.end(); ++it)
 	{
 		envp[i] = strdup((it->first + "=" + it->second).c_str());
-		if (envp[i] == NULL) {
-			// hier envp freeen
-			return (NULL);
-		}
+		if (envp[i] == NULL)
+			exit (1);
 		i++;
 	}
 	envp[i] = NULL;
@@ -154,23 +159,19 @@ std::string CGI::execute(void) {
 	char		**args;
 
 	pid = 0;
-	envp = create_envp();
-	args = create_args();
-	if (envp == NULL || args == NULL) {
-		// hier nog args en/of envp freeen
-		return ("500");
-	}
 	tmp_fd = dup(STDIN_FILENO);
 	ret = pipe(fd);
 	pid = fork();
-	if (tmp_fd < 0 || pid < 0 || ret < 0) {
-		// hier nog args en envp freeen
+	if (tmp_fd < 0 || pid < 0 || ret < 0)
 		return ("500");
-	}
 	if (pid == 0)
 	{
+		envp = create_envp();
+		args = create_args();
+		if (!args || !envp)
+			exit(1);
 		if (dup2(fd[1], STDOUT_FILENO) < 0)
-			return ("500");
+			exit(1);
 		close(fd[0]);
 		close(fd[1]);
 		execute_cgi(args, tmp_fd, envp);
@@ -183,8 +184,11 @@ std::string CGI::execute(void) {
 		ret = 1;
 		while(waitpid(-1, &status, WUNTRACED) != -1)
 			;
-		if (WEXITSTATUS(status) == 1)
-			return ("502");
+		int code = WEXITSTATUS(status);
+		if (code == 1)
+			return ("500");
+		else if (code == 2)
+			return ("502"); 
 		close(fd[1]);
 		close(tmp_fd);
 		while (ret > 0)
@@ -193,7 +197,6 @@ std::string CGI::execute(void) {
 			ret = read(fd[0], buffer, CGI_BUFSIZE - 1);
 			if (ret < 0)
 				return("500");
-			// think about checking fds for select here? Possible?
 			body += buffer;
 		}
 		close(fd[0]);
