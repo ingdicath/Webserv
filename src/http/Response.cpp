@@ -281,13 +281,6 @@ void Response::processGetMethod() {
         std::cout << "QueryString: " << queryString << std::endl; //testing
         contentPath = contentPath.substr(0, contentPath.find("?"));
     }
-    // TODO: uitzoeken hoe dit alleen bij errorpagina opgeroepen kan worden
-    // pos = contentPath.find("/cgi-bin");
-    // if (pos != std::string::npos) {
-    //     std::string end = contentPath.substr(pos+8);
-    //     std::string begin = contentPath.substr(0, contentPath.find("/cgi-bin"));
-    //     contentPath = begin + end;
-    // }
     std::cout << GREEN << "ContentPath: " << contentPath << RESET << std::endl; //testing
     int i = isFile(contentPath);
     if (i == 2) { //it is a directory
@@ -308,9 +301,13 @@ void Response::processGetMethod() {
         if (fileExtension == _serverLocation.getCgi().first) { // cgi if extension is .py
             CGI cgi(GET, contentPath);
             _body = cgi.execute_GET(queryString);
-            if (_body == "502") {
+            if (_body == "500") {
+                _statusCode = 500;
+                return;
+            }
+            else if (_body == "502") {
                 _statusCode = 502;
-            return;
+                return;
             }
             // insert function to find type and remove first 2 lines of _body
             // and fill the _type with the correct type.
@@ -343,7 +340,11 @@ void    Response::processPostMethod(Request &request) {
         CGI cgi(POST, filePath);
         _path = filePath;
         _body = cgi.execute_POST(_type, request.getBody());
-        if (_body == "502") {
+        if (_body == "500") {
+            _statusCode = 500;
+            return;
+        }
+        else if (_body == "502") {
             _statusCode = 502;
             return;
         }
