@@ -6,7 +6,7 @@
 /*   By: aheister <aheister@student.codam.nl>         +#+                     */
 /*                                                   +#+                      */
 /*   Created: 2022/09/19 12:28:01 by aheister      #+#    #+#                 */
-/*   Updated: 2022/09/23 09:58:27 by aheister      ########   odam.nl         */
+/*   Updated: 2022/09/23 11:29:23 by aheister      ########   odam.nl         */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -49,9 +49,9 @@ int CGI::execute_cgi(char *args[], int tmp_fd, char *env[])
 {
 	dup2(tmp_fd, STDIN_FILENO);
 	close(tmp_fd);
-	//(void)args;
-	//(void)env;
-	execve(args[0], args, env);
+	(void)args;
+	(void)env;
+	//execve(args[0], args, env);
 	exit(1);
 }
 
@@ -179,7 +179,7 @@ std::string CGI::execute(void) {
         	int es = WEXITSTATUS(status);
         	std::cout << "Exit status was " << es << std::endl;
 			if (es == 1) {
-				body = "500";
+				body = "502";
 				return (body);
 			}
     	}

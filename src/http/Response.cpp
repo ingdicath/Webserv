@@ -340,8 +340,8 @@ void    Response::processPostMethod(Request &request) {
         CGI cgi(POST, filePath);
         _path = filePath;
         _body = cgi.execute_POST(_type, request.getBody());
-        if (_body == "500") {
-            _statusCode = 500;
+        if (_body == "502") {
+            _statusCode = 502;
             return;
         }
         //else {
