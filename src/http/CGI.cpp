@@ -6,7 +6,7 @@
 /*   By: aheister <aheister@student.codam.nl>         +#+                     */
 /*                                                   +#+                      */
 /*   Created: 2022/09/19 12:28:01 by aheister      #+#    #+#                 */
-/*   Updated: 2022/09/23 09:04:28 by aheister      ########   odam.nl         */
+/*   Updated: 2022/09/23 09:58:27 by aheister      ########   odam.nl         */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -15,13 +15,14 @@
 
 // TODO:    - Return error code if file cannot be executed or if other functions in CGI object fail
 //              - 500 if system function fails
-//              - 403 if program can't be executed
+//              - 502 if program can't be executed
 //          - Handle memory management of array env
 //          - Handle memory management of array args
 //          - Find out how to fill the other environment variables based on client and serverinfo
 //			- Remove type from result of cgi
 //			- Make the errorpages better: with link to homepage
 //			- Handle UPLOAD?? (don't know if that is done here)
+//			- Think of better example to make execute fail
 
 CGI::CGI(const e_method method, const std::string path) {
 	_method = method;
@@ -48,6 +49,8 @@ int CGI::execute_cgi(char *args[], int tmp_fd, char *env[])
 {
 	dup2(tmp_fd, STDIN_FILENO);
 	close(tmp_fd);
+	//(void)args;
+	//(void)env;
 	execve(args[0], args, env);
 	exit(1);
 }
@@ -167,16 +170,19 @@ std::string CGI::execute(void) {
 	else
 	{
 		char	buffer[CGI_BUFSIZE] = {0};
-		int		chld_state;
+		int		status;
 
 		ret = 1;
-		while(waitpid(-1, &chld_state, WUNTRACED) != -1)
+		while(waitpid(-1, &status, WUNTRACED) != -1)
 			;
-		// TODO: uitzoeken hoe ik de exitcode kan vinden
-		// if (WIFEXITED(chld_state)) {
-    	// 	body = "500";
-		// 	return (body);
-  		// }
+		if (WIFEXITED(status)) {
+        	int es = WEXITSTATUS(status);
+        	std::cout << "Exit status was " << es << std::endl;
+			if (es == 1) {
+				body = "500";
+				return (body);
+			}
+    	}
 		close(fd[1]);
 		close(tmp_fd);
 		while (ret > 0)

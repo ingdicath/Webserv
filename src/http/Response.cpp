@@ -308,7 +308,7 @@ void Response::processGetMethod() {
         if (fileExtension == _serverLocation.getCgi().first) { // cgi if extension is .py
             CGI cgi(GET, contentPath);
             _body = cgi.execute_GET(queryString);
-            std::cout << GREEN << _body << RESET << std::endl;
+            std::cout << GREEN << _body << RESET << std::endl; // testing
             // insert function to find type and remove first 2 lines of _body
             // and fill the _type with the correct type.
             _type = "text/html";
@@ -340,10 +340,10 @@ void    Response::processPostMethod(Request &request) {
         CGI cgi(POST, filePath);
         _path = filePath;
         _body = cgi.execute_POST(_type, request.getBody());
-        // if (_body == "500") {
-        //     _statusCode = 500;
-        //     return;
-        // }
+        if (_body == "500") {
+            _statusCode = 500;
+            return;
+        }
         //else {
         // insert function to find type and remove first 2 lines of _body
         // and fill the _type with the correct type.
@@ -412,7 +412,7 @@ std::string Response::getResponseStr(int code) {
         std::string contentPath = _path.substr(_serverLocation.getRoot().size());
         res = headers.generateHeader(code, _closeConnection, _body.size(), _type, contentPath, _path);
     }
-    std::cout << RED << "Response Headers: \n" << res << std::endl;//testing
+    std::cout << RED << "Response Headers: \n" << res << RESET << std::endl;//testing
     if (_body != "") {
         res += _body;
     }
