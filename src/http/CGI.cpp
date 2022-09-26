@@ -6,7 +6,7 @@
 /*   By: aheister <aheister@student.codam.nl>         +#+                     */
 /*                                                   +#+                      */
 /*   Created: 2022/09/19 12:28:01 by aheister      #+#    #+#                 */
-/*   Updated: 2022/09/23 14:37:45 by aheister      ########   odam.nl         */
+/*   Updated: 2022/09/26 11:34:38 by aheister      ########   odam.nl         */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -15,7 +15,6 @@
 
 // TODO:    - Find out how to fill the other environment variables based on client and serverinfo
 //			- Remove type and new line from result of cgi
-//			- Handle UPLOAD?? (don't know if that is done here)
 
 CGI::CGI(const e_method method, const std::string path) {
 	_method = method;
