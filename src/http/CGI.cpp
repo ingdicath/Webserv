@@ -10,6 +10,7 @@
 /*                                                                            */
 /* ************************************************************************** */
 
+#include <cstring>
 #include "CGI.hpp"
 #include "../webserver/Location.hpp"
 

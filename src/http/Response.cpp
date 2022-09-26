@@ -4,6 +4,7 @@
 
 #include "Response.hpp"
 #include "CGI.hpp"
+#include <algorithm> //for linux
 
 Response::Response() {
 }
@@ -367,7 +368,7 @@ void    Response::processPostMethod(Request &request) {
         }
 
         std::ofstream file;
-        file.open(filePath, std::ifstream::out); //std::ios::out | std::ios::binary
+        file.open(filePath.c_str(), std::ifstream::out); //std::ios::out | std::ios::binary
         if (file.is_open() == false) {
             std::cout << RED << "cannot write to file" << std::endl; //testing
             _statusCode = 403; // to be confirmed
