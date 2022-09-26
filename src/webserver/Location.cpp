@@ -66,7 +66,10 @@ void Location::setUpload(const std::string &upload) {
 }
 
 void Location::setIndex(const std::string &index) {
-	_index = index;
+	if(_autoindex)
+		_index = "";
+	else
+		_index = index;
 }
 
 void Location::setRedirection(const std::pair<int, std::string> &redirection) {

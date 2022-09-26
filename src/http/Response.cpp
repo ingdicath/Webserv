@@ -282,7 +282,7 @@ void Response::processGetMethod() {
         std::cout << "QueryString: " << queryString << std::endl; //testing
         contentPath = contentPath.substr(0, contentPath.find("?"));
     }
-    std::cout << GREEN << "ContentPath: " << contentPath << RESET << std::endl; //testing
+    std::cout << GREEN << "ContentPath: " << contentPath << "| Auto-index: " << _autoindex << "| _serverLocation.getIndex(): " << _serverLocation.getIndex() << RESET << std::endl; //testing
     int i = isFile(contentPath);
     if (i == 2) { //it is a directory
         // https://serverfault.com/questions/940276/force-nginx-to-always-autoindex-and-ignore-index-html-files
@@ -351,7 +351,6 @@ void    Response::processPostMethod(Request &request) {
         // and fill the _type with the correct type.
         _type = "text/html";
         return;
-        //}
     }
 
     if (isFile(filePath) == 1) { //file already exists
