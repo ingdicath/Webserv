@@ -333,8 +333,6 @@ void Response::processGetMethod() {
 void    Response::processPostMethod(Request &request) {
     std::string filePath = _serverLocation.getRoot() + _path.substr(_serverLocation.getPathLocation().size() - 1);;
     std::cout << RED << "File Path: " << filePath << RESET << std::endl; //testing
-
-    //CGI TEST
     std::string fileExtension = filePath.substr(filePath.find_last_of("."));
     if (fileExtension == _serverLocation.getCgi().first) { // cgi if extension is .py
         CGI cgi(POST, filePath);
@@ -343,12 +341,11 @@ void    Response::processPostMethod(Request &request) {
         if (_body == "500") {
             _statusCode = 500;
             return;
-        }
+        } 
         else if (_body == "502") {
             _statusCode = 502;
             return;
         }
-        //else {
         // insert function to find type and remove first 2 lines of _body
         // and fill the _type with the correct type.
         _type = "text/html";
