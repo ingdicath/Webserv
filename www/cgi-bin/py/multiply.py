@@ -15,9 +15,9 @@ try:
     num2 = int(input_data["num2"].value)
 except:
     print('<output>Sorry, the script cannot turn your inputs into numbers (integers).</output>')
-    print('<p><br/><br/><a href="../../index.html">Back to homepage</a></p>')
+    print('<p><br/><br/><a href="../../index.html" style="color: black;">Back to homepage</a></p>')
     raise SystemExit(1)
 print('<output style=" height:60px; width:300; background-color:white; border-radius: 7px; padding-top: 10px; padding-bottom: 10px; padding-left: 30px; padding-right: 30px; font-size:24px; font-weight:bold" >{0} * {1} = {2}</output>'.format(num1, num2, num1 * num2))
-print('<p><br/><br/><a href="../../index.html">Back to homepage</a></p>')
+print('<p><br/><br/><a href="../../index.html" style="color: black;">Back to homepage</a></p>')
 print('</div')
 print('</body>')
