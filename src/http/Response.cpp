@@ -143,6 +143,7 @@ int Response::responseValidation(Request &request) {
     } else {
         _serverLocation = _httpData.getLocations()[locationIndex];
         _autoindex = _serverLocation.isAutoindex();
+        std::cout << "autoindex: " << _autoindex << " serverlocation: " << _serverLocation.getIndex() << std::endl; // testing
         if (_serverLocation.getAcceptedMethods().find(_method) == _serverLocation.getAcceptedMethods().end()) {
             return 405;
         }
