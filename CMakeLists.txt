@@ -26,4 +26,6 @@ add_executable(Webserv src/main.cpp
         src/webserver/Client.cpp src/webserver/Client.hpp
         src/webserver/Location.cpp src/webserver/Location.hpp
         src/webserver/Server.cpp src/webserver/Server.hpp
-        src/webserver/Webserver.cpp src/webserver/Webserver.cpp)
+        src/webserver/Webserver.cpp src/webserver/Webserver.cpp
+        http_tester/RequestTester.cpp
+        http_tester/RequestTester.hpp)

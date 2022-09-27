@@ -2,6 +2,7 @@
 // Created by Hz Lin on 04/08/2022.
 //
 
+#include <cstring>
 #include "RequestTester.hpp"
 
 #define PORT 8085
