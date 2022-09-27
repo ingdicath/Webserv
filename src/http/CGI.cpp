@@ -6,7 +6,7 @@
 /*   By: aheister <aheister@student.codam.nl>         +#+                     */
 /*                                                   +#+                      */
 /*   Created: 2022/09/19 12:28:01 by aheister      #+#    #+#                 */
-/*   Updated: 2022/09/27 12:45:19 by aheister      ########   odam.nl         */
+/*   Updated: 2022/09/27 13:35:07 by aheister      ########   odam.nl         */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -64,9 +64,10 @@ char **CGI::create_envp(void)
 {
 	std::map<std::string, std::string> env_map;
 
-	if (this->_method == GET)
+	if (this->_method == GET) {
 		env_map["QUERY_STRING"] = this->_queryString;
 		env_map["REQUEST_METHOD"] = "GET";
+	}
 	if (this->_method == POST) {
 		env_map["CONTENT_TYPE"] = this->_type;
 		env_map["CONTENT_LENGTH"] = _requestBody.size();
