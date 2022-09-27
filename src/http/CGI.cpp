@@ -6,7 +6,7 @@
 /*   By: aheister <aheister@student.codam.nl>         +#+                     */
 /*                                                   +#+                      */
 /*   Created: 2022/09/19 12:28:01 by aheister      #+#    #+#                 */
-/*   Updated: 2022/09/26 11:34:38 by aheister      ########   odam.nl         */
+/*   Updated: 2022/09/27 12:45:19 by aheister      ########   odam.nl         */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -15,10 +15,10 @@
 #include "../webserver/Location.hpp"
 
 // TODO:    - Find out how to fill the other environment variables based on client and serverinfo
-//			- Remove type and new line from result of cgi
 
-CGI::CGI(const e_method method, const std::string path) {
+CGI::CGI(const e_method method, HttpData &httpData, const std::string path) {
 	_method = method;
+	_httpData = httpData;
 	_path = path;
 }
 
@@ -66,23 +66,20 @@ char **CGI::create_envp(void)
 
 	if (this->_method == GET)
 		env_map["QUERY_STRING"] = this->_queryString;
+		env_map["REQUEST_METHOD"] = "GET";
 	if (this->_method == POST) {
 		env_map["CONTENT_TYPE"] = this->_type;
 		env_map["CONTENT_LENGTH"] = _requestBody.size();
+		env_map["REQUEST_METHOD"] = "POST";							// TODO: GAAT MIS bij POST
 	} 
 	env_map["GATEWAY_INTERFACE"] = "CGI/1.1";
-	env_map["PATH_INFO"] = "";                                      //path suffix, if appended to URL after program name and a slash
-	env_map["PATH_TRANSLATED"] = "";              
-	env_map["REMOTE_ADDR"] = "";
-	env_map["REMOTE_IDENT"] = "";                                   //IP address of the client (dot-decimal)
-	env_map["REQUEST_URI"] = "";                                    //the part of URL after ? character
-	env_map["REQUEST_METHOD"] = "GET";                              //
-	env_map["SCRIPT_NAME"] = "";                                    //relative path to the program, like /cgi-bin/script.cgi
-	env_map["SCRIPT_FILENAME"] = "";                                //
-	env_map["SERVER_SOFTWARE"] = "";                                //name/version of HTTP server
-	env_map["SERVER_PROTOCOL"] = "HTTP/1.1";                        //HTTP/version
-	env_map["SERVER_NAME"] = "127.0.0.1";                           //host name of the server, may be dot-decimal IP address
-	env_map["SERVER_PORT"] = "8085";                                //TCP port (decimal)
+	env_map["PATH_INFO"] = _path.substr(_path.find_last_of("/"));   // /add.py
+	env_map["PATH_TRANSLATED"] = _path;              				// Request-Target translated to a local URI (www/cgi-bin/py/add.py)
+	env_map["REMOTE_ADDR"] = "";									// TODO
+	env_map["SERVER_SOFTWARE"] = "Connecting kittens/1.0";          // Name/version of HTTP server
+	env_map["SERVER_PROTOCOL"] = "HTTP/1.1";                        // HTTP/version
+	env_map["SERVER_NAME"] = _httpData.getServerName();             // Host name of the server, may be dot-decimal IP address
+	env_map["SERVER_PORT"] = _httpData.getPort();                   // TCP port (decimal)
 
 	return (convert_map_to_array(env_map));
 }

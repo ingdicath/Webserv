@@ -6,7 +6,7 @@
 /*   By: aheister <aheister@student.codam.nl>         +#+                     */
 /*                                                   +#+                      */
 /*   Created: 2022/09/19 13:09:04 by aheister      #+#    #+#                 */
-/*   Updated: 2022/09/23 13:51:20 by aheister      ########   odam.nl         */
+/*   Updated: 2022/09/27 11:46:27 by aheister      ########   odam.nl         */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -27,7 +27,7 @@ enum e_method
 
 class CGI {
 public:
-	CGI(const e_method method, std::string path);
+	CGI(const e_method method, HttpData &httpData, std::string path);
 	CGI(CGI const & src);
 	CGI& operator=(CGI const & rhs);
 	virtual ~CGI(void);
@@ -39,6 +39,7 @@ private:
 	CGI(void);
 
 	e_method		_method;
+	HttpData 		_httpData;
 	std::string		_path;
 	std::string		_queryString;
 	std::string		_requestBody;

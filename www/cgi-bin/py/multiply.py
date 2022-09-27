@@ -7,6 +7,8 @@ input_data = cgi.FieldStorage()
 
 print('Content-Type: text/html') # HTML is following
 print('')                        # Leave a blank line
+print('<!DOCTYPE html>')
+print('<html lang="en">')
 print('<body style="width:100%; font-family: sans-serif, standard, courier, arial, helvética; background-color: rgb(229, 220, 245); margin-top:30px">')
 print('<div style="width:400px; margin:0 auto; text-align: center; background-color: rgb(180, 116, 228); border-radius: 10px; padding: 10px; height:260px;">')
 print('<h1>Multiply Results</h1>')
@@ -21,3 +23,4 @@ print('<output style=" height:60px; width:300; background-color:white; border-ra
 print('<p><br/><br/><a href="../../index.html" style="color: black;">Back to homepage</a></p>')
 print('</div')
 print('</body>')
+print('</html>')

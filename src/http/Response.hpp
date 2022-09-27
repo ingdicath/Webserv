@@ -14,6 +14,7 @@
 #include <sys/stat.h>
 #include <unistd.h>
 #include <dirent.h>
+#include <algorithm> //for linux
 #include "../utils/settings.hpp"
 #include "Request.hpp"
 #include "HttpData.hpp"

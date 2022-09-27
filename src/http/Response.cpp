@@ -4,7 +4,6 @@
 
 #include "Response.hpp"
 #include "CGI.hpp"
-#include <algorithm> //for linux
 
 Response::Response() {
 }
@@ -301,7 +300,7 @@ void Response::processGetMethod() {
         _path = contentPath;
         std::string fileExtension = contentPath.substr(contentPath.find_last_of("."));
         if (fileExtension == _serverLocation.getCgi().first) { // cgi if extension is .py
-            CGI cgi(GET, contentPath);
+            CGI cgi(GET, _httpData, contentPath);
             _body = cgi.execute_GET(queryString);
             if (_body == "500") {
                 _statusCode = 500;
@@ -311,9 +310,14 @@ void Response::processGetMethod() {
                 _statusCode = 502;
                 return;
             }
-            // insert function to find type and remove first 2 lines of _body
-            // and fill the _type with the correct type.
-            _type = "text/html";
+            std::istringstream input;
+            input.str(_body);
+            std::string line;
+            std::getline(input, line, '\n');
+            std::string toErase = "Content-type: ";
+            line.erase(0, toErase.length());
+            _type = line;
+            _body = _body.substr(_body.find_first_of("<"));
             return;
         }
         // How do we handle other extensions like .php and .bla which cannot be executed?
@@ -337,7 +341,7 @@ void    Response::processPostMethod(Request &request) {
     std::cout << RED << "File Path: " << filePath << RESET << std::endl; //testing
     std::string fileExtension = filePath.substr(filePath.find_last_of("."));
     if (fileExtension == _serverLocation.getCgi().first) { // cgi if extension is .py
-        CGI cgi(POST, filePath);
+        CGI cgi(POST, _httpData, filePath);
         _path = filePath;
         _body = cgi.execute_POST(_type, request.getBody());
         if (_body == "500") {
@@ -348,9 +352,14 @@ void    Response::processPostMethod(Request &request) {
             _statusCode = 502;
             return;
         }
-        // insert function to find type and remove first 2 lines of _body
-        // and fill the _type with the correct type.
-        _type = "text/html";
+        std::istringstream input;
+        input.str(_body);
+        std::string line;
+        std::getline(input, line, '\n');
+        std::string toErase = "Content-type: ";
+        line.erase(0, toErase.length());
+        _type = line;
+        _body = _body.substr(_body.find_first_of("<"));
         return;
     }
 
