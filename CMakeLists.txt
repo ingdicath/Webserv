@@ -28,4 +28,4 @@ add_executable(Webserv src/main.cpp
         src/webserver/Server.cpp src/webserver/Server.hpp
         src/webserver/Webserver.cpp src/webserver/Webserver.cpp
         http_tester/RequestTester.cpp
-        http_tester/RequestTester.hpp)
+        http_tester/RequestTester.hpp tests/catch.hpp tests/conf_file_invalid.cpp)

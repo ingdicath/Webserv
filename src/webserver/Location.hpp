@@ -36,8 +36,6 @@ public:
 	const std::pair<int, std::string> getRedirection() const;
 	const std::pair<std::string, std::string> &getCgi() const;
 
-//	void addRedirection(const std::pair<int, std::string> &redirection);
-
 private:
 	std::string _pathLocation;
 	std::string _upload;
