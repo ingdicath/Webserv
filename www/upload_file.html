@@ -2,7 +2,7 @@
 <html lang="en">
  <body style="width:100%; font-family: sans-serif, standard, courier, arial, helvética; background-color: rgb(231, 245, 220); margin-top:30px">
   <div style="width:400px; margin:0 auto;">
-  <form enctype="multipart/form-data" method="post" action="upload/profile.png" style="text-align: center; background-color: rgb(163, 228, 116); border-radius: 10px; padding: 10px; height:260px;">
+  <form method="POST" enctype="multipart/form-data" style="text-align: center; background-color: rgb(163, 228, 116); border-radius: 10px; padding: 10px; height:260px;">
   <h1>Upload file</h1>
    <fieldset style="border:0px">
      <legend>Please, upload your profile picture</legend>
@@ -10,18 +10,8 @@
      <label>File: <input type="file" name="filename" id="myFile" style="font-size: 14px; height:30px; margin-top:10px; padding-top: 5px;"></label>
     </div>
   </fieldset>
-   <button style="width:140px; height:40px; font-size:16px; margin:10px; border-radius: 5px; background-color: rgb(249, 252, 250);">Submit</button>
+   <button style="width:140px; height:40px; font-size:16px; margin:10px; border-radius: 5px; background-color: rgb(249, 252, 250);">Upload</button>
   </form>
  </body>
  </div>
 </html>
-
-<script type="text/javascript">
-	function setAction()
-	{
-		var myfile = document.getElementById('myFile');
-		var file_name = myfile.substring(myfile.lastIndexOf('/')+1);
-		var action_prefix = "/upload/";
-		document.getElementById('myFile').action = action_prefix.concat(file_name);
-	}
-</script>

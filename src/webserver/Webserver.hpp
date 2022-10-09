@@ -7,6 +7,7 @@
 #include "Server.hpp"
 #include <vector>
 #include <algorithm>
+#include <ostream>
 
 enum e_action
 {

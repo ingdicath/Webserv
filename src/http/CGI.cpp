@@ -6,20 +6,21 @@
 /*   By: aheister <aheister@student.codam.nl>         +#+                     */
 /*                                                   +#+                      */
 /*   Created: 2022/09/19 12:28:01 by aheister      #+#    #+#                 */
-/*   Updated: 2022/09/27 13:35:07 by aheister      ########   odam.nl         */
+/*   Updated: 2022/10/08 13:28:15 by aheister      ########   odam.nl         */
 /*                                                                            */
 /* ************************************************************************** */
 
-#include <cstring>
 #include "CGI.hpp"
+#include <stdio.h>
 #include "../webserver/Location.hpp"
 
-// TODO:    - Find out how to fill the other environment variables based on client and serverinfo
+// TODO:	- add a check for select to the cgi
 
-CGI::CGI(const e_method method, HttpData &httpData, const std::string path) {
-	_method = method;
-	_httpData = httpData;
-	_path = path;
+CGI::CGI(const e_method method, HttpData &httpData, const std::string path) 
+	: 	_method(method),
+		_httpData(httpData),
+		_path(path),
+		_errorCode(200)	{
 }
 
 CGI::CGI(CGI const &src) {
@@ -29,82 +30,21 @@ CGI::CGI(CGI const &src) {
 CGI& CGI::operator=(CGI const & rhs) {
 	if (this != &rhs) {
 		_method = rhs._method;
+		_httpData = rhs._httpData;
 		_path = rhs._path;
-		_queryString = rhs._queryString;
+		_errorCode = rhs._errorCode;
+		if (_method == GET)
+			_queryString = rhs._queryString;
+		if (_method == POST) {
+			_requestBody = rhs._requestBody;
+			_type = rhs._type;
+			_length = rhs._length;
+		}
 	}
 	return *this;
 }
 
 CGI::~CGI() {
-}
-
-void CGI::free_array(char **array) {
-	int i;
-	
-	i = 0;
-	if (array != NULL) {
-		while (array[i]) {
-			if (array[i])
-				free(array[i]);
-			i++;
-		}
-		free(array);
-	}
-}
-
-int CGI::execute_cgi(char *args[], int tmp_fd, char *env[])
-{
-	dup2(tmp_fd, STDIN_FILENO);
-	close(tmp_fd);
-	execve(args[0], args, env);
-	exit(2);
-}
-
-char **CGI::create_envp(void)
-{
-	std::map<std::string, std::string> env_map;
-
-	if (this->_method == GET) {
-		env_map["QUERY_STRING"] = this->_queryString;
-		env_map["REQUEST_METHOD"] = "GET";
-	}
-	if (this->_method == POST) {
-		env_map["CONTENT_TYPE"] = this->_type;
-		env_map["CONTENT_LENGTH"] = _requestBody.size();
-		env_map["REQUEST_METHOD"] = "POST";							// TODO: GAAT MIS bij POST
-	} 
-	env_map["GATEWAY_INTERFACE"] = "CGI/1.1";
-	env_map["PATH_INFO"] = _path.substr(_path.find_last_of("/"));   // /add.py
-	env_map["PATH_TRANSLATED"] = _path;              				// Request-Target translated to a local URI (www/cgi-bin/py/add.py)
-	env_map["REMOTE_ADDR"] = "";									// TODO
-	env_map["SERVER_SOFTWARE"] = "Connecting kittens/1.0";          // Name/version of HTTP server
-	env_map["SERVER_PROTOCOL"] = "HTTP/1.1";                        // HTTP/version
-	env_map["SERVER_NAME"] = _httpData.getServerName();             // Host name of the server, may be dot-decimal IP address
-	env_map["SERVER_PORT"] = _httpData.getPort();                   // TCP port (decimal)
-
-	return (convert_map_to_array(env_map));
-}
-
-char **CGI::create_args(void) {
-	char **args;
-	int size;
-
-	if (_method == POST)
-		size = 3;
-	else	
-		size = 2;
-	args = NULL;
-	args = (char **)malloc(size * sizeof(char *));
-	if (!args)
-		return (NULL);
-	args[0] = const_cast<char*>(_path.c_str());
-	if (_method == POST) {
-		args[1] = const_cast<char*>(_requestBody.c_str());
-		args[2] = NULL;
-	}
-	else
-		args[1] = NULL;
-	return(args);
 }
 
 char **CGI::convert_map_to_array(std::map<std::string, std::string> env_map)
@@ -129,81 +69,142 @@ char **CGI::convert_map_to_array(std::map<std::string, std::string> env_map)
 	return (envp);
 }
 
-std::string	CGI::execute_GET(std::string queryString) {
-	std::string body;
+char **CGI::create_envp(void)
+{
+	std::map<std::string, std::string> env_map;
 
-	setQueryString(queryString);
-	body = execute();
-	return (body);
+	if (this->_method == GET) {
+		env_map["QUERY_STRING"] = this->_queryString;
+		env_map["REQUEST_METHOD"] = "GET";
+	}
+	else if (this->_method == POST) {
+		env_map["CONTENT_TYPE"] = this->_type;
+		env_map["CONTENT_LENGTH"] = this->_length;
+		env_map["REQUEST_METHOD"] = "POST";
+	}
+	env_map["GATEWAY_INTERFACE"] = "CGI/1.1";
+	env_map["PATH_INFO"] = "/cgi-bin/" + this->_path.substr(this->_path.find_last_of("/"));
+	env_map["PATH_TRANSLATED"] = "/cgi-bin/" + this->_path.substr(this->_path.find_last_of("/"));
+	env_map["REMOTE_ADRESS"] = "127.0.0.1";
+	env_map["SCRIPT_NAME"] = "/cgi-bin/" + this->_path.substr(this->_path.find_last_of("/"));
+	env_map["SERVER_SOFTWARE"] = "Connecting kittens/1.0";
+	env_map["SERVER_PROTOCOL"] = "HTTP/1.1";
+	env_map["SERVER_NAME"] = _httpData.getServerName();
+	env_map["SERVER_PORT"] = std::to_string(_httpData.getPort());
+
+	return (convert_map_to_array(env_map));
 }
 
-std::string	CGI::execute_POST(std::string type, std::string requestBody) {
-	std::string body;
+char **CGI::create_args(void) {
+	char **args;
 
+	args = NULL;
+	args = (char **)malloc(2 * sizeof(char *));
+	if (!args)
+		return (NULL);
+	args[0] = strdup(_path.c_str());
+	args[1] = NULL;
+	return(args);
+}
+
+int	CGI::execute_GET(std::string queryString) {
+
+	setQueryString(queryString);
+	execute();
+	return (this->_errorCode);
+}
+
+int	CGI::execute_POST(std::string type, std::string requestBody) {
 	setType(type);
 	setLength(requestBody.size());
 	setRequestBody(requestBody);
-	body = execute();
-	return (body);
+	execute();
+	return (this->_errorCode);
 }
 
-std::string CGI::execute(void) {
+int CGI::execute_cgi(int fdIn, int fdOut)
+{
+	char	**env;
+	char	**args;
+
+	if (dup2(fdIn, STDIN_FILENO) < 0 || dup2(fdOut, STDOUT_FILENO) < 0)
+		exit(1);
+	env = create_envp();
+	args = create_args();
+	if (!args || !env)
+		exit(1);
+	execve(args[0], args, env);
+	exit(2);
+}
+
+void CGI::execute(void) {
 	int         ret;
-	int         pid;
-	int         tmp_fd;
+	pid_t       pid;
 	int         fd[2];
 	std::string body;
-	char        **envp;
-	char		**args;
 
-	pid = 0;
-	tmp_fd = dup(STDIN_FILENO);
-	ret = pipe(fd);
+	fd[0] = dup(STDIN_FILENO);
+	fd[1] = dup(STDOUT_FILENO);
+
+	// tmpfile() creates a temporary binary file, with a filename guaranteed to be different from any other existing file.
+	// The temporary file created is automatically deleted when the stream is closed (fclose).
+	FILE	*fileIn = tmpfile();
+	FILE	*fileOut = tmpfile();
+		
+	// The fileno() function returns the integer file descriptor associated with the stream pointed to by stream.
+	int	fdIn = fileno(fileIn);
+	int	fdOut = fileno(fileOut);
+
+	if (fd[0] < 0 || fd[1] < 0 || fdIn < 0 || fdOut < 0) {
+		_errorCode = 500;
+		return;
+	}
+
+	write(fdIn, _requestBody.c_str(), _requestBody.size());
+	// Set the offset (2nd argument in bites) so in this case to the beginning.
+	lseek(fdIn, 0, SEEK_SET);
+
 	pid = fork();
-	if (tmp_fd < 0 || pid < 0 || ret < 0)
-		return ("500");
-	if (pid == 0)
-	{
-		envp = create_envp();
-		args = create_args();
-		if (!args || !envp)
-			exit(1);
-		if (dup2(fd[1], STDOUT_FILENO) < 0)
-			exit(1);
-		close(fd[0]);
-		close(fd[1]);
-		execute_cgi(args, tmp_fd, envp);
+	if (pid < 0) {
+		_errorCode = 500;
+		return;
+	}
+	if (pid == 0) {
+		execute_cgi(fdIn, fdOut);
 	}
 	else
 	{
-		char	buffer[CGI_BUFSIZE] = {0};
-		int		status;
+		char		buffer[CGI_BUFSIZE] = {0};
+		pid_t		status;
 
-		ret = 1;
-		while(waitpid(-1, &status, WUNTRACED) != -1)
+		while (waitpid(-1, &status, WUNTRACED) != -1)
 			;
 		int code = WEXITSTATUS(status);
 		if (code == 1)
-			return ("500");
+			_errorCode = 500;
 		else if (code == 2)
-			return ("502"); 
-		close(fd[1]);
-		close(tmp_fd);
+			_errorCode = 502;
+		ret = 1;
+		lseek(fdOut, 0, SEEK_SET);
 		while (ret > 0)
 		{
 			memset(buffer, 0, CGI_BUFSIZE);
-			ret = read(fd[0], buffer, CGI_BUFSIZE - 1);
+			ret = read(fdOut, buffer, CGI_BUFSIZE - 1);
 			if (ret < 0)
-				return("500");
-			body += buffer;
+				_errorCode = 500;
+			_body += buffer;
 		}
-		close(fd[0]);
 	}
-	return (body);
+	if (dup2(fd[0], STDIN_FILENO) < 0 || dup2(fd[1], STDOUT_FILENO) < 0)
+		_errorCode = 500;
+	if (fclose(fileIn) < 0 || fclose(fileOut) < 0)
+		_errorCode = 500;
+	if (close(fd[0]) < 0 || close(fd[1]) < 0)
+		_errorCode = 500;
+	// fdIn and fdOut are already 'closed' in the child process (fd's are shared amongst threads).
 }
 
 // setters
-
 void    CGI::setQueryString(std::string queryString) {
 	this->_queryString = queryString;
 }
@@ -213,9 +214,18 @@ void    CGI::setType(std::string type) {
 }
 
 void    CGI::setLength(long length) {
-	this->_length = length;
+	this->_length = std::to_string(length);
 }
 
 void    CGI::setRequestBody(std::string requestBody) {
 	this->_requestBody = requestBody;
+}
+
+// getters
+const std::string	&CGI::getBody() const {
+	return (_body);
+}
+
+const int	&CGI::getErrorCode() const {
+	return (_errorCode);
 }

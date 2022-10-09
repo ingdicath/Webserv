@@ -6,7 +6,7 @@
 /*   By: aheister <aheister@student.codam.nl>         +#+                     */
 /*                                                   +#+                      */
 /*   Created: 2022/07/11 15:09:47 by aheister      #+#    #+#                 */
-/*   Updated: 2022/09/19 16:00:32 by aheister      ########   odam.nl         */
+/*   Updated: 2022/10/09 12:16:12 by aheister      ########   odam.nl         */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -358,7 +358,7 @@ void Server::processRequest(int socket) {
 		processChunk(socket);
 	}
 
-    //output for testing
+	// output for testing
 //    if (_requests[socket].size() < 1000) {
 //        std::cout << "\n_request:\n" << _requests[socket] << std::endl;
 //    } else {
@@ -367,12 +367,12 @@ void Server::processRequest(int socket) {
 
     if (_requests[socket] != "") {
         Request request(_requests[socket]);
-        std::cout << request << std::endl;
+        std::cout << request << std::endl; // testing
         HttpData    httpData = setHttpData(request);
         Response    response(httpData, request);
         _responses.insert(std::make_pair(socket, response.getResponse(request)));
-        std::cout << response << std::endl;
-//        std::cout << "Response:\n" << _responses[socket] << std::endl; //testing
+        std::cout << response << std::endl; // testing
+        //std::cout << "Response:\n" << _responses[socket] << std::endl; //testing
     }
     _requests.erase(socket);
 }
@@ -421,7 +421,7 @@ HttpData Server::setHttpData(Request &request) {
                 return httpData;
             }
         }
-        std::cout << "Server name not find in config" << std::endl;
+        //std::cout << "Server name not find in config" << std::endl; // What is this message: should this be printed??
         httpData.setServerName("NF");
     }
 	return httpData;

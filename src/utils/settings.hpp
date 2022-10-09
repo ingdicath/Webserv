@@ -44,7 +44,7 @@
 #define DEFAULT_INDEX "index.html"
 #define DEFAULT_SERVER_NAME ""
 #define DEFAULT_BACKLOG 1000
-#define DEFAULT_TIMEOUT 10 // added: 60 seconds is default nginx timeout: change later
+#define DEFAULT_TIMEOUT 60 // added: 60 seconds is default nginx timeout: change later
 
 #define MAXLINE 4096
 #define CGI_BUFSIZE 65536

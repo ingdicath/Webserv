@@ -6,18 +6,20 @@
 /*   By: aheister <aheister@student.codam.nl>         +#+                     */
 /*                                                   +#+                      */
 /*   Created: 2022/09/19 13:09:04 by aheister      #+#    #+#                 */
-/*   Updated: 2022/09/27 11:46:27 by aheister      ########   odam.nl         */
+/*   Updated: 2022/10/08 12:27:00 by aheister      ########   odam.nl         */
 /*                                                                            */
 /* ************************************************************************** */
 
 #pragma once
 
 #include <string>
+#include <stdlib.h>
 #include <unistd.h>
 #include <sys/wait.h>
 #include <iostream>
 #include <map>
 #include "Response.hpp"
+#include "../utils/utils.hpp"
 
 enum e_method
 {
@@ -32,8 +34,12 @@ public:
 	CGI& operator=(CGI const & rhs);
 	virtual ~CGI(void);
 
-	std::string		execute_GET(std::string queryString);
-	std::string		execute_POST(std::string type, std::string requestBody);
+	int					execute_GET(std::string queryString);
+	int					execute_POST(std::string type, std::string requestBody);
+
+	//getters
+	const std::string	&getBody() const;
+	const int			&getErrorCode() const;
 
 private:
 	CGI(void);
@@ -44,20 +50,20 @@ private:
 	std::string		_queryString;
 	std::string		_requestBody;
 	std::string 	_type;
-	std::string		_error;
-	char**			_arg;
-	long			_length;
+	std::string		_length;
 
-	std::string		execute(void);
+	int         	_errorCode;
+	std::string		_body;
+
+	void			execute(void);
 	char			**create_envp(void);
 	char			**create_args(void);
 	char 			**convert_map_to_array(std::map<std::string, std::string> env_map);
-	int 			execute_cgi(char *args[], int tmp_fd, char *env[]);
-	void			free_array(char **array);
+	int 			execute_cgi(int fdIn, int fdOut);
 
 	//setters
-	void    setQueryString(std::string queryString);
-	void    setType(std::string type);
-	void	setLength(long length);
-	void    setRequestBody(std::string requestBody);
+	void    		setQueryString(std::string queryString);
+	void    		setType(std::string type);
+	void			setLength(long length);
+	void    		setRequestBody(std::string requestBody);
 };

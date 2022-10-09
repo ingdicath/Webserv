@@ -136,13 +136,13 @@ int Response::findRequestLocation() {
 
 int Response::responseValidation(Request &request) {
     int locationIndex = findRequestLocation();
-    std::cout << "location index: " << locationIndex << std::endl; //testing
+    //std::cout << "location index: " << locationIndex << std::endl; //testing
     if (locationIndex == -1) {
         return 500;
     } else {
         _serverLocation = _httpData.getLocations()[locationIndex];
         _autoindex = _serverLocation.isAutoindex();
-        std::cout << "autoindex: " << _autoindex << " serverlocation: " << _serverLocation.getIndex() << std::endl; // testing
+        //std::cout << "autoindex: " << _autoindex << " serverlocation: " << _serverLocation.getIndex() << std::endl; // testing
         if (_serverLocation.getAcceptedMethods().find(_method) == _serverLocation.getAcceptedMethods().end()) {
             return 405;
         }
@@ -301,17 +301,13 @@ void Response::processGetMethod() {
         std::string fileExtension = contentPath.substr(contentPath.find_last_of("."));
         if (fileExtension == _serverLocation.getCgi().first) { // cgi if extension is .py
             CGI cgi(GET, _httpData, contentPath);
-            _body = cgi.execute_GET(queryString);
-            if (_body == "500") {
-                _statusCode = 500;
-                return;
-            }
-            else if (_body == "502") {
-                _statusCode = 502;
+            if (cgi.execute_GET(queryString) != 200) {
+                _statusCode = cgi.getErrorCode();
                 return;
             }
             std::istringstream input;
-            input.str(_body);
+            _body = cgi.getBody();
+            input.str(cgi.getBody());
             std::string line;
             std::getline(input, line, '\n');
             std::string toErase = "Content-type: ";
@@ -343,17 +339,13 @@ void    Response::processPostMethod(Request &request) {
     if (fileExtension == _serverLocation.getCgi().first) { // cgi if extension is .py
         CGI cgi(POST, _httpData, filePath);
         _path = filePath;
-        _body = cgi.execute_POST(_type, request.getBody());
-        if (_body == "500") {
-            _statusCode = 500;
-            return;
-        } 
-        else if (_body == "502") {
-            _statusCode = 502;
+        if (cgi.execute_POST(_type, request.getBody()) != 200) {
+            _statusCode = cgi.getErrorCode();
             return;
         }
         std::istringstream input;
-        input.str(_body);
+        _body = cgi.getBody();
+        input.str(cgi.getBody());
         std::string line;
         std::getline(input, line, '\n');
         std::string toErase = "Content-type: ";

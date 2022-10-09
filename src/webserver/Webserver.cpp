@@ -1,8 +1,6 @@
 //
-// Created by Diani on 20/06/2022, last update by Anna 08/07/2022.
+// Created by Diani on 20/06/2022
 //
-
-// TODO:	- Find why _activeClient is not updated anymore
 
 #include <cstring>
 #include <cstdlib>
@@ -104,18 +102,17 @@ void    Webserver::runWebserver(void) {
 	std::cout << GREEN "Webserver running" RESET << std::endl;
 	while (running) {
 		if (ready == 0) {
-			std::cout << "_activeClients = " << _activeClients << std::endl;
-			if (_activeClients == 0)
-				std::cout << CYAN "+++++++ Waiting for connection ++++++++" RESET << std::endl;
-			while (ready == 0)
+			while (ready == 0) {
+				if (_activeClients == 0) {
+					std::cout << CYAN << "+++++++ Waiting for connection ++++++++" << RESET << std::endl;
+					std::cout << "\033[1A" << "\033[K";
+				}
 				ready = findReadySockets(timeout);
+			}
 		}
 		else {
-			// loop through all existing servers
 			for (std::vector<Server>::iterator itServer = _servers.begin(); itServer < _servers.end(); itServer++) {
-				// loop through all existing sockets
 				for (int i = 0; i <= _maxSocket; i++) {
-					// handling the 'ready to read' sockets
 					if (FD_ISSET(i, &_readyRead) && ready > 0) {
 						// when the server socket is put in the 'ready' set there is a new connection
 						if (i == itServer->getServerSocket()) {
@@ -127,10 +124,10 @@ void    Webserver::runWebserver(void) {
 							std::vector<Client> clients = itServer->getClients();
 							for (std::vector<Client>::iterator itClient = clients.begin(); itClient < clients.end(); itClient++) {
 								if (i == itClient->getClientSocket()) {
-									//std::cout << i << " = readyRead" << ", ready = " << ready << std::endl; // test: delete later
                                     int recvIndication = itServer->recvRequest(i);
                                     if (recvIndication == EXIT_SUCCESS) {
                                         itServer->processRequest(i);
+										itClient->setClientTimeStamp();
                                         updateSockets(i, ADD, WRITE);
                                     }
 									else if (recvIndication == EXIT_FAILURE) {
@@ -147,10 +144,7 @@ void    Webserver::runWebserver(void) {
 						std::vector<Client> clients = itServer->getClients();
 						for (std::vector<Client>::iterator itClient = clients.begin(); itClient < clients.end(); itClient++) {
 							if (i == itClient->getClientSocket()) {
-								//std::cout << i << " = readyWrite" << ", ready = " << ready << std::endl; // test: delete later
-								//writeResponse(i);
                                 itServer->sendResponse(i);
-								// TODO: change this part based on the request header value connection open
 								itServer->removeClient(i);
 								updateSockets(i, REMOVE, WRITE);
 								ready--;
@@ -210,13 +204,18 @@ void Webserver::updateSockets(int socket, int type, int subtype) {
 		}
 	}
 	else if (type == REMOVE) {
-		if (subtype == READ)
+		if (!subtype) {
 			FD_CLR(socket, &_readSet);
-		if (subtype == WRITE)
+			FD_CLR(socket, &_writeSet);
+		}
+		else if (subtype == READ)
+			FD_CLR(socket, &_readSet);
+		else if (subtype == WRITE)
 			FD_CLR(socket, &_writeSet);
 		_activeClients--;
 		std::vector<int>::iterator it = std::find(_allSockets.begin(), _allSockets.end(), socket);
-		_allSockets.erase(it);
+		if (it <= _allSockets.end())
+			_allSockets.erase(it);
 	}
 	_maxSocket = *std::max_element(_allSockets.begin(), _allSockets.end());
 }
@@ -257,8 +256,8 @@ void Webserver::checkTimeout(void) {
 			if (seconds >= itServer->getTimeout()) {
 				clientSocket = itClient->getClientSocket();
 				std::cout << RED "Client " << clientSocket << " timed out: " << seconds << " seconds" RESET << std::endl;
+				updateSockets(clientSocket, REMOVE, 0);
 				itServer->removeClient(clientSocket);
-				updateSockets(clientSocket, REMOVE, READ);
 			}
 		}
 	}
