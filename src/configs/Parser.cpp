@@ -270,7 +270,7 @@ bool Parser::_isValidIpv4Address(const std::string &ipAddress) {
 	for (size_t i = 0; i < vec.size(); i++) {
 		num = utils::stringToPositiveNum(vec.at(i));
 		if (num > 255) {
-			std::cerr << RED ERROR "Wrong values for 'host': '" + ipAddress + "'" RESET << std::endl;
+			std::cerr << RED ERROR " Wrong values for 'host': '" + ipAddress + "'" RESET << std::endl;
 			return false;
 		}
 	}

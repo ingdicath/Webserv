@@ -47,11 +47,10 @@ public:
 	};
 
 	//Get functions
-	int								getPort(void) const;
+	int								getPort() const;
 	const std::string				&getHost() const;
 	std::vector<Location>			*getLocations();
 	const std::vector<std::string>	&getServerName() const;
-	const std::string				&getIndex() const;
 	unsigned long					getClientMaxBodySize() const;
 	const							std::map<int, std::string> &getErrorPage() const;
 
@@ -79,6 +78,9 @@ public:
 
 	// Finds if a server has same port same host
 	bool 	isSameListen(const Server& other);
+
+	// Finds if the server has duplicates path locations
+	void 	checkDuplicateLocationPath(const std::string& path);
 
 private:
 // Configuration file

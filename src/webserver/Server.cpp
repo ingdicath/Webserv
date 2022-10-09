@@ -210,7 +210,7 @@ uint32_t Server::getTimeout(void) const {
 
 void Server::setPort(int port) {
 	if (_flagPort) {
-		throw Parser::ConfigFileException("Duplicate value in 'port'.");
+		throw Parser::ConfigFileException("'port' directive is duplicated.");
 	}
 	_port = port;
 	_flagPort = true;
@@ -218,7 +218,7 @@ void Server::setPort(int port) {
 
 void Server::setHost(std::string host) {
 	if (_flagHost) {
-		throw Parser::ConfigFileException("Duplicate value in 'host'.");
+		throw Parser::ConfigFileException("'host' directive is duplicated.");
 	}
 	_host = host;
 	_flagHost = true;
@@ -267,7 +267,12 @@ void Server::addErrorPage(const std::pair<int, std::string> &errorPage) {
 	}
 }
 
+/**
+ * Before add the location block to the current server, it checks if there is
+ * a duplicate path location. In affirmative case, it throws an error.
+ */
 void Server::addLocation(Location location) {
+	checkDuplicateLocationPath(location.getPathLocation());
 	_locations.push_back(location);
 }
 
@@ -431,7 +436,17 @@ void Server::addRelatedServers(Server server) {
 	std::set<std::string>::iterator it = server._serverNameSet.begin();
 	for (; it != server._serverNameSet.end(); it++) {
 		if (!_serverNameSet.insert(*it).second) {
-			throw std::invalid_argument(ERROR "Duplicate server names" RESET);
+			throw std::invalid_argument(ERROR " Duplicate server names" RESET);
+		}
+	}
+}
+
+void Server::checkDuplicateLocationPath(const std::string& path) {
+	std::vector<Location> *locations = getLocations();
+	std::vector<Location>::iterator it = locations->begin();
+	for(; it != locations->end(); it++){
+		if (it->getPathLocation() == path){
+			throw std::logic_error(ERROR " Duplicate location '" + path + "'.");
 		}
 	}
 }

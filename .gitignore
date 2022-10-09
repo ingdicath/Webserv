@@ -30,6 +30,8 @@
 *.exe
 *.out
 *.app
+http_tester/test
+cgi_tester
 
 #idea
 .idea
