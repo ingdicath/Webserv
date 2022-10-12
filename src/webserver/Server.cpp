@@ -408,9 +408,10 @@ int Server::sendResponse(int socket) {
 HttpData Server::setHttpData(Request &request) {
 	HttpData httpData;
     std::string hostName = request.getHost().substr(0, request.getHost().find_last_of(":"));
-
     std::vector<std::string>::iterator it = std::find(_serverName.begin(), _serverName.end(), hostName);
-    if (it != _serverName.end()) {
+
+	// allow localhost and localhost ip (127.0.0.1) when is present in the url as well, e.g. localhost:8085
+    if (it != _serverName.end() || hostName == "localhost" || hostName == "127.0.0.1" ) {
         httpData.setServerName(hostName);
         httpData.setPort(_port);
         httpData.setHost(_host);
@@ -421,7 +422,7 @@ HttpData Server::setHttpData(Request &request) {
         for (size_t i = 0; i < _relatedServers.size(); i++) {
             std::vector<std::string>    serverNames = _relatedServers[i].getServerName();
             std::vector<std::string>::iterator it = std::find(serverNames.begin(), serverNames.end(), hostName);
-            if (it != serverNames.end()) {
+            if (it != serverNames.end() || hostName == "localhost" || hostName == "127.0.0.1" ) {
                 httpData.setServerName(hostName);
                 httpData.setPort(_relatedServers[i].getPort());
                 httpData.setHost(_relatedServers[i].getHost());
