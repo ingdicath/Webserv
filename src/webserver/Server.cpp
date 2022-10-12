@@ -6,7 +6,7 @@
 /*   By: aheister <aheister@student.codam.nl>         +#+                     */
 /*                                                   +#+                      */
 /*   Created: 2022/07/11 15:09:47 by aheister      #+#    #+#                 */
-/*   Updated: 2022/10/09 12:16:12 by aheister      ########   odam.nl         */
+/*   Updated: 2022/10/11 12:51:13 by aheister      ########   odam.nl         */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -292,7 +292,7 @@ static int chunkedEnd(const std::string &str) {
 	return (0);
 }
 
-//return 0 is finished, return -1 when closing the conncetion
+//return 0 is finished, return -1 when closing the connection
 int Server::recvRequest(int socket) {
 	char buffer[MAXLINE + 1] = {0};
 	int ret;
@@ -307,7 +307,6 @@ int Server::recvRequest(int socket) {
 	}
 
 	_requests[socket] += std::string(buffer);
-
 	size_t i = _requests[socket].find("\r\n\r\n"); // find the end of the headers
 	if (i != std::string::npos) { //there is a body
 		if (_requests[socket].find("Content-Length: ") == std::string::npos) { //no info about content length
@@ -321,8 +320,16 @@ int Server::recvRequest(int socket) {
 				return EXIT_SUCCESS;
 			}
 		} else { //there is content length
-			size_t len = std::atoi(
-					_requests[socket].substr(_requests[socket].find("Content-Length: ") + 16, 10).c_str());
+			size_t len = std::atoi(_requests[socket].substr(_requests[socket].find("Content-Length: ") + 16, 10).c_str());
+			if (_requests[socket].find("Content-Type: multipart/form-data") != std::string::npos) { //this is upload via multipart/formdata
+				//if (_requests[socket].find(EOF) != std::string::npos)
+				std::cout << GREEN << _requests[socket].size() << "|" << len << RESET << std::endl;
+					//return EXIT_SUCCESS;
+				//else {
+					std::cout << GREEN << _requests[socket] << RESET << std::endl;
+					//return -1;
+				}
+			//}
 			if (_requests[socket].size() >= len + i + 4) {
 				return EXIT_SUCCESS;
 			} else {

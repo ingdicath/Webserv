@@ -338,7 +338,7 @@ void    Response::processPostMethod(Request &request) {
     std::string fileExtension = filePath.substr(filePath.find_last_of("."));
     if (fileExtension == _serverLocation.getCgi().first) { // cgi if extension is .py
         CGI cgi(POST, _httpData, filePath);
-        _path = filePath;
+        _path = filePath; // KIJKEN OF DEZE NOG ERGENS VOOR DIENT
         if (cgi.execute_POST(_type, request.getBody()) != 200) {
             _statusCode = cgi.getErrorCode();
             return;
@@ -354,13 +354,24 @@ void    Response::processPostMethod(Request &request) {
         _body = _body.substr(_body.find_first_of("<"));
         return;
     }
+    std::string uploadFilePath = "";
+    std::map <std::string, std::string> requestHeaders = request.getHeaders();
+    if (requestHeaders["Content-Type"].find("multipart/form-data") != std::string::npos) {
+        std::vector<Location> locations = _httpData.getLocations();
+        for (std::vector<Location>::iterator itLocation = locations.begin(); itLocation < locations.end(); itLocation++) {
+            if (itLocation->getUpload() != "") {
+                uploadFilePath = _serverLocation.getRoot() + itLocation->getUpload() + "/" + request.getFileName();
+                std::cout << uploadFilePath << std::endl;
+            }   
+        }
+    }
 
-    if (isFile(filePath) == 1) { //file already exists
+    if (isFile(uploadFilePath) == 1) { //file already exists
         std::cout << RED << "file exist" << std::endl; //testing
         _statusCode = 403; // to be confirmed
         setErrorBody();
     } else {
-        std::string dirPath = filePath.substr(0, filePath.find_last_of('/'));
+        std::string dirPath = uploadFilePath.substr(0, uploadFilePath.find_last_of('/'));
         std::cout << RED << "File Dir: " << dirPath << std::endl; //testing
         if (isFile(dirPath) != 2) { //could not find the directory to create this file
             std::cout << RED << "cannot find dir" << std::endl; //testing
@@ -369,15 +380,17 @@ void    Response::processPostMethod(Request &request) {
         }
 
         std::ofstream file;
-        file.open(filePath.c_str(), std::ifstream::out); //std::ios::out | std::ios::binary
+        file.open(uploadFilePath.c_str(), std::ifstream::out); //std::ios::out | std::ios::binary
         if (file.is_open() == false) {
             std::cout << RED << "cannot write to file" << std::endl; //testing
             _statusCode = 403; // to be confirmed
             return;
         } else {
-            file << request.getBody(); //do we need to delete it later?
+            file << request.getBody();
             file.close();
-            _body = "<html><body><h1>File created at URL: " + _path + "</h1></body></head></html>";
+            _statusCode = 201;
+            _path = filePath;
+            _body = "<html><body><h1>File created at URL: " + uploadFilePath + "</h1></body></head></html>";
             _type = "text/html";
         }
     }

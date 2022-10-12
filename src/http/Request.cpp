@@ -65,6 +65,18 @@ const int &Request::getRet() const {
     return _ret;
 }
 
+const std::string &Request::getMultipartBoundary() const {
+    return _multipartBoundary;
+}
+
+const std::string &Request::getFileName() const {
+    return _fileName;
+}
+
+const std::string &Request::getFileContentType() const {
+    return _fileContentType;
+}
+
 int Request::parseRawRequest(const std::string &rawRequest) {
     if (rawRequest.find("\r\n\r\n") != std::string::npos) {
         std::stringstream ss(rawRequest);
@@ -144,7 +156,9 @@ void    Request::parseHeaders(std::stringstream &ss) {
         }
         _headers.insert(std::pair<std::string, std::string>(key, value));
     }
-
+    if (_headers["Content-Type"].find("multipart/form-data") != std::string::npos) {
+        _multipartBoundary = _headers["Content-Type"].substr(_headers["Content-Type"].find("boundary=----WebKitFormBoundary") + 31);
+    }
     if (_headers.find(HOST) == _headers.end()) {
         _ret = 400;
     }
@@ -159,6 +173,18 @@ void    Request::parseBody(std::stringstream &ss, const std::string &requestStr)
         std::string	restInput = requestStr.substr(currentPos, requestStr.size() - currentPos);
         _body.assign(restInput);
     }
+    if (_multipartBoundary != "") {
+        //std::cout << _body << std::endl; // testing
+        _fileName = _body.substr(_body.find("filename") + 10);
+        _fileName = _fileName.substr(0, _fileName.find("\""));
+        //std::cout << _fileName << std::endl; // testing
+        _fileContentType = _body.substr(_body.find("Content-Type:") + 14);
+        _fileContentType = _fileContentType.substr(0, _fileContentType.find("\r"));
+        //std::cout << _fileContentType << std::endl; // testing
+        _body = _body.substr(_body.find("\r\n\r\n") + 4);
+        _body = _body.substr(0, _body.find("\r"));
+    }
+
 }
 
 // overload function for testing
