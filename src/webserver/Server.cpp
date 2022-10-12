@@ -90,12 +90,15 @@ int Server::setupServer(void) {
 		if (fcntl(_serverSocket, F_SETFL, O_NONBLOCK) == -1) {
 			throw setupException();
 		}
-		setsockopt(this->_serverSocket, SOL_SOCKET, SO_REUSEADDR, (char *) &iSetOption, sizeof(iSetOption));
+		if (setsockopt(this->_serverSocket, SOL_SOCKET, SO_REUSEADDR, (char *) &iSetOption, sizeof(iSetOption)) == -1){
+			throw setupException();
+		}
 		memset(&_serverAddr, 0, sizeof(_serverAddr));
 		_serverAddr.sin_family = AF_INET;
 		_serverAddr.sin_port = htons(_port);
-		char *host = const_cast<char *>(_host.c_str());    // TODO: put this in configuration part
-		_serverAddr.sin_addr.s_addr = inet_addr(host);
+		_serverAddr.sin_addr.s_addr = htonl(INADDR_ANY);
+//		char *host = const_cast<char *>(_host.c_str());    // TODO: put this in configuration part
+//		_serverAddr.sin_addr.s_addr = inet_addr(host);
 		if (bind(_serverSocket, (struct sockaddr *) &_serverAddr, sizeof(_serverAddr)) == -1) {
 			throw setupException();
 		}
