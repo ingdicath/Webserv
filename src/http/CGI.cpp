@@ -12,6 +12,7 @@
 
 #include "CGI.hpp"
 #include <stdio.h>
+#include <cstring>
 #include "../webserver/Location.hpp"
 
 // TODO:	- add a check for select to the cgi

@@ -97,8 +97,6 @@ int Server::setupServer(void) {
 		_serverAddr.sin_family = AF_INET;
 		_serverAddr.sin_port = htons(_port);
 		_serverAddr.sin_addr.s_addr = htonl(INADDR_ANY);
-//		char *host = const_cast<char *>(_host.c_str());    // TODO: put this in configuration part
-//		_serverAddr.sin_addr.s_addr = inet_addr(host);
 		if (bind(_serverSocket, (struct sockaddr *) &_serverAddr, sizeof(_serverAddr)) == -1) {
 			throw setupException();
 		}
