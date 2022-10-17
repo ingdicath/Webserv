@@ -254,6 +254,7 @@ void    RequestTester::chunkedEncoding(int &sock) {
     return;
 }
 
+/*
 int main(int argc, char **argv) {
     if (argc != 2) {
         std::cout << "pass the indicator of the test as argument" << std::endl;
@@ -313,3 +314,4 @@ int main(int argc, char **argv) {
     }
     return (0);
 }
+*/
