@@ -138,7 +138,7 @@ int Response::responseValidation(Request &request) {
 	int locationIndex = findRequestLocation();
 	//std::cout << "location index: " << locationIndex << std::endl; //testing
 	if (locationIndex == -1) {
-		return 500;
+		return 404;
 	} else {
 		_serverLocation = _httpData.getLocations()[locationIndex];
 		_autoindex = _serverLocation.isAutoindex();
