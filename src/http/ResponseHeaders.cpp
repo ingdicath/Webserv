@@ -16,7 +16,6 @@ ResponseHeaders::ResponseHeaders() {
     _location = "";
     _retryAfter = "";
     _server = "Webserv/1.0";
-    _transferEncoding = "identity";
     _statusMsg[100] = "Continue";
     _statusMsg[200] = "OK";
     _statusMsg[201] = "Created";
@@ -57,7 +56,6 @@ ResponseHeaders &ResponseHeaders::operator=(const ResponseHeaders &obj) {
         _location = obj._location;
         _retryAfter = obj._retryAfter;
         _server = obj._server;
-        _transferEncoding = obj._transferEncoding;
         _statusMsg = obj._statusMsg;
     }
     return *this;
@@ -145,8 +143,6 @@ std::string		ResponseHeaders::writeHeader() {
         headers += "Retry-After: " + _retryAfter + "\r\n";
     if (_server != "")
         headers += "Server: " + _server + "\r\n";
-    if (_transferEncoding != "")
-        headers += "Transfer-Encoding: " + _transferEncoding + "\r\n";
     return headers;
 }
 

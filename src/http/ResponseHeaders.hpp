@@ -26,7 +26,6 @@ private:
     std::string					_location; //the URL of a redirect
     std::string					_retryAfter; //413 and 301
     std::string					_server; //info about the software used by the origin server to handle the request
-    std::string					_transferEncoding;
     std::map<int, std::string>	_statusMsg;
 
     std::string numToStr(size_t n);

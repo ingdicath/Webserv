@@ -432,7 +432,9 @@ std::string Response::getResponseStr(int code) {
 	} else if (code / 100 == 3) {
 		res = headers.generateHeaderRedirection(code, _closeConnection, _path);
 	} else {
-		std::string contentPath = _path.substr(_serverLocation.getRoot().size());
+        std::string contentPath = _path.substr(_path.find_last_of('/')); //TODO LIN: change to the correct contentPath
+        std::cout << "contentPath: " << contentPath << std::endl; //delete, test
+//		std::string contentPath = _path.substr(_serverLocation.getRoot().size());
 		res = headers.generateHeader(code, _closeConnection, _body.size(), _type, contentPath, _path);
 	}
 	std::cout << RED << "Response Headers: \n" << res << RESET << std::endl;//testing
