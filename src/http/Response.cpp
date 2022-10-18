@@ -146,7 +146,7 @@ int Response::responseValidation(Request &request) {
 		if (_serverLocation.getAcceptedMethods().find(_method) == _serverLocation.getAcceptedMethods().end()) {
 			return 405;
 		}
-		if (_httpData.getMaxClientBody() < request.getBody().size()) {
+		if (_httpData.getMaxClientBody() < request.getBody().size() && _httpData.getMaxClientBody() != 0) {
 			_closeConnection = true;
 			return 413;
 		}
