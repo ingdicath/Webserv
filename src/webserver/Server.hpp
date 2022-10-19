@@ -104,9 +104,8 @@ private:
 	struct sockaddr_in			_serverAddr;
 	std::vector<Client>			_clients;
 
-    std::map<int, std::string>  _requests;
-	//multipart
-	std::map<int, size_t>		_requestLen;
-    
+	std::map<int, std::string>  _requests;
+	std::map<int, std::string>  _requestsHeader;
+    std::map<int, std::string>  _requestsBody;
 	std::map<int, std::string>  _responses;
 };

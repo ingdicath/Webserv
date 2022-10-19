@@ -6,7 +6,7 @@
 /*   By: aheister <aheister@student.codam.nl>         +#+                     */
 /*                                                   +#+                      */
 /*   Created: 2022/07/11 15:09:47 by aheister      #+#    #+#                 */
-/*   Updated: 2022/10/19 09:08:09 by aheister      ########   odam.nl         */
+/*   Updated: 2022/10/19 11:06:09 by aheister      ########   odam.nl         */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -132,6 +132,9 @@ int Server::acceptConnection(void) {
 	} else {
 		this->addClient(newSocket, clientAddr);
 		_requests.insert(std::make_pair(newSocket, ""));
+		// FOR MULTIPART
+		_requestsHeader.insert(std::make_pair(newSocket, ""));
+		_requestsBody.insert(std::make_pair(newSocket, ""));
 	}
 	return newSocket;
 }
@@ -307,8 +310,26 @@ int Server::recvRequest(int socket) {
 		std::cout << "recv error, closing connection" << std::endl;
 		return EXIT_FAILURE;
 	}
-	_requests[socket] += std::string(buffer);
-	size_t i = _requests[socket].find("\r\n\r\n"); // find the end of the headers
+	 _requests[socket] += std::string(buffer);
+	 size_t i = _requests[socket].find("\r\n\r\n"); // find the end of the headers
+	if (_requestsHeader[socket] == "" && std::string(buffer).find("\r\n\r\n") != std::string::npos) {
+		_requestsHeader[socket] = std::string(buffer).substr(0, (std::string(buffer).find("\r\n\r\n") + 4));
+		std::cout << _requestsHeader[socket] << std::endl;
+	}
+	else if (_requestsBody[socket] == "" && _requestsHeader[socket].find("Content-Type: multipart/form-data") != std::string::npos) {
+		int pos = _requestsHeader[socket].find("boundary=----WebKitFormBoundary") + 31;
+		std::string boundaryID = _requests[socket].substr(pos , 16);
+		if (std::string(buffer).find(boundaryID)) {
+			if (std::string(buffer).find("Content-Type: text/plain") != std::string::npos) {
+				std::cout << BLUE << std::string(buffer) << RESET << std::endl;
+				std::cout << RED << boundaryID << RESET << std::endl;
+			}	
+			else {
+				std::cout << "type not supported" << std::endl;
+			}
+		}
+		_requestsBody[socket] += std::string(buffer);
+	}
 	if (i != std::string::npos) { //there is a body
 		if (_requests[socket].find("Content-Length: ") == std::string::npos) { //no info about content length
 			if (_requests[socket].find("Transfer-Encoding: chunked") != std::string::npos) { //it is chunked encoding
@@ -324,6 +345,7 @@ int Server::recvRequest(int socket) {
 		else if (_requests[socket].find("Content-Type: multipart/form-data") != std::string::npos) {
 			int pos = _requests[socket].find("boundary=----WebKitFormBoundary") + 31;
 			std::string boundaryID = _requests[socket].substr(pos , 16);
+			//std::cout << std::string(buffer) << std::endl;
 			std::string boundaryEnd = "------WebKitFormBoundary" + boundaryID + "--";
 			if (std::string(buffer).find(boundaryEnd) != std::string::npos) {
 				return EXIT_SUCCESS;
