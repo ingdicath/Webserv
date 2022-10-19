@@ -6,7 +6,7 @@
 /*   By: aheister <aheister@student.codam.nl>         +#+                     */
 /*                                                   +#+                      */
 /*   Created: 2022/07/11 15:09:47 by aheister      #+#    #+#                 */
-/*   Updated: 2022/10/19 12:14:53 by aheister      ########   odam.nl         */
+/*   Updated: 2022/10/19 13:16:13 by aheister      ########   odam.nl         */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -132,10 +132,10 @@ int Server::acceptConnection(void) {
 	} else {
 		this->addClient(newSocket, clientAddr);
 		_requests.insert(std::make_pair(newSocket, ""));
-		_ret[newSocket] = 200;
 		// FOR MULTIPART
 		_requestsHeader.insert(std::make_pair(newSocket, ""));
 		_requestsBody.insert(std::make_pair(newSocket, ""));
+		_ret.insert(std::make_pair(newSocket, 200));
 	}
 	return newSocket;
 }
@@ -400,8 +400,10 @@ void Server::processRequest(int socket) {
 
     if (_requests[socket] != "") {
         Request request(_requests[socket]);
-		if (_ret[socket] != 200)
+		if (_ret[socket] != 200) {
 			request.setRet(_ret[socket]);
+			std::cout << "ret = " << _ret[socket] << std::endl;
+		}
         std::cout << request << std::endl; // testing
         HttpData    httpData = setHttpData(request);
         Response    response(httpData, request);
@@ -411,6 +413,8 @@ void Server::processRequest(int socket) {
         //std::cout << "Response:\n" << _responses[socket] << std::endl; //testing
     }
 	_ret.erase(socket);
+	_requestsHeader.erase(socket);
+	_requestsBody.erase(socket);
     _requests.erase(socket);
 }
 
