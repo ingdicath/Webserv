@@ -138,7 +138,7 @@ int Response::responseValidation(Request &request) {
 	int locationIndex = findRequestLocation();
 	//std::cout << "location index: " << locationIndex << std::endl; //testing
 	if (locationIndex == -1) {
-		return 500;
+		return 404;
 	} else {
 		_serverLocation = _httpData.getLocations()[locationIndex];
 		_autoindex = _serverLocation.isAutoindex();
@@ -146,7 +146,7 @@ int Response::responseValidation(Request &request) {
 		if (_serverLocation.getAcceptedMethods().find(_method) == _serverLocation.getAcceptedMethods().end()) {
 			return 405;
 		}
-		if (_httpData.getMaxClientBody() < request.getBody().size()) {
+		if (_httpData.getMaxClientBody() < request.getBody().size() && _httpData.getMaxClientBody() != 0) {
 			_closeConnection = true;
 			return 413;
 		}
@@ -407,6 +407,7 @@ void     Response::processDeleteMethod() {
 			_statusCode = 200;
 			_body = "<html><body><h1>File deleted at URL: " + _path + "</h1></body></head></html>";
 			_type = "text/html";
+			_path = filePath;
 		}
 		else {
 			_statusCode = 403;

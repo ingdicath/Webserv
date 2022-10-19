@@ -35,7 +35,7 @@ private:
 
 	enum eDirectives {
 		PORT,
-		HOST_,  //conflict with macro's Request.hpp
+		HOST_,
 		SERVER_NAME,
 		ERROR_PAGE,
 		BODY_SIZE,
