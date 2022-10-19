@@ -361,17 +361,12 @@ void    Response::processPostMethod(Request &request) {
 	std::vector<Location> locations = _httpData.getLocations();
 	for (std::vector<Location>::iterator itLocation = locations.begin(); itLocation < locations.end(); itLocation++) {
 		if (itLocation->getUpload() != "") {
-			if (requestHeaders["Content-Type"].find("application/x-www-form-urlencoded") != std::string::npos)
-				uploadFilePath = filePath;
-			else
-				uploadFilePath = _serverLocation.getRoot() + itLocation->getUpload() + "/" + request.getFileName();
+			// if (requestHeaders["Content-Type"].find("application/x-www-form-urlencoded") != std::string::npos)
+			// 	uploadFilePath = filePath;
+			// else
+			uploadFilePath = _serverLocation.getRoot() + itLocation->getUpload() + "/" + request.getFileName();
 		}
 	}
-	if (requestHeaders["Content-Type"].find("multipart/form-data") != std::string::npos) {
-		// HERE THE CURL INFO HAS TO BE ADDED
-		std::cout << uploadFilePath << std::endl;
-	}
-
 	if (isFile(uploadFilePath) == 1) { //file already exists
 		std::cout << RED << "file exist" << std::endl; //testing
 		_statusCode = 403; // to be confirmed
@@ -386,7 +381,8 @@ void    Response::processPostMethod(Request &request) {
 		}
 
 		std::ofstream file;
-		file.open(uploadFilePath.c_str(), std::ifstream::out); //std::ios::out | std::ios::binary
+		//file.open(uploadFilePath.c_str(), std::ifstream::out);
+		file.open(uploadFilePath.c_str(), std::ios::out | std::ios::binary);
 		if (file.is_open() == false) {
 			std::cout << RED << "cannot write to file" << std::endl; //testing
 			_statusCode = 403; // to be confirmed

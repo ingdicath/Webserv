@@ -105,5 +105,8 @@ private:
 	std::vector<Client>			_clients;
 
     std::map<int, std::string>  _requests;
-    std::map<int, std::string>  _responses;
+	//multipart
+	std::map<int, size_t>		_requestLen;
+    
+	std::map<int, std::string>  _responses;
 };

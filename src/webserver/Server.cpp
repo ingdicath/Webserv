@@ -6,7 +6,7 @@
 /*   By: aheister <aheister@student.codam.nl>         +#+                     */
 /*                                                   +#+                      */
 /*   Created: 2022/07/11 15:09:47 by aheister      #+#    #+#                 */
-/*   Updated: 2022/10/11 12:51:13 by aheister      ########   odam.nl         */
+/*   Updated: 2022/10/19 09:08:09 by aheister      ########   odam.nl         */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -90,7 +90,7 @@ int Server::setupServer(void) {
 		if (fcntl(_serverSocket, F_SETFL, O_NONBLOCK) == -1) {
 			throw setupException();
 		}
-		if (setsockopt(this->_serverSocket, SOL_SOCKET, SO_REUSEADDR, (char *) &iSetOption, sizeof(iSetOption)) == -1){
+		if (setsockopt(this->_serverSocket, SOL_SOCKET, SO_REUSEADDR, (char *) &iSetOption, sizeof(iSetOption)) == -1) {
 			throw setupException();
 		}
 		memset(&_serverAddr, 0, sizeof(_serverAddr));
@@ -306,7 +306,6 @@ int Server::recvRequest(int socket) {
 		std::cout << "recv error, closing connection" << std::endl;
 		return EXIT_FAILURE;
 	}
-
 	_requests[socket] += std::string(buffer);
 	size_t i = _requests[socket].find("\r\n\r\n"); // find the end of the headers
 	if (i != std::string::npos) { //there is a body
@@ -320,23 +319,25 @@ int Server::recvRequest(int socket) {
 			} else { //no content length and not chunked encoding
 				return EXIT_SUCCESS;
 			}
-		} else { //there is content length
+		}
+		else if (_requests[socket].find("Content-Type: multipart/form-data") != std::string::npos) {
+			int pos = _requests[socket].find("boundary=----WebKitFormBoundary") + 31;
+			std::string boundaryID = _requests[socket].substr(pos , 16);
+			std::string boundaryEnd = "------WebKitFormBoundary" + boundaryID + "--";
+			if (std::string(buffer).find(boundaryEnd) != std::string::npos) {
+				return EXIT_SUCCESS;
+			} else {
+				return -1; // multipart/formdata not finished
+			}
+		}
+		else { //there is content length
 			size_t len = std::atoi(_requests[socket].substr(_requests[socket].find("Content-Length: ") + 16, 10).c_str());
-			if (_requests[socket].find("Content-Type: multipart/form-data") != std::string::npos) { //this is upload via multipart/formdata
-				//if (_requests[socket].find(EOF) != std::string::npos)
-				std::cout << GREEN << _requests[socket].size() << "|" << len << RESET << std::endl;
-					//return EXIT_SUCCESS;
-				//else {
-					std::cout << GREEN << _requests[socket] << RESET << std::endl;
-					//return -1;
-				}
-			//}
 			if (_requests[socket].size() >= len + i + 4) {
 				return EXIT_SUCCESS;
 			} else {
 				return -1; //content length does not match the body size
 			}
-		}
+		} //QUESTION: WHAT IS THERE ISN'T A BODY?
 	}
 	return -1;
 }
@@ -379,7 +380,8 @@ void Server::processRequest(int socket) {
         HttpData    httpData = setHttpData(request);
         Response    response(httpData, request);
         _responses.insert(std::make_pair(socket, response.getResponse(request)));
-        std::cout << response << std::endl; // testing
+		//std::cout << "response_insert" << std::endl; // testing
+        //std::cout << response << std::endl; // testing
         //std::cout << "Response:\n" << _responses[socket] << std::endl; //testing
     }
     _requests.erase(socket);
