@@ -77,6 +77,11 @@ const std::string &Request::getFileContentType() const {
 	return _fileContentType;
 }
 
+//setters
+void Request::setRet(int ret) {
+	_ret = ret;
+}
+
 int Request::parseRawRequest(const std::string &rawRequest) {
 	if (rawRequest.find("\r\n\r\n") != std::string::npos) {
 		std::stringstream ss(rawRequest);

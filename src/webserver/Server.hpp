@@ -105,7 +105,10 @@ private:
 	std::vector<Client>			_clients;
 
 	std::map<int, std::string>  _requests;
+	// TEST
 	std::map<int, std::string>  _requestsHeader;
     std::map<int, std::string>  _requestsBody;
+	// END_TEST
+	std::map<int, int>  		_ret;
 	std::map<int, std::string>  _responses;
 };

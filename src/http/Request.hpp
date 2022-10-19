@@ -46,18 +46,21 @@ public:
 	int parseRawRequest(const std::string &rawRequest);
 
 	//getters
-	const std::string &getMethod() const;
-	const std::string &getPath() const;
-	const std::string &getVersion() const;
+	const std::string 	&getMethod() const;
+	const std::string 	&getPath() const;
+	const std::string 	&getVersion() const;
 	std::map<std::string, std::string> getHeaders() const;
-	const std::string &getHost() const;
-	const std::string &getBody() const;
+	const std::string 	&getHost() const;
+	const std::string 	&getBody() const;
 	// UPLOAD
-	const std::string &getMultipartBoundary() const;
-	const std::string &getFileName() const;
-	const std::string &getFileContentType() const;
+	const std::string 	&getMultipartBoundary() const;
+	const std::string 	&getFileName() const;
+	const std::string 	&getFileContentType() const;
 	// END UPLOAD
-	const int &getRet() const;
+	const int 			&getRet() const;
+
+	//setters
+	void				setRet(int ret);
 };
 
 // for testing delete later
