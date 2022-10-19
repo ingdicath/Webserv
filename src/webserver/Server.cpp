@@ -244,6 +244,7 @@ void Server::setDefaultErrorPages() {
 	_errorPage.insert(std::pair<int, std::string>(411, "/errors/411.html"));
 	_errorPage.insert(std::pair<int, std::string>(413, "/errors/413.html"));
 	_errorPage.insert(std::pair<int, std::string>(414, "/errors/414.html"));
+	_errorPage.insert(std::pair<int, std::string>(415, "/errors/415.html"));
 	_errorPage.insert(std::pair<int, std::string>(418, "/errors/418.html"));
 	_errorPage.insert(std::pair<int, std::string>(429, "/errors/429.html"));
 	_errorPage.insert(std::pair<int, std::string>(431, "/errors/431.html"));
