@@ -6,7 +6,7 @@
 /*   By: aheister <aheister@student.codam.nl>         +#+                     */
 /*                                                   +#+                      */
 /*   Created: 2022/09/19 12:28:01 by aheister      #+#    #+#                 */
-/*   Updated: 2022/10/08 13:28:15 by aheister      ########   odam.nl         */
+/*   Updated: 2022/10/19 11:23:20 by aheister      ########   odam.nl         */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -91,7 +91,9 @@ char **CGI::create_envp(void)
 	env_map["SERVER_SOFTWARE"] = "Connecting kittens/1.0";
 	env_map["SERVER_PROTOCOL"] = "HTTP/1.1";
 	env_map["SERVER_NAME"] = _httpData.getServerName();
-	env_map["SERVER_PORT"] = std::to_string(_httpData.getPort());
+	std::stringstream streamPort;  
+    streamPort << _httpData.getPort();
+	env_map["SERVER_PORT"] = streamPort.str();
 
 	return (convert_map_to_array(env_map));
 }
@@ -215,7 +217,9 @@ void    CGI::setType(std::string type) {
 }
 
 void    CGI::setLength(long length) {
-	this->_length = std::to_string(length);
+	std::stringstream stream;  
+    stream << length;  
+	this->_length = stream.str();
 }
 
 void    CGI::setRequestBody(std::string requestBody) {
