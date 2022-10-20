@@ -6,7 +6,7 @@
 /*   By: aheister <aheister@student.codam.nl>         +#+                     */
 /*                                                   +#+                      */
 /*   Created: 2022/09/19 12:28:01 by aheister      #+#    #+#                 */
-/*   Updated: 2022/10/19 11:23:20 by aheister      ########   odam.nl         */
+/*   Updated: 2022/10/20 11:45:17 by aheister      ########   odam.nl         */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -14,8 +14,6 @@
 #include <stdio.h>
 #include <cstring>
 #include "../webserver/Location.hpp"
-
-// TODO:	- add a check for select to the cgi
 
 CGI::CGI(const e_method method, HttpData &httpData, const std::string path) 
 	: 	_method(method),
@@ -48,6 +46,11 @@ CGI& CGI::operator=(CGI const & rhs) {
 CGI::~CGI() {
 }
 
+/*
+** DESCRIPTION
+** Function that converts the map of environment variables created in the function 'create_envp' into the array, 
+** needed as the 3rd argument in the execve function.
+*/
 char **CGI::convert_map_to_array(std::map<std::string, std::string> env_map)
 {
 	int i;
@@ -70,6 +73,14 @@ char **CGI::convert_map_to_array(std::map<std::string, std::string> env_map)
 	return (envp);
 }
 
+/*
+** DESCRIPTION
+** Function that creates a map of environment variables that execve uses to execute the script.
+** JOBS
+** 1. Depending on the method different variables are filled. GET uses a query string, POST gets its input via the stdin
+**    but needs the content type and length to process it.
+** 2. The rest of the variables are filled with server info, path info and remote info
+*/
 char **CGI::create_envp(void)
 {
 	std::map<std::string, std::string> env_map;
@@ -98,6 +109,11 @@ char **CGI::create_envp(void)
 	return (convert_map_to_array(env_map));
 }
 
+/*
+** DESCRIPTION
+** Function that constructs the array of arguments needed for the execve function. The first position contains the full path,
+** the second and last position of the array contains a NULL (execve demands that)
+*/
 char **CGI::create_args(void) {
 	char **args;
 
@@ -110,21 +126,43 @@ char **CGI::create_args(void) {
 	return(args);
 }
 
+/*
+** DESCRIPTION
+** Function called from Response->processGetMethod to execute the cgi process. The function sets the QueryString and
+** and continues the execution process. The function returns an errorcode. On succes this code is 200, else it is 
+** the errorcode of what went wrong.
+*/
 int	CGI::execute_GET(std::string queryString) {
 
 	setQueryString(queryString);
-	execute();
+	prepare_execution();
 	return (this->_errorCode);
 }
 
+/*
+** DESCRIPTION
+** Function called from Response->processPostMethod to execute the cgi process. The function sets the Type, Length and
+** Requestbody and continues the execution process. The function returns an errorcode. On succes this code is 200, else it is 
+** the errorcode of what went wrong.
+*/
 int	CGI::execute_POST(std::string type, std::string requestBody) {
 	setType(type);
 	setLength(requestBody.size());
 	setRequestBody(requestBody);
-	execute();
+	prepare_execution();
 	return (this->_errorCode);
 }
 
+/*
+** DESCRIPTION
+** Function that actualy executes the cgi script.
+** JOBS
+** 1. Dup of STDIN_FILENO to fdIn in order to read and write from/to the tmpfile during execution
+** 2. The function create_envp is called to create the needed environment variables
+** 3. The function create_args is called to create the array of args needed
+** 4. Then the cgi script is executed.
+** 5. When the execution fails, the function exits with code 2 which is used by the parent to set the right error code
+*/
 int CGI::execute_cgi(int fdIn, int fdOut)
 {
 	char	**env;
@@ -140,7 +178,21 @@ int CGI::execute_cgi(int fdIn, int fdOut)
 	exit(2);
 }
 
-void CGI::execute(void) {
+/*
+** DESCRIPTION
+** Function that prepares for execution of the cgi script and creates the thread for it.
+** JOBS
+** 1. Dup STDIN_FILENO and STDOUT_FILENO to fd[2] to store them
+** 2. Create 2 temporary binary files with tmpfile(). This function creates a filename guaranteed to be different 
+**    from any other existing file. The temporary file created is automatically deleted when the stream is closed (fclose).
+** 3. Retrieve the integer of the file descriptor associated with the stream pointed to by stream using fileno().
+** 4. In case of a POST request write the input (written in the stdin) to the fdIn and set the pointer to the beginning with lseek
+** 5. Fork and execute the cgi script in the child.
+** 6. In the parent: wait for the execution to finish and retrieve the exitstatus in case it couldn't execute
+** 7. Read the tmpfile in a buffer and write it to the _body
+** 8. Dup STDIN_FILENO and STDOUT_FILENO back and close all open file descriptors
+*/
+void CGI::prepare_execution(void) {
 	int         ret;
 	pid_t       pid;
 	int         fd[2];
@@ -148,13 +200,8 @@ void CGI::execute(void) {
 
 	fd[0] = dup(STDIN_FILENO);
 	fd[1] = dup(STDOUT_FILENO);
-
-	// tmpfile() creates a temporary binary file, with a filename guaranteed to be different from any other existing file.
-	// The temporary file created is automatically deleted when the stream is closed (fclose).
 	FILE	*fileIn = tmpfile();
-	FILE	*fileOut = tmpfile();
-		
-	// The fileno() function returns the integer file descriptor associated with the stream pointed to by stream.
+	FILE	*fileOut = tmpfile();		
 	int	fdIn = fileno(fileIn);
 	int	fdOut = fileno(fileOut);
 

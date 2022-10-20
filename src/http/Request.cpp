@@ -212,8 +212,6 @@ std::ostream	&operator<<(std::ostream &os, const Request &request) {
 	os << "Host: " << request.getHost() << std::endl;
 	os << "Body: " << std::endl << request.getBody() << std::endl;
 	os << "Body size: " << request.getBody().size() << std::endl;
-	os << "ID Multipart: " << request.getMultipartBoundary() << std::endl;
-	os << "File content type: " << request.getFileContentType() << std::endl;
 	os << "Ret:  " << request.getRet() << std::endl;
 	os <<  "------- Request Object Info Done --------" << RESET << std::endl;
 	return os;

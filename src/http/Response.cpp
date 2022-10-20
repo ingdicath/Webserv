@@ -344,7 +344,6 @@ void    Response::processPostMethod(Request &request) {
 				return;
 			}
 			std::istringstream input;
-			_body = cgi.getBody();
 			input.str(cgi.getBody());
 			std::string line;
 			std::getline(input, line, '\n');
@@ -361,9 +360,6 @@ void    Response::processPostMethod(Request &request) {
 	std::vector<Location> locations = _httpData.getLocations();
 	for (std::vector<Location>::iterator itLocation = locations.begin(); itLocation < locations.end(); itLocation++) {
 		if (itLocation->getUpload() != "") {
-			// if (requestHeaders["Content-Type"].find("application/x-www-form-urlencoded") != std::string::npos)
-			// 	uploadFilePath = filePath;
-			// else
 			uploadFilePath = _serverLocation.getRoot() + itLocation->getUpload() + "/" + request.getFileName();
 		}
 	}

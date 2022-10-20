@@ -6,7 +6,7 @@
 /*   By: aheister <aheister@student.codam.nl>         +#+                     */
 /*                                                   +#+                      */
 /*   Created: 2022/09/19 13:09:04 by aheister      #+#    #+#                 */
-/*   Updated: 2022/10/08 12:27:00 by aheister      ########   odam.nl         */
+/*   Updated: 2022/10/20 11:31:33 by aheister      ########   odam.nl         */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -55,7 +55,7 @@ private:
 	int         	_errorCode;
 	std::string		_body;
 
-	void			execute(void);
+	void			prepare_execution(void);
 	char			**create_envp(void);
 	char			**create_args(void);
 	char 			**convert_map_to_array(std::map<std::string, std::string> env_map);

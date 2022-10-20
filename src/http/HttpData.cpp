@@ -26,6 +26,7 @@ HttpData    &HttpData::operator=(const HttpData &obj) {
     return *this;
 }
 
+//setters
 void    HttpData::setPort(int port) {
     _port = port;
 }
@@ -49,6 +50,7 @@ void    HttpData::setLocations(std::vector<Location> locations) {
     _locations = locations;
 }
 
+//getters
 const int   &HttpData::getPort() const {
     return _port;
 }
