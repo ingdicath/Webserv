@@ -12,8 +12,8 @@
 
 NAME		=	webserv
 
-CFLAGS	=	-Wall -Werror -Wextra -Iincludes -pedantic -std=c++98
-#CFLAGS		=	-Wall -Werror -Wextra -Iincludes -std=c++98
+CFLAGS		=	-Wall -Werror -Wextra -pedantic -std=c++98
+
 CC			=	c++
 
 SRC_DIR		=	src
@@ -33,11 +33,8 @@ SRC			=	main.cpp \
 				FileUtils.cpp \
 				CGI.cpp
 
-# SRC_PATH	=	$(addprefix $(SRC_DIR), $(SRC))
-# OBJ_FILES	=	$(SRC_PATH:$(SRC_DIR)%.cpp=$(OBJ_DIR)%.o)
 OBJ_FILES	=	$(addprefix $(OBJ_DIR), $(notdir $(SRC:%.cpp=%.o)))
 VPATH 		=	$(subst $(space),:,$(shell find $(SRC_DIR) -type d))
-OBJ_FILES	=	$(addprefix $(OBJ_DIR), $(SRC:.cpp=.o))
 
 RM			=	/bin/rm -rf
 
@@ -50,9 +47,8 @@ all:			$(NAME)
 
 $(NAME):		$(OBJ_FILES)
 				$(CC) $(CFLAGS) -o $(NAME) $(OBJ_FILES)
-				@echo "'$(GREEN)$(NAME)' executable has been created\n$(RESET)"
+				@echo "$(GREEN)'$(NAME)' executable has been created\n$(RESET)"
 
-# $(SRC_DIR)%.cpp
 $(OBJ_DIR)%.o:	$(notdir %.cpp)
 				@mkdir -p $(OBJ_DIR)
 				@echo "$(PURPLE)Creating objects for: $<$(RESET)"

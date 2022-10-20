@@ -2,6 +2,7 @@
 // Created by Hz Lin on 18/07/2022.
 //
 
+#include <iomanip>
 #include "Request.hpp"
 #include "../utils/settings.hpp"
 #include "../utils/utils.hpp"
@@ -194,6 +195,27 @@ void    Request::parseBody(std::stringstream &ss, const std::string &requestStr)
 		_body = _body.substr(0, _body.size() - 1);
 	}
 
+}
+
+void Request::printRequestInfo(const std::string &color) {
+	std::cout << color << std::setfill('_') << std::setw(45) << "_" << std::endl;
+	std::cout << "[INFO] Request " << std::endl;
+	std::cout << "Method: " << _method << " -- HTTP Version: " << _version << std::endl;
+	std::cout << "Path: " << _path << std::endl;
+	std::cout << std::setfill('.') << std::setw(45) << "." << std::endl;
+	std::cout << BOLD "Headers:" RESET << std::endl;
+	std::cout << color << "Host: " << _host << std::endl;
+	std::cout << "Content-Type: " << _fileContentType << std::endl;
+	std::map<std::string, std::string>	headers = _headers;
+	for(std::map<std::string, std::string>::const_iterator it = headers.begin(); it != headers.end(); ++it) {
+		if (it->first == "Content-Length"){
+			std::cout << "Content-Length: " << it->second << std::endl;
+		}
+	}
+	std::cout << std::setfill('.') << std::setw(45) << "." << std::endl;
+	std::cout << "Body: " << std::endl << GRAY << _body << RESET << std::endl;
+	std::cout << color << "Body size:  ✅ ❌ " << _body.size() << std::endl;
+	std::cout << std::setfill('_') << std::setw(45) << "_" << std::endl;
 }
 
 // overload function for testing

@@ -61,7 +61,10 @@ public:
 
 	//setters
 	void				setRet(int ret);
+
+	void printRequestInfo(const std::string &color);
 };
 
 // for testing delete later
 std::ostream	&operator<<(std::ostream &os, const Request &request);
+
