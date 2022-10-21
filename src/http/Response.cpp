@@ -343,6 +343,7 @@ void    Response::processPostMethod(Request &request) {
 				_statusCode = cgi.getErrorCode();
 				return;
 			}
+			_body = cgi.getBody();
 			std::istringstream input;
 			input.str(cgi.getBody());
 			std::string line;
