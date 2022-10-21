@@ -62,7 +62,7 @@ public:
 	//setters
 	void				setRet(int ret);
 
-	void printRequestInfo(const std::string &color);
+	void printRequestDebug(const std::string &color);
 };
 
 // for testing delete later

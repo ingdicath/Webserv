@@ -404,8 +404,9 @@ void Server::processRequest(int socket) {
 			request.setRet(_ret[socket]);
 			std::cout << "ret = " << _ret[socket] << std::endl;
 		}
-//		request.printRequestInfo(YELLOW); // short request info print (in progress)
-        std::cout << request << std::endl; // testing
+        //TODO: put conditional if debug is on
+        request.printRequestDebug(CYAN); // short request info print (in progress)
+//        std::cout << request << std::endl; // testing
         HttpData    httpData = setHttpData(request);
         Response    response(httpData, request);
         _responses.insert(std::make_pair(socket, response.getResponse(request)));
