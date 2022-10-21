@@ -14,7 +14,19 @@ void	signal_handler(int signal)
 	}
 }
 
+int checkFlagDebug(char **argv, int *debug){
+    *debug = 0;
+    if (strcmp(argv[0], "--debug") == 0){
+        *debug = 1;
+        return *debug;
+    } else{
+        std::cerr << RED ERROR " Invalid argument for debug. Usage: --debug" RESET << std::endl;
+        exit(EXIT_FAILURE);
+    }
+}
+
 int     main(int argc, char* argv[]) {
+    int debug;
 	std::string configFile;
 	Webserver webserver;
 
@@ -25,6 +37,10 @@ int     main(int argc, char* argv[]) {
 		case 2:
 			configFile = argv[1];
 			break;
+        case 3:
+            configFile = argv[1];
+            debug = checkFlagDebug(&argv[2], &debug);
+            break;
 		default:
 			std::cerr << RED "\nInvalid number of arguments." RESET << std::endl;
 			std::cerr << "Usage: ./webserv [configuration file]\n" << std::endl;
