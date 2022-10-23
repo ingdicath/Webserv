@@ -6,7 +6,7 @@
 /*   By: aheister <aheister@student.codam.nl>         +#+                     */
 /*                                                   +#+                      */
 /*   Created: 2022/07/11 15:09:47 by aheister      #+#    #+#                 */
-/*   Updated: 2022/10/19 13:16:13 by aheister      ########   odam.nl         */
+/*   Updated: 2022/10/23 16:45:45 by aheister      ########   odam.nl         */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -132,7 +132,6 @@ int Server::acceptConnection(void) {
 	} else {
 		this->addClient(newSocket, clientAddr);
 		_requests.insert(std::make_pair(newSocket, ""));
-		// FOR MULTIPART
 		_requestsHeader.insert(std::make_pair(newSocket, ""));
 		_requestsBody.insert(std::make_pair(newSocket, ""));
 		_ret.insert(std::make_pair(newSocket, 200));
@@ -170,9 +169,9 @@ void Server::removeClient(int thisSocket) {
 	}
 }
 
-/**
- * Getters
- */
+/*
+** Getters
+*/
 
 int Server::getPort(void) const {
 	return _port;
@@ -209,9 +208,9 @@ uint32_t Server::getTimeout(void) const {
 	return _timeOut;
 }
 
-/**
- * Setters
- */
+/*
+** Setters
+*/
 
 void Server::setPort(int port) {
 	if (_flagPort) {
@@ -258,12 +257,12 @@ void Server::setDefaultErrorPages() {
 	_errorPage.insert(std::pair<int, std::string>(505, "/errors/505.html"));
 }
 
-/**
- * If the status error code already exists in the default error Pages map, the path to this error
- * is updated, if is not found, it is added to the current map of error pages.
- * @param errorPage Is the pair of status error code and path defined in the config file
- * by the user.
- */
+/*
+** If the status error code already exists in the default error Pages map, the path to this error
+** is updated, if is not found, it is added to the current map of error pages.
+** @param errorPage Is the pair of status error code and path defined in the config file
+** by the user.
+*/
 void Server::addErrorPage(const std::pair<int, std::string> &errorPage) {
 	std::map<int, std::string>::iterator it = _errorPage.find(errorPage.first);
 	if (it != _errorPage.end()) {
@@ -273,10 +272,10 @@ void Server::addErrorPage(const std::pair<int, std::string> &errorPage) {
 	}
 }
 
-/**
- * Before add the location block to the current server, it checks if there is
- * a duplicate path location. In affirmative case, it throws an error.
- */
+/*
+** Before add the location block to the current server, it checks if there is
+** a duplicate path location. In affirmative case, it throws an error.
+*/
 void Server::addLocation(Location location) {
 	checkDuplicateLocationPath(location.getPathLocation());
 	_locations.push_back(location);
@@ -311,57 +310,54 @@ int Server::recvRequest(int socket) {
 		std::cout << "recv error, closing connection" << std::endl;
 		return EXIT_FAILURE;
 	}
-	 _requests[socket] += std::string(buffer);
-	 size_t i = _requests[socket].find("\r\n\r\n"); // find the end of the headers
-	if (_requestsHeader[socket] == "" && std::string(buffer).find("\r\n\r\n") != std::string::npos) {
-		_requestsHeader[socket] = std::string(buffer).substr(0, (std::string(buffer).find("\r\n\r\n") + 4));
-		std::cout << _requestsHeader[socket] << std::endl; // testing
+	_requests[socket] += std::string(buffer);
+	size_t endOfHeader = _requests[socket].find("\r\n\r\n") + 4; // find the end of the headers
+	if (endOfHeader != std::string::npos && _requestsHeader[socket] == "") {
+		_requestsHeader[socket] = _requests[socket].substr(0, endOfHeader);
 	}
-	else if (_requestsBody[socket] == "" && _requestsHeader[socket].find("Content-Type: multipart/form-data") != std::string::npos) {
-		int pos = _requestsHeader[socket].find("boundary=----WebKitFormBoundary") + 31;
-		std::string boundaryID = _requests[socket].substr(pos , 16);
-		if (std::string(buffer).find(boundaryID)) {
-			if (std::string(buffer).find("Content-Type: text/plain") != std::string::npos || std::string(buffer).find("Content-Type: application/octet-stream") != std::string::npos) {
-				std::cout << BLUE << std::string(buffer) << RESET << std::endl; // testing
-				std::cout << RED << boundaryID << RESET << std::endl; // testing
-			}	
-			else {
-				_ret[socket] = 415;
-				return EXIT_SUCCESS;
-			}
-		}
-		_requestsBody[socket] += std::string(buffer);
-	}
-	if (i != std::string::npos) { //there is a body
-		if (_requests[socket].find("Content-Length: ") == std::string::npos) { //no info about content length
-			if (_requests[socket].find("Transfer-Encoding: chunked") != std::string::npos) { //it is chunked encoding
-				if (chunkedEnd(_requests[socket]) == 0) { //chunked finished
-					return EXIT_SUCCESS;
-				} else {
-					return -1; //chunked not finished
-				}
-			} else { //no content length and not chunked encoding
-				return EXIT_SUCCESS;
-			}
-		}
-		else if (_requests[socket].find("Content-Type: multipart/form-data") != std::string::npos) {
-			int pos = _requests[socket].find("boundary=----WebKitFormBoundary") + 31;
+	if (_requestsHeader[socket] != "") {
+		if (_requestsHeader[socket].find("Content-Type: multipart/form-data") != std::string::npos) { // processing multipart/formdata
+			int pos = _requestsHeader[socket].find("boundary=----WebKitFormBoundary") + 31;
 			std::string boundaryID = _requests[socket].substr(pos , 16);
+			std::string boundaryStart = "------WebKitFormBoundary" + boundaryID;
 			std::string boundaryEnd = "------WebKitFormBoundary" + boundaryID + "--";
-			if (std::string(buffer).find(boundaryEnd) != std::string::npos) {
+			_requestsBody[socket] += std::string(buffer);
+			if (_requests[socket].find(boundaryStart) != std::string::npos) {
+				std::cout << "begin" << std::endl;
+				if (_requests[socket].find("Content-Type: text/plain") == std::string::npos && 
+						_requests[socket].find("Content-Type: application/octet-stream") == std::string::npos) {
+					_ret[socket] = 415;
+					return EXIT_SUCCESS;
+				}
+			}
+			if (_requests[socket].find(boundaryEnd) != std::string::npos) {
 				return EXIT_SUCCESS;
 			} else {
+				std::cout << "not finished" << std::endl;
 				return -1; // multipart/formdata not finished
 			}
 		}
-		else { //there is content length
+		else if (_requestsHeader[socket].find("Transfer-Encoding: chunked") != std::string::npos) { //it is chunked encoding
+			if (chunkedEnd(_requests[socket]) == 0) { //chunked finished
+				return EXIT_SUCCESS;
+			} else {
+				return -1; //chunked not finished
+			}
+		}
+		else if (_requestsHeader[socket].find("Content-Length: ") != std::string::npos) { //there is content length
 			size_t len = std::atoi(_requests[socket].substr(_requests[socket].find("Content-Length: ") + 16, 10).c_str());
-			if (_requests[socket].size() >= len + i + 4) {
+			if (_requests[socket].size() >= len + endOfHeader) {
+				return EXIT_SUCCESS;
+			} else if (std::string(buffer).size() == 0) {
+				_ret[socket] = 400;
 				return EXIT_SUCCESS;
 			} else {
 				return -1; //content length does not match the body size
 			}
-		} //QUESTION: WHAT IS THERE ISN'T A BODY?
+		}
+		else { //no content length, not chunked encoding, no multipart
+			return EXIT_SUCCESS;
+		}	
 	}
 	return -1;
 }
