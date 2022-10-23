@@ -466,8 +466,11 @@ std::string Response::getResponse(Request &request) {
 	}
 	if (_statusCode != 200) {
 		setErrorBody();
-//		return getResponseStr(_statusCode);
-        return printResponseDebug(_statusCode, ORANGE); // testing,  for debug
+		if (DEBUG) {
+			return printResponseDebug(_statusCode, ORANGE);
+		} else {
+			return getResponseStr(_statusCode);
+		}
 	}
 	else {
 		if (_serverLocation.getRedirection().first != -1) {
@@ -483,8 +486,11 @@ std::string Response::getResponse(Request &request) {
 		if (_statusCode >= 400) {
 			setErrorBody();
 		}
-//		return getResponseStr(_statusCode);
-        return printResponseDebug(_statusCode, ORANGE); // testing,  for debug
+		if (DEBUG){
+			return printResponseDebug(_statusCode, ORANGE);
+		} else {
+			return getResponseStr(_statusCode);
+		}
 	}
 }
 
