@@ -6,7 +6,7 @@
 /*   By: aheister <aheister@student.codam.nl>         +#+                     */
 /*                                                   +#+                      */
 /*   Created: 2022/07/11 15:09:47 by aheister      #+#    #+#                 */
-/*   Updated: 2022/10/23 16:45:45 by aheister      ########   odam.nl         */
+/*   Updated: 2022/10/23 17:24:13 by aheister      ########   odam.nl         */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -310,6 +310,7 @@ int Server::recvRequest(int socket) {
 		std::cout << "recv error, closing connection" << std::endl;
 		return EXIT_FAILURE;
 	}
+	std::cout << std::string(buffer) << std::endl;
 	_requests[socket] += std::string(buffer);
 	size_t endOfHeader = _requests[socket].find("\r\n\r\n") + 4; // find the end of the headers
 	if (endOfHeader != std::string::npos && _requestsHeader[socket] == "") {
@@ -348,9 +349,6 @@ int Server::recvRequest(int socket) {
 			size_t len = std::atoi(_requests[socket].substr(_requests[socket].find("Content-Length: ") + 16, 10).c_str());
 			if (_requests[socket].size() >= len + endOfHeader) {
 				return EXIT_SUCCESS;
-			} else if (std::string(buffer).size() == 0) {
-				_ret[socket] = 400;
-				return EXIT_SUCCESS;
 			} else {
 				return -1; //content length does not match the body size
 			}
@@ -377,7 +375,8 @@ void Server::processChunk(int socket) {
 		subChunk = chunks.substr(i, 100);
 		chunkSize = strtol(subChunk.c_str(), NULL, 16);
 	}
-	_requests[socket] = heads + "\r\n\r\n" + body + "\r\n\r\n";
+	//_requests[socket] = heads + "\r\n\r\n" + body + "\r\n\r\n";
+	_requests[socket] = heads + "\r\n\r\n" + body;
 }
 
 void Server::processRequest(int socket) {

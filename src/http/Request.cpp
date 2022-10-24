@@ -84,14 +84,14 @@ void Request::setRet(int ret) {
 }
 
 int Request::parseRawRequest(const std::string &rawRequest) {
-	if (rawRequest.find("\r\n\r\n") != std::string::npos) {
-		std::stringstream ss(rawRequest);
-		parseMethod(ss);
-		parsePath(ss);
-		parseVersion(ss);
-		ss.ignore(2); // skip the \r\n
-		parseHeaders(ss);
-		parseBody(ss, rawRequest);
+if (rawRequest.find("\r\n\r\n") != std::string::npos) {
+	std::stringstream ss(rawRequest);
+	parseMethod(ss);
+	parsePath(ss);
+	parseVersion(ss);
+	ss.ignore(2); // skip the \r\n
+	parseHeaders(ss);
+	parseBody(ss, rawRequest);
 	} else {
 		_ret = 400;
 	}
@@ -108,6 +108,7 @@ void    Request::parseMethod(std::stringstream &ss) {
 		_ret = 501; //method not implemented
 	}
 	else {
+		std::cout << "2" << std::endl; // testing
 		_ret = 400;
 	}
 }
@@ -130,6 +131,7 @@ void    Request::parsePath(std::stringstream &ss) {
 
 	_path = requestPath;
 	if (_path[0] != '/') {
+		std::cout << "3" << std::endl; // testing
 		_ret = 400;
 	}
 }
@@ -141,6 +143,7 @@ void    Request::parseVersion(std::stringstream &ss) {
 		_ret = 505; //http version not supported
 	}
 	else if (_version != "HTTP/1.1") {
+		std::cout << "4" << std::endl; // testing
 		_ret = 400;
 	}
 }
@@ -158,6 +161,7 @@ void    Request::parseHeaders(std::stringstream &ss) {
 		std::getline(header, value);
 		value = value.substr(1,value.size() - 2);
 		if (key.empty() || value.empty()) {
+			std::cout << "5" << std::endl; // testing
 			_ret = 400;
 		}
 		_headers.insert(std::pair<std::string, std::string>(key, value));
@@ -166,6 +170,7 @@ void    Request::parseHeaders(std::stringstream &ss) {
 		_multipartBoundary = _headers["Content-Type"].substr(_headers["Content-Type"].find("boundary=----WebKitFormBoundary") + 31);
 	}
 	if (_headers.find(HOST) == _headers.end()) {
+		std::cout << "6" << std::endl; // testing
 		_ret = 400;
 	}
 	else {
