@@ -226,7 +226,7 @@ void Webserver::updateSockets(int socket, int type, int subtype) {
 */
 void Webserver::clear(void) {
 	for (std::vector<Server>::iterator itServer = _servers.begin(); itServer < _servers.end(); itServer++) {
-		std::cout << itServer->getServerSocket() << " closed" << std::endl; // test: delete later
+//		std::cout << itServer->getServerSocket() << " closed" << std::endl; // test: delete later
 		close(itServer->getServerSocket());
 		_servers.erase(itServer);
 	}

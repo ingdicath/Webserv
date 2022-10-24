@@ -33,7 +33,7 @@ ResponseHeaders::ResponseHeaders() {
 	_statusMsg[415] = "Unsupported Media Type";
     _statusMsg[500] = "Internal Server Error";
     _statusMsg[501] = "Not Implemented";
-    _statusMsg[501] = "Bad Gateway";
+    _statusMsg[502] = "Bad Gateway";
     _statusMsg[505] = "HTTP Version Not Supported";
 }
 

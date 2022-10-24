@@ -240,7 +240,7 @@ void    Response::setErrorBody() {
 		std::ofstream       file;
 		std::stringstream   buffer;
 		std::string         errorPagePath = "www" + errorPage[_statusCode];
-		std::cout << BLUE << errorPagePath << RESET << std::endl;
+//		std::cout << BLUE << errorPagePath << RESET << std::endl; //testing
 		file.open(errorPagePath.c_str(), std::ifstream::in);
 		if (file.is_open() == false) {
 			_body = "<!DOCTYPE html>\n<html><title>404</title><body>There was an error finding your error page</body></html>\n";
@@ -263,7 +263,7 @@ void Response::processRedirection(Request &request) {
 		redirectionLocation.erase(pos, 4);
 		redirectionLocation.append(request.getPath());
 	}
-	std::cout << "Redirection Location: " << redirectionLocation << std::endl; //testing
+//	std::cout << "Redirection Location: " << redirectionLocation << std::endl; //testing
 	_path = redirectionLocation;
 	_statusCode = _serverLocation.getRedirection().first;
 	_body = "";
@@ -279,10 +279,10 @@ void Response::processGetMethod() {
 	std::size_t pos = contentPath.find('?');
 	if (pos != std::string::npos) {
 		queryString = contentPath.substr(pos+1);
-		std::cout << "QueryString: " << queryString << std::endl; //testing
+//		std::cout << "QueryString: " << queryString << std::endl; //testing
 		contentPath = contentPath.substr(0, contentPath.find("?"));
 	}
-	std::cout << GREEN << "ContentPath: " << contentPath << "| Auto-index: " << _autoindex << "| _serverLocation.getIndex(): " << _serverLocation.getIndex() << RESET << std::endl; //testing
+//	std::cout << GREEN << "ContentPath: " << contentPath << "| Auto-index: " << _autoindex << "| _serverLocation.getIndex(): " << _serverLocation.getIndex() << RESET << std::endl; //testing
 	int i = isFile(contentPath);
 	if (i == 2) { //it is a directory
 		// https://serverfault.com/questions/940276/force-nginx-to-always-autoindex-and-ignore-index-html-files
@@ -327,14 +327,14 @@ void Response::processGetMethod() {
 		}
 	}
 	else {
-		std::cout << "cannot find file" << std::endl; //testing
+//		std::cout << "cannot find file" << std::endl; //testing
 		_statusCode = 404;
 	}
 }
 
 void    Response::processPostMethod(Request &request) {
 	std::string filePath = _serverLocation.getRoot() + _path.substr(_serverLocation.getPathLocation().size() - 1);;
-	std::cout << RED << "File Path: " << filePath << RESET << std::endl; //testing
+//	std::cout << RED << "File Path: " << filePath << RESET << std::endl; //testing
 	if (filePath.find(".") != std::string::npos) {
 		std::string fileExtension = filePath.substr(filePath.find_last_of("."));
 		if (fileExtension == _serverLocation.getCgi().first) { // cgi if extension is .py
@@ -365,14 +365,14 @@ void    Response::processPostMethod(Request &request) {
 		}
 	}
 	if (isFile(uploadFilePath) == 1) { //file already exists
-		std::cout << RED << "file exist" << std::endl; //testing
+//		std::cout << RED << "file exist" << std::endl; //testing
 		_statusCode = 403; // to be confirmed
 		setErrorBody();
 	} else {
 		std::string dirPath = uploadFilePath.substr(0, uploadFilePath.find_last_of('/'));
-		std::cout << RED << "File Dir: " << dirPath << std::endl; //testing
+//		std::cout << RED << "File Dir: " << dirPath << std::endl; //testing
 		if (isFile(dirPath) != 2) { //could not find the directory to create this file
-			std::cout << RED << "cannot find dir" << std::endl; //testing
+//			std::cout << RED << "cannot find dir" << std::endl; //testing
 			_statusCode = 403; // to be confirmed
 			return;
 		}
@@ -381,7 +381,7 @@ void    Response::processPostMethod(Request &request) {
 		//file.open(uploadFilePath.c_str(), std::ifstream::out);
 		file.open(uploadFilePath.c_str(), std::ios::out | std::ios::binary);
 		if (file.is_open() == false) {
-			std::cout << RED << "cannot write to file" << std::endl; //testing
+//			std::cout << RED << "cannot write to file" << std::endl; //testing
 			_statusCode = 403; // to be confirmed
 			return;
 		} else {
@@ -398,7 +398,7 @@ void    Response::processPostMethod(Request &request) {
 
 void     Response::processDeleteMethod() {
 	std::string filePath = _serverLocation.getRoot() + _path.substr(_serverLocation.getPathLocation().size() - 1);
-	std::cout << RED << "File Path: " << filePath << std::endl; //testing
+//	std::cout << RED << "File Path: " << filePath << std::endl; //testing
 	if (isFile(filePath) ==  1) {
 		if (std::remove(filePath.c_str()) == 0) {
 			_statusCode = 200;
@@ -429,32 +429,13 @@ std::string Response::getResponseStr(int code) {
 		std::string contentPath = _path.substr(_serverLocation.getRoot().size());
 		res = headers.generateHeader(code, _closeConnection, _body.size(), _type, contentPath, _path);
 	}
-	std::cout << RED << "Response Headers: \n" << res << RESET << std::endl;//testing
-	if (_body != "") {
-		res += _body;
-	}
-	return res;
-}
-
-// Prints response info for debug option
-std::string Response::printResponseDebug(int code, const std::string &color) {
-	std::string res;
-	ResponseHeaders  headers;
-
-	if (code == 405) {
-		res = headers.generateHeaderAllowed(code, _closeConnection, _body.size(), _type, _path, _serverLocation.getAcceptedMethods());
-	} else if (code >= 400) {
-		res = headers.generateHeaderError(code, _closeConnection, _body.size(), _type, _path);
-	} else if (code / 100 == 3) {
-		res = headers.generateHeaderRedirection(code, _closeConnection, _path);
+	if (DEBUG){
+		std::cout << YELLOW << "[INFO] Response Headers: \n" << res  << std::endl; //testing
+		std::cout <<  "------- End of Response info --------\n" << RESET << std::endl;
 	} else {
-		std::string contentPath = _path.substr(_serverLocation.getRoot().size());
-		res = headers.generateHeader(code, _closeConnection, _body.size(), _type, contentPath, _path);
+		std::cout << BLUE "Response Status Code: " << code << " " << headers.getStatusMsg(code) << std::endl << std::endl;
 	}
-	std::cout << color << "\n[INFO] Response Headers\n" << res << RESET << std::endl;//testing
-	std::cout << color << "------- End of Response info --------\n" << RESET << std::endl;
-
-	if (!_body.empty()) {
+	if (_body != "") {
 		res += _body;
 	}
 	return res;
@@ -466,15 +447,11 @@ std::string Response::getResponse(Request &request) {
 	}
 	if (_statusCode != 200) {
 		setErrorBody();
-		if (DEBUG) {
-			return printResponseDebug(_statusCode, ORANGE);
-		} else {
-			return getResponseStr(_statusCode);
-		}
+		return getResponseStr(_statusCode);
 	}
 	else {
 		if (_serverLocation.getRedirection().first != -1) {
-			std::cout << "Redirecting......" << std::endl; //testing
+//			std::cout << "Redirecting......" << std::endl; //testing
 			processRedirection(request);
 		} else if (_method == "GET") {
 			processGetMethod();
@@ -486,11 +463,7 @@ std::string Response::getResponse(Request &request) {
 		if (_statusCode >= 400) {
 			setErrorBody();
 		}
-		if (DEBUG) {
-			return printResponseDebug(_statusCode, ORANGE);
-		} else {
-			return getResponseStr(_statusCode);
-		}
+		return getResponseStr(_statusCode);
 	}
 }
 

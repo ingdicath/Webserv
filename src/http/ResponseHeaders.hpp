@@ -34,7 +34,6 @@ private:
     void    setDate();
     void    setLastModified(const std::string& path);
 
-    std::string getStatusMsg(int code);
     std::string writeHeader();
 
 public:
@@ -43,7 +42,8 @@ public:
     virtual ~ResponseHeaders();
     ResponseHeaders &operator=(const ResponseHeaders &obj);
 
-    std::string generateHeaderAllowed(int code, bool closeConnection, size_t size, std::string type, std::string path, std::set<std::string> methods);
+	std::string getStatusMsg(int code);
+	std::string generateHeaderAllowed(int code, bool closeConnection, size_t size, std::string type, std::string path, std::set<std::string> methods);
     std::string generateHeaderError(int code, bool closeConnection, size_t size, std::string type, std::string path);
     std::string generateHeaderRedirection(int code, bool closeConnection, std::string location);
     std::string generateHeader(int code, bool closeConnection, size_t size, std::string type, std::string path, std::string absolutePath);
