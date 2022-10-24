@@ -66,7 +66,7 @@ public:
     const std::string   &getBody() const;
 
     std::string getResponse(Request &request);
-
+	std::string printResponseDebug(int code, const std::string &color);
 };
 
 // for testing delete later

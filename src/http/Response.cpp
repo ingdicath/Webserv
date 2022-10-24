@@ -436,13 +436,41 @@ std::string Response::getResponseStr(int code) {
 	return res;
 }
 
+// Prints response info for debug option
+std::string Response::printResponseDebug(int code, const std::string &color) {
+	std::string res;
+	ResponseHeaders  headers;
+
+	if (code == 405) {
+		res = headers.generateHeaderAllowed(code, _closeConnection, _body.size(), _type, _path, _serverLocation.getAcceptedMethods());
+	} else if (code >= 400) {
+		res = headers.generateHeaderError(code, _closeConnection, _body.size(), _type, _path);
+	} else if (code / 100 == 3) {
+		res = headers.generateHeaderRedirection(code, _closeConnection, _path);
+	} else {
+		std::string contentPath = _path.substr(_serverLocation.getRoot().size());
+		res = headers.generateHeader(code, _closeConnection, _body.size(), _type, contentPath, _path);
+	}
+	std::cout << color << "\n[INFO] Response Headers\n" << res << RESET << std::endl;//testing
+	std::cout << color << "------- End of Response info --------\n" << RESET << std::endl;
+
+	if (!_body.empty()) {
+		res += _body;
+	}
+	return res;
+}
+
 std::string Response::getResponse(Request &request) {
 	if (_statusCode == 200) {
 		_statusCode = responseValidation(request);
 	}
 	if (_statusCode != 200) {
 		setErrorBody();
-		return getResponseStr(_statusCode);
+		if (DEBUG) {
+			return printResponseDebug(_statusCode, ORANGE);
+		} else {
+			return getResponseStr(_statusCode);
+		}
 	}
 	else {
 		if (_serverLocation.getRedirection().first != -1) {
@@ -458,7 +486,11 @@ std::string Response::getResponse(Request &request) {
 		if (_statusCode >= 400) {
 			setErrorBody();
 		}
-		return getResponseStr(_statusCode);
+		if (DEBUG) {
+			return printResponseDebug(_statusCode, ORANGE);
+		} else {
+			return getResponseStr(_statusCode);
+		}
 	}
 }
 

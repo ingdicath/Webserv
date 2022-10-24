@@ -5,6 +5,8 @@
 #include "webserver/Webserver.hpp"
 #include "utils/settings.hpp"
 
+int DEBUG = 0;
+
 void	signal_handler(int signal)
 {
 	if (signal == SIGINT)
@@ -14,19 +16,36 @@ void	signal_handler(int signal)
 	}
 }
 
+int checkFlagDebug(const std::string &str) {
+	if (str == "--debug") {
+		return 1;
+	} else {
+		return 0;
+	}
+}
+
 int     main(int argc, char* argv[]) {
-	std::string configFile;
+	std::string configFile = DEFAULT_CONFIG_FILE;
 	Webserver webserver;
+	DEBUG = 0;
 
 	switch (argc) {
 		case 1:
-			configFile = DEFAULT_CONFIG_FILE;
 			break;
 		case 2:
+			DEBUG = checkFlagDebug(argv[1]);
+			if (!DEBUG)
+				configFile = argv[1];
+			break;
+		case 3:
 			configFile = argv[1];
+			DEBUG = checkFlagDebug(argv[2]);
+			if (DEBUG){
+				break;
+			}
 			break;
 		default:
-			std::cerr << RED "\nInvalid number of arguments." RESET << std::endl;
+			std::cerr << RED ERROR "\nInvalid number of arguments." << std::endl;
 			std::cerr << "Usage: ./webserv [configuration file]\n" << std::endl;
 			return EXIT_FAILURE;
 	}

@@ -50,3 +50,6 @@
 
 #define MAXLINE 4096
 #define CGI_BUFSIZE 65536
+
+/** Global variable for DEBUG **/
+extern int DEBUG;

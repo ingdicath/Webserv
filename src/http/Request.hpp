@@ -62,7 +62,8 @@ public:
 	//setters
 	void				setRet(int ret);
 
-	void printRequestInfo(const std::string &color);
+	// prints info when debug flag is on
+	void printRequestDebug(const std::string &color);
 };
 
 // for testing delete later
