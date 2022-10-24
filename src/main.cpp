@@ -38,8 +38,10 @@ int main(int argc, char **argv) {
 		case 3:
 			configFile = argv[1];
 			DEBUG = checkFlagDebug(argv[2]);
-			if (DEBUG)
+			if (DEBUG){
 				break;
+			}
+			break;
 		default:
 			std::cerr << RED ERROR "\nInvalid number of arguments." << std::endl;
 			std::cerr << "Usage: ./webserv [configuration file]\n" << std::endl;
