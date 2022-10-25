@@ -187,7 +187,7 @@ int	Webserver::findReadySockets(struct timeval timeout) {
 }
 
 /*
-** DESCRIPTION - TODO: UPDATEN!!
+** DESCRIPTION
 ** Function that updates the highest (max) used file descriptor (socket) in the program to be used in the select function
 ** to check the 'readyness' of all file descriptors (sockets) until the given max has reached
 ** JOBS
@@ -233,7 +233,6 @@ void Webserver::updateSockets(int socket, int type, int subtype) {
 */
 void Webserver::clear(void) {
 	for (std::vector<Server>::iterator itServer = _servers.begin(); itServer < _servers.end(); itServer++) {
-//		std::cout << itServer->getServerSocket() << " closed" << std::endl; // test: delete later
 		close(itServer->getServerSocket());
 		_servers.erase(itServer);
 	}

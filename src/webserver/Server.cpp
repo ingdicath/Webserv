@@ -136,11 +136,9 @@ void Server::addClient(int newSocket, struct sockaddr_in clientAddr) {
 	Client client;
 
 	client.setClientAddress(clientAddr);
-//	std::cout << "Client: " << inet_ntoa(clientAddr.sin_addr) << std::endl; // test: delete later
 	client.setClientSocket(newSocket);
 	client.setClientTimeStamp();
 	_clients.push_back(client);
-//	std::cout << "Client accepted: " << newSocket << std::endl; // test: delete later
 }
 
 /*
@@ -150,7 +148,6 @@ void Server::addClient(int newSocket, struct sockaddr_in clientAddr) {
 void Server::removeClient(int thisSocket) {
 	for (std::vector<Client>::iterator it = _clients.begin(); it < _clients.end(); it++) {
 		if (it->getClientSocket() == thisSocket) {
-//			std::cout << RED "Client " << it->getClientSocket() << " removed" RESET << std::endl; // test: delete later
 			close(it->getClientSocket());
 			_clients.erase(it);
 			_requests.erase(thisSocket);
@@ -299,7 +296,6 @@ int Server::recvRequest(int socket) {
 		std::cout << "recv error, closing connection" << std::endl;
 		return EXIT_FAILURE;
 	}
-//	std::cout << std::string(buffer) << std::endl;
 	_requests[socket] += std::string(buffer);
 	size_t endOfHeader = _requests[socket].find("\r\n\r\n"); // find the end of the headers
 	if (endOfHeader != std::string::npos) {
@@ -318,7 +314,6 @@ int Server::recvRequest(int socket) {
 			std::string boundaryEnd = "------WebKitFormBoundary" + boundaryID + "--";
 			_requestsBody[socket] += std::string(buffer);
 			if (_requests[socket].find(boundaryStart) != std::string::npos) {
-//				std::cout << "begin" << std::endl;
 				if (_requests[socket].find("Content-Type: text/plain") == std::string::npos && 
 						_requests[socket].find("Content-Type: application/octet-stream") == std::string::npos) {
 					_ret[socket] = 415;
@@ -368,7 +363,6 @@ void Server::processChunk(int socket) {
 		subChunk = chunks.substr(i, 100);
 		chunkSize = strtol(subChunk.c_str(), NULL, 16);
 	}
-	//_requests[socket] = heads + "\r\n\r\n" + body + "\r\n\r\n";
 	_requests[socket] = heads + "\r\n\r\n" + body;
 }
 
@@ -379,18 +373,10 @@ void Server::processRequest(int socket) {
 		processChunk(socket);
 	}
 
-	// output for testing
-//    if (_requests[socket].size() < 1000) {
-//        std::cout << "\n_request:\n" << _requests[socket] << std::endl;
-//    } else {
-//        std::cout << "\n_request:\n" << _requests[socket].substr(0, 1000) << std::endl;
-//    }
-
     if (!_requests[socket].empty()) {
         Request request(_requests[socket]);
 		if (_ret[socket] != 200) {
 			request.setRet(_ret[socket]);
-//			std::cout << "ret = " << _ret[socket] << std::endl; // testing??
 		}
 		if (DEBUG == 1) {
 			request.printRequestDebug(CYAN); // print DEBUG info
@@ -400,9 +386,6 @@ void Server::processRequest(int socket) {
         HttpData    httpData = setHttpData(request);
         Response    response(httpData, request);
         _responses.insert(std::make_pair(socket, response.getResponse(request)));
-		//std::cout << "response_insert" << std::endl; // testing
-        //std::cout << response << std::endl; // testing
-        //std::cout << "Response:\n" << _responses[socket] << std::endl; //testing
     }
 	_ret.erase(socket);
 	_requestsHeader.erase(socket);
@@ -455,7 +438,6 @@ HttpData Server::setHttpData(Request &request) {
                 return httpData;
             }
         }
-        //std::cout << "Server name not find in config" << std::endl; // What is this message: should this be printed??
         httpData.setServerName("NF");
     }
 	return httpData;

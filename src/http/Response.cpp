@@ -348,7 +348,7 @@ void    Response::processPostMethod(Request &request) {
 			line.erase(0, toErase.length());
 			_type = line;
 			_body = _body.substr(_body.find_first_of("<"));
-			_path = filePath;                                 // TODO: WHEN SOMETHING MISSES IN THE RESPONSE YOU GET AN ERROR AND THE WEBSERVER DIES
+			_path = filePath;
 			return;
 		}
 	}
