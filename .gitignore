@@ -40,3 +40,4 @@ cmake-build-debug
 .DS_Store
 webserv
 client
+CMakeLists.txt
