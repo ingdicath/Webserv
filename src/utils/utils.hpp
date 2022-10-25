@@ -1,6 +1,14 @@
-//
-// Created by Diana catherine Salamanca leguizamon on 5/19/22.
-//
+/* ************************************************************************** */
+/*                                                                            */
+/*                                                        ::::::::            */
+/*   utils.hpp                                          :+:    :+:            */
+/*                                                     +:+                    */
+/*   By: diana <diana@student.codam.nl>               +#+                     */
+/*                                                   +#+                      */
+/*   Created: 2022/10/25 08:58:23 by diana         #+#    #+#                 */
+/*   Updated: 2022/10/25 08:58:23 by diana         ########   odam.nl         */
+/*                                                                            */
+/* ************************************************************************** */
 
 #pragma once
 
@@ -12,8 +20,6 @@
 #define WHITESPACES " \n\t\r\f\v"
 
 namespace utils {
-
-	void 						removeWhiteSpaces(std::string str); // check usage
 	std::vector<std::string>	splitString(const std::string &str, char splitter);
 	bool 						isPositiveNumber(const std::string &str);
 	size_t 						stringToPositiveNum(const std::string &input);
@@ -23,9 +29,7 @@ namespace utils {
 	std::string 				deleteLastOf(char toSearch, std::string str);
 	std::string 				stringToUpper(std::string oString);
 	std::string 				stringToLower(std::string oString);
-
 	int 						stringToInt(const std::string &input);
 	long 						stringToLong(const std::string &input);
-	std::map<int, std::string>	makeMap(int num, std::string string);
 	std::vector<std::string>	splitByWhiteSpaces(const std::string &string, const std::string &whiteSp);
 }

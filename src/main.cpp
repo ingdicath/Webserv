@@ -1,7 +1,17 @@
+/* ************************************************************************** */
+/*                                                                            */
+/*                                                        ::::::::            */
+/*   main.cpp                                           :+:    :+:            */
+/*                                                     +:+                    */
+/*   By: diana <diana@student.codam.nl>               +#+                     */
+/*                                                   +#+                      */
+/*   Created: 2022/10/25 09:00:11 by diana         #+#    #+#                 */
+/*   Updated: 2022/10/25 09:00:11 by diana         ########   odam.nl         */
+/*                                                                            */
+/* ************************************************************************** */
 
 #include <csignal>
 #include <cstdlib>
-
 #include "webserver/Webserver.hpp"
 #include "utils/settings.hpp"
 

@@ -1,6 +1,14 @@
-//
-// Created by Diana catherine Salamanca leguizamon on 5/19/22.
-//
+/* ************************************************************************** */
+/*                                                                            */
+/*                                                        ::::::::            */
+/*   utils.cpp                                          :+:    :+:            */
+/*                                                     +:+                    */
+/*   By: diana <diana@student.codam.nl>               +#+                     */
+/*                                                   +#+                      */
+/*   Created: 2022/10/25 08:58:06 by diana         #+#    #+#                 */
+/*   Updated: 2022/10/25 08:58:06 by diana         ########   odam.nl         */
+/*                                                                            */
+/* ************************************************************************** */
 
 #include <string>
 #include <vector>
@@ -10,10 +18,6 @@
 #include "settings.hpp"
 
 namespace utils {
-
-	void removeWhiteSpaces(std::string str) {
-		str.erase(std::remove_if(str.begin(), str.end(), ::isspace), str.end());
-	}
 
 	std::vector<std::string> splitString(const std::string &str, char splitter) {
 		std::vector<std::string> res;
@@ -84,7 +88,6 @@ namespace utils {
 		return oString;
 	}
 
-	// added by diana for parsing config file
 	int stringToInt(const std::string &input) {
 		int res;
 		std::istringstream convert(input);
@@ -94,7 +97,6 @@ namespace utils {
 		return res;
 	}
 
-	// added by diana for parsing config file
 	long stringToLong(const std::string &input) {
 		long res;
 		std::istringstream convert(input);
@@ -104,29 +106,18 @@ namespace utils {
 		return res;
 	}
 
-	// It makes a map with a pair composed by int and string as an input
-	std::map<int, std::string> makeMap(int num, std::string string) {
-		std::map<int, std::string> myMap;
-		myMap.insert(std::pair<int, std::string>(num, string));
-		return myMap;
-	}
-
-// add 29Aug by Diana
-	std::vector<std::string> splitByWhiteSpaces(const std::string& string, const std::string& whiteSp)
-	{
-		size_t	startPos = 0;
-		size_t	endPos;
-		size_t  splitPos;
-		size_t	len;
+	std::vector<std::string> splitByWhiteSpaces(const std::string &string, const std::string &whiteSp) {
+		size_t startPos = 0;
+		size_t endPos;
+		size_t splitPos;
+		size_t len;
 		std::vector<std::string> vec;
 
-		while (startPos < string.size())
-		{
+		while (startPos < string.size()) {
 			splitPos = string.find_first_of(whiteSp, startPos);
 			endPos = std::min(splitPos, string.size());
 			len = endPos - startPos;
-			if (len)
-			{
+			if (len) {
 				std::string sub = string.substr(startPos, len);
 				utils::trim(sub);
 				vec.push_back(sub);
