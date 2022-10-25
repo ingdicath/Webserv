@@ -51,29 +51,6 @@ Response &Response::operator=(const Response &obj) {
 	return *this;
 }
 
-const std::string   &Response::getPath() const {
-	return _path;
-}
-
-const std::string   &Response::getMethod() const {
-	return _method;
-}
-const HttpData  &Response::getHttpData() const {
-	return _httpData;
-}
-
-const int   &Response::getStatusCode() const {
-	return _statusCode;
-}
-
-const std::string &Response::getType() const {
-	return _type;
-}
-
-const std::string &Response::getBody() const {
-	return _body;
-}
-
 std::vector<std::string>    Response::setPathVector(std::string pathStr) {
 	size_t i = 0;
 	size_t slashPos;
@@ -352,7 +329,7 @@ void    Response::processPostMethod(Request &request) {
 		}
 	}
 	if (isFile(uploadFilePath) == 1) { //file already exists
-		_statusCode = 403; // to be confirmed
+		_statusCode = 403;
 		setErrorBody();
 	} else {
 		std::string dirPath = uploadFilePath.substr(0, uploadFilePath.find_last_of('/'));

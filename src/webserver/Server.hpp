@@ -101,7 +101,7 @@ private:
 	std::set<std::string>       _serverNameSet;  //Validate duplicate servername same listen
 
 	// Variables that help to validate duplicate values
-	bool						_flagPort; // option #1 for validate duplicate directives
+	bool						_flagPort;
 	bool						_flagHost;
 
 	int							_timeOut;

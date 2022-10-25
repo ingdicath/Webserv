@@ -15,7 +15,7 @@
 #include "../utils/settings.hpp"
 #include "../utils/utils.hpp"
 
-Request::Request() {
+Request::Request() : _ret(200){
 }
 
 Request::Request(const std::string &requestStr) :
@@ -54,10 +54,6 @@ const std::string    &Request::getPath() const {
 	return _path;
 }
 
-const std::string	&Request::getVersion() const {
-	return _version;
-}
-
 std::map<std::string, std::string>	Request::getHeaders() const {
 	return _headers;
 }
@@ -74,16 +70,8 @@ const int &Request::getRet() const {
 	return _ret;
 }
 
-const std::string &Request::getMultipartBoundary() const {
-	return _multipartBoundary;
-}
-
 const std::string &Request::getFileName() const {
 	return _fileName;
-}
-
-const std::string &Request::getFileContentType() const {
-	return _fileContentType;
 }
 
 //setters
@@ -223,16 +211,11 @@ void Request::printRequestDebug(const std::string &color) {
 	std::cout <<  "------- End of request info --------\n" << RESET << std::endl;
 }
 
-// overload function for testing
+// overload function
 std::ostream	&operator<<(std::ostream &os, const Request &request) {
 	std::cout << BLUE << "[INFO] General " << std::endl;
 	os << "Request Method: " << request.getMethod() << std::endl;
  	os << "Path: " << request.getPath() << std::endl;
-//	os << "HEADERS:" << std::endl;
-//	std::map<std::string, std::string>	headers = request.getHeaders();
-//	for(std::map<std::string, std::string>::const_iterator it = headers.begin(); it != headers.end(); ++it) {
-//		os << it->first << ": " << it->second << std::endl;
-//	}
 	os << "Host: " << request.getHost();
 	return os;
 }

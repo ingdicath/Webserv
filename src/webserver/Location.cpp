@@ -10,7 +10,6 @@
 /*                                                                            */
 /* ************************************************************************** */
 
-#include <csignal> //for getcwd Linux
 #include <unistd.h>
 #include "Location.hpp"
 #include "../utils/settings.hpp"

@@ -13,7 +13,6 @@
 #include "CGI.hpp"
 #include <stdio.h>
 #include <cstring>
-#include "../webserver/Location.hpp"
 
 CGI::CGI(const e_method method, HttpData &httpData, const std::string path) 
 	: 	_method(method),

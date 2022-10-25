@@ -12,7 +12,6 @@
 
 #pragma once
 
-
 #include <iostream>
 #include <string>
 #include <map>
@@ -22,7 +21,7 @@
 #include <sys/stat.h>
 #include <unistd.h>
 #include <dirent.h>
-#include <algorithm> //for linux
+#include <algorithm>
 #include "../utils/settings.hpp"
 #include "Request.hpp"
 #include "HttpData.hpp"
@@ -63,14 +62,5 @@ public:
     Response(const Response &obj);
     Response &operator=(const Response &obj);
 
-    //getters
-    const std::string   &getPath() const;
-    const std::string   &getMethod() const;
-    const HttpData      &getHttpData() const;
-    const int           &getStatusCode() const;
-    const std::string   &getType() const;
-    const std::string   &getBody() const;
-
     std::string getResponse(Request &request);
-	std::string printResponseDebug(int code, const std::string &color);
 };

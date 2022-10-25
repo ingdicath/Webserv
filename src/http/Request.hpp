@@ -19,7 +19,6 @@
 #include <cstdlib>
 #include <sstream>
 
-#define CONTENT_LENGTH "Content-Length"
 #define HOST "Host"
 
 class Request {
@@ -46,7 +45,7 @@ private:
 	Request();
 
 public:
-	Request(const std::string &requesStr);
+	Request(const std::string &requestStr);
 	virtual ~Request();
 	Request(const Request &obj);
 	Request &operator=(const Request &obj);
@@ -56,14 +55,11 @@ public:
 	//getters
 	const std::string 	&getMethod() const;
 	const std::string 	&getPath() const;
-	const std::string 	&getVersion() const;
 	std::map<std::string, std::string> getHeaders() const;
 	const std::string 	&getHost() const;
 	const std::string 	&getBody() const;
 	// UPLOAD
-	const std::string 	&getMultipartBoundary() const;
 	const std::string 	&getFileName() const;
-	const std::string 	&getFileContentType() const;
 	// END UPLOAD
 	const int 			&getRet() const;
 

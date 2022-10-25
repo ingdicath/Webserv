@@ -13,7 +13,7 @@
 #pragma once
 
 #include <string>
-#include <stdlib.h>
+#include <cstdlib>
 #include <unistd.h>
 #include <sys/wait.h>
 #include <iostream>

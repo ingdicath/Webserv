@@ -22,7 +22,6 @@ private:
     int             _port;
     std::string     _host;
     unsigned long   _maxClientBody;
-//    std::string     _path;
     std::string     _serverName;
     std::map<int, std::string>  _errorPage;
     std::vector<Location>       _locations;
@@ -49,6 +48,3 @@ public:
     const std::map<int, std::string> &getErrorPages() const;
     const std::vector<Location>      &getLocations() const;
 };
-
-// overload function for testing
-std::ostream	&operator<<(std::ostream &os, const HttpData &httpData);

@@ -13,13 +13,13 @@
 #pragma once
 
 #include <iostream>
-#include "../utils/settings.hpp"
 #include <set>
 #include <map>
 #include <sys/stat.h>
 #include <sstream>
 #include <sys/time.h>
 #include "Request.hpp"
+#include "../utils/settings.hpp"
 
 class ResponseHeaders {
 private:

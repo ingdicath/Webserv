@@ -10,8 +10,7 @@
 /*                                                                            */
 /* ************************************************************************** */
 
-#include <cstring>	// for Linux
-#include <cstdio>	// for Linux
+#include <cstring>
 #include <cstdlib>
 #include "../utils/settings.hpp"
 #include "Webserver.hpp"
@@ -55,8 +54,6 @@ Webserver::~Webserver(void) {
 /*
 ** DESCRIPTION
 ** Function that creates the servers from the configuration file and adds them to the <vector> _servers
-** JOBS
-** 1. follows...
 */
 void	Webserver::loadConfiguration(const std::string& configFile) {
 	std::cout << PURPLE "Webserver using: " << configFile << RESET << std::endl;

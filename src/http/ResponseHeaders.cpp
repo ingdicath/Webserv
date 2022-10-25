@@ -75,7 +75,7 @@ std::string  ResponseHeaders::numToStr(size_t n) {
 }
 
 void    ResponseHeaders::setContentType(std::string type, std::string path) {
-    if (type != "")
+    if (!type.empty())
     {
         _contentType = type;
         return ;
@@ -128,25 +128,25 @@ std::string		ResponseHeaders::getStatusMsg(int code) {
 
 std::string		ResponseHeaders::writeHeader() {
     std::string	headers = "";
-    if (_allow != "")
+    if (!_allow.empty())
         headers += "Allow: " + _allow + "\r\n";
-    if (_contentLanguage != "")
+    if (!_contentLanguage.empty())
         headers += "Content-Language: " + _contentLanguage + "\r\n";
-    if (_contentLength != "")
+    if (!_contentLength.empty())
         headers += "Content-Length: " + _contentLength + "\r\n";
-    if (_contentLocation != "")
+    if (!_contentLocation.empty())
         headers += "Content-Location: " + _contentLocation + "\r\n";
-    if (_contentType != "")
+    if (!_contentType.empty())
         headers += "Content-Type: " + _contentType + "\r\n";
-    if (_date != "")
+    if (!_date.empty())
         headers += "Date: " + _date + "\r\n";
-    if (_lastModified != "")
+    if (!_lastModified.empty())
         headers += "Last-Modified: " + _lastModified + "\r\n";
-    if (_location != "")
+    if (!_location.empty())
         headers += "Location: " + _location + "\r\n";
-    if (_retryAfter != "")
+    if (!_retryAfter.empty())
         headers += "Retry-After: " + _retryAfter + "\r\n";
-    if (_server != "")
+    if (!_server.empty())
         headers += "Server: " + _server + "\r\n";
     return headers;
 }

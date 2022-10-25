@@ -12,10 +12,10 @@
 
 #pragma once
 
-#include "Server.hpp"
 #include <vector>
 #include <algorithm>
 #include <ostream>
+#include "Server.hpp"
 
 enum e_action
 {
