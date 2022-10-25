@@ -301,7 +301,12 @@ int Server::recvRequest(int socket) {
 	}
 //	std::cout << std::string(buffer) << std::endl;
 	_requests[socket] += std::string(buffer);
-	size_t endOfHeader = _requests[socket].find("\r\n\r\n") + 4; // find the end of the headers
+	size_t endOfHeader = _requests[socket].find("\r\n\r\n"); // find the end of the headers
+	if (endOfHeader != std::string::npos) {
+		endOfHeader += 4;
+	} else {
+		return -1;
+	}
 	if (endOfHeader != std::string::npos && _requestsHeader[socket].empty()) {
 		_requestsHeader[socket] = _requests[socket].substr(0, endOfHeader);
 	}
