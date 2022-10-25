@@ -14,7 +14,6 @@
 
 ResponseHeaders::ResponseHeaders() {
     _allow = "";
-    _connection = "keep-alive";
     _contentLanguage = "en";
     _contentLength = "";
     _contentLocation = "";
@@ -55,7 +54,6 @@ ResponseHeaders::~ResponseHeaders() {
 ResponseHeaders &ResponseHeaders::operator=(const ResponseHeaders &obj) {
     if (this != &obj) {
         _allow = obj._allow;
-        _connection = obj._connection;
         _contentLanguage = obj._contentLanguage;
         _contentLength = obj._contentLength;
         _contentLocation = obj._contentLocation;
@@ -130,8 +128,6 @@ std::string		ResponseHeaders::getStatusMsg(int code) {
 
 std::string		ResponseHeaders::writeHeader() {
     std::string	headers = "";
-    if (_connection != "")
-        headers += "Connection: " + _connection + "\r\n";
     if (_allow != "")
         headers += "Allow: " + _allow + "\r\n";
     if (_contentLanguage != "")
@@ -155,7 +151,7 @@ std::string		ResponseHeaders::writeHeader() {
     return headers;
 }
 
-std::string ResponseHeaders::generateHeaderAllowed(int code, bool closeConnection, size_t size, std::string type,
+std::string ResponseHeaders::generateHeaderAllowed(int code, size_t size, std::string type,
                                                    std::string path, std::set<std::string> methods) {
     std::set<std::string>::iterator it = methods.begin();
     while (it != methods.end()) {
@@ -163,9 +159,6 @@ std::string ResponseHeaders::generateHeaderAllowed(int code, bool closeConnectio
         if (it != methods.end()) {
             _allow += ", ";
         }
-    }
-    if (closeConnection) {
-        _connection = "close";
     }
     _contentLength = numToStr(size);
     _contentLocation = path;
@@ -179,11 +172,8 @@ std::string ResponseHeaders::generateHeaderAllowed(int code, bool closeConnectio
     return headers;
 }
 
-std::string ResponseHeaders::generateHeaderError(int code, bool closeConnection, size_t size,
+std::string ResponseHeaders::generateHeaderError(int code, size_t size,
                                                  std::string type, std::string path) {
-    if (closeConnection) {
-        _connection = "close";
-    }
     _contentLength = numToStr(size);
     setContentType(type, path);
     setDate();
@@ -198,10 +188,7 @@ std::string ResponseHeaders::generateHeaderError(int code, bool closeConnection,
     return headers;
 }
 
-std::string ResponseHeaders::generateHeaderRedirection(int code, bool closeConnection, std::string location) {
-    if (closeConnection) {
-        _connection = "close";
-    }
+std::string ResponseHeaders::generateHeaderRedirection(int code, std::string location) {
     _location = location;
     if (code == 301) {
         _retryAfter = numToStr(10); //retry after 10 sec
@@ -213,11 +200,8 @@ std::string ResponseHeaders::generateHeaderRedirection(int code, bool closeConne
     return headers;
 }
 
-std::string ResponseHeaders::generateHeader(int code, bool closeConnection, size_t size, std::string type,
+std::string ResponseHeaders::generateHeader(int code, size_t size, std::string type,
                                             std::string path, std::string absolutePath) {
-    if (closeConnection) {
-        _connection = "close";
-    }
     _contentLength = numToStr(size);
     if (path != "/autoindex") {
         _contentLocation = path;

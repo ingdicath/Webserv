@@ -33,7 +33,6 @@ private:
     std::string _path;
     std::string _method;
     HttpData    _httpData;
-    bool        _closeConnection;
     int         _statusCode;
     std::string _type;
     long        _length;
@@ -67,7 +66,6 @@ public:
     //getters
     const std::string   &getPath() const;
     const std::string   &getMethod() const;
-    const bool          &ifCloseConnection() const;
     const HttpData      &getHttpData() const;
     const int           &getStatusCode() const;
     const std::string   &getType() const;

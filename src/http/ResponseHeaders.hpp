@@ -24,7 +24,6 @@
 class ResponseHeaders {
 private:
     std::string					_allow; //used for 405, Method not allowed
-    std::string                 _connection; //close or keep-alive
     std::string					_contentLanguage;
     std::string					_contentLength;
     std::string					_contentLocation; //indicate the direct URL to use to access the resource
@@ -51,8 +50,8 @@ public:
     ResponseHeaders &operator=(const ResponseHeaders &obj);
 
 	std::string getStatusMsg(int code);
-	std::string generateHeaderAllowed(int code, bool closeConnection, size_t size, std::string type, std::string path, std::set<std::string> methods);
-    std::string generateHeaderError(int code, bool closeConnection, size_t size, std::string type, std::string path);
-    std::string generateHeaderRedirection(int code, bool closeConnection, std::string location);
-    std::string generateHeader(int code, bool closeConnection, size_t size, std::string type, std::string path, std::string absolutePath);
+	std::string generateHeaderAllowed(int code, size_t size, std::string type, std::string path, std::set<std::string> methods);
+    std::string generateHeaderError(int code, size_t size, std::string type, std::string path);
+    std::string generateHeaderRedirection(int code, std::string location);
+    std::string generateHeader(int code, size_t size, std::string type, std::string path, std::string absolutePath);
 };

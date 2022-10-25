@@ -24,12 +24,6 @@ Response::Response(HttpData &httpData, Request &request) :
 	if (_statusCode == 200 && httpData.getServerName() == "NF") {
 		_statusCode = 404; //server not found
 	}
-	_closeConnection = false;
-	if (request.getHeaders().find("Connection") != request.getHeaders().end()) {
-		if (request.getHeaders()["Connection"] == "close") {
-			_closeConnection = true;
-		}
-	}
 	_type = "";
 	_length = -1;
 	_body = "";
@@ -47,7 +41,6 @@ Response &Response::operator=(const Response &obj) {
 		_path = obj._path;
 		_method = obj._method;
 		_httpData = obj._httpData;
-		_closeConnection = obj._closeConnection;
 		_statusCode = obj._statusCode;
 		_type = obj._type;
 		_length = obj._length;
@@ -67,10 +60,6 @@ const std::string   &Response::getMethod() const {
 }
 const HttpData  &Response::getHttpData() const {
 	return _httpData;
-}
-
-const bool  &Response::ifCloseConnection() const {
-	return _closeConnection;
 }
 
 const int   &Response::getStatusCode() const {
@@ -155,7 +144,6 @@ int Response::responseValidation(Request &request) {
 			return 405;
 		}
 		if (_httpData.getMaxClientBody() < request.getBody().size() && _httpData.getMaxClientBody() != 0) {
-			_closeConnection = true;
 			return 413;
 		}
 		if (_method == "POST") { //have to have content type and content length
@@ -428,14 +416,14 @@ std::string Response::getResponseStr(int code) {
 	ResponseHeaders  headers;
 
 	if (code == 405) {
-		res = headers.generateHeaderAllowed(code, _closeConnection, _body.size(), _type, _path, _serverLocation.getAcceptedMethods());
+		res = headers.generateHeaderAllowed(code, _body.size(), _type, _path, _serverLocation.getAcceptedMethods());
 	} else if (code >= 400) {
-		res = headers.generateHeaderError(code, _closeConnection, _body.size(), _type, _path);
+		res = headers.generateHeaderError(code, _body.size(), _type, _path);
 	} else if (code / 100 == 3) {
-		res = headers.generateHeaderRedirection(code, _closeConnection, _path);
+		res = headers.generateHeaderRedirection(code, _path);
 	} else {
 		std::string contentPath = _path.substr(_serverLocation.getRoot().size());
-		res = headers.generateHeader(code, _closeConnection, _body.size(), _type, contentPath, _path);
+		res = headers.generateHeader(code, _body.size(), _type, contentPath, _path);
 	}
 	if (DEBUG){
 		std::cout << YELLOW << "[INFO] Response Headers: \n" << res  << std::endl; //testing
@@ -480,11 +468,11 @@ std::ostream	&operator<<(std::ostream &os, const Response &response) {
 	os << BLUE << "--------- Response Object Info ----------" << std::endl;
 	os << "Path: " << response.getPath() << std::endl;
 	os << "Method: " << response.getMethod() << std::endl;
-	if (response.ifCloseConnection() == true) {
-		os << "Close Connection: yes" << std::endl;
-	} else {
-		os << "Close Connection: no" << std::endl;
-	}
+//	if (response.ifCloseConnection() == true) {
+//		os << "Close Connection: yes" << std::endl;
+//	} else {
+//		os << "Close Connection: no" << std::endl;
+//	}
 	os << "StatusCode: " << response.getStatusCode() << std::endl;
 	if (response.getType() == "text/html") {
 		os << "Body: \n" << response.getBody() << std::endl;
