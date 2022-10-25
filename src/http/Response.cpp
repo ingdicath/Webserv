@@ -74,6 +74,21 @@ std::vector<std::string>    Response::setPathVector(std::string pathStr) {
 }
 
 int Response::findRequestLocation() {
+    //if the _path (at this moment we get it from the request) end without a '/'
+    //find the absolute path of it, so we can check if it is a directory
+    //if it is a directory, add a '/' to the _path, so the program will handle it correctly
+    if (_path[_path.length() - 1] != '/') {
+        char cwd[MAXLINE];
+        char *res = getcwd(cwd, sizeof(cwd));
+        std::string absolutePath = res;
+        absolutePath = absolutePath.append(DEFAULT_ROOT);
+        absolutePath = absolutePath.append(_path);
+        std::cout << "APath: " << absolutePath << std::endl;
+        if (isFile(absolutePath) == 2) {
+            _path += "/";
+        }
+    }
+
 	std::vector<Location>    locationVector = _httpData.getLocations();
 	std::vector<std::string>    requestPath = setPathVector(_path);
 	size_t lenRequestPath = requestPath.size();
@@ -150,11 +165,11 @@ int Response::responseValidation(Request &request) {
 int Response::isFile(const std::string &path) { //return 1 if is file, return 2 if is directory
 	struct stat s;
 	if (stat(path.c_str(), &s) == 0 ) {
-		if (s.st_mode & S_IFDIR) {
-			return 2;
-		}
-		else if (s.st_mode & S_IFREG) {
+		if (s.st_mode & S_IFREG) {
 			return 1;
+		}
+		else if (s.st_mode & S_IFDIR) {
+			return 2;
 		}
 		else {
 			return 0;
