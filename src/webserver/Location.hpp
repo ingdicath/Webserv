@@ -1,6 +1,14 @@
-//
-// Created by Diana catherine Salamanca leguizamon on 5/31/22.
-//
+/* ************************************************************************** */
+/*                                                                            */
+/*                                                        ::::::::            */
+/*   Location.hpp                                       :+:    :+:            */
+/*                                                     +:+                    */
+/*   By: dsalaman <dsalaman@student.codam.nl>         +#+                     */
+/*                                                   +#+                      */
+/*   Created: 2022/10/25 11:43:30 by dsalaman      #+#    #+#                 */
+/*   Updated: 2022/10/25 11:43:30 by dsalaman      ########   odam.nl         */
+/*                                                                            */
+/* ************************************************************************** */
 
 #pragma once
 
