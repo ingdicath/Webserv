@@ -116,7 +116,6 @@ void    Request::parseMethod(std::stringstream &ss) {
 		_ret = 501; //method not implemented
 	}
 	else {
-//		std::cout << "2" << std::endl; // testing
 		_ret = 400;
 	}
 }
@@ -139,7 +138,6 @@ void    Request::parsePath(std::stringstream &ss) {
 
 	_path = requestPath;
 	if (_path[0] != '/') {
-//		std::cout << "3" << std::endl; // testing
 		_ret = 400;
 	}
 }
@@ -151,7 +149,6 @@ void    Request::parseVersion(std::stringstream &ss) {
 		_ret = 505; //http version not supported
 	}
 	else if (_version != "HTTP/1.1") {
-//		std::cout << "4" << std::endl; // testing
 		_ret = 400;
 	}
 }
@@ -169,7 +166,6 @@ void    Request::parseHeaders(std::stringstream &ss) {
 		std::getline(header, value);
 		value = value.substr(1,value.size() - 2);
 		if (key.empty() || value.empty()) {
-//			std::cout << "5" << std::endl; // testing
 			_ret = 400;
 		}
 		_headers.insert(std::pair<std::string, std::string>(key, value));
@@ -178,7 +174,6 @@ void    Request::parseHeaders(std::stringstream &ss) {
 		_multipartBoundary = _headers["Content-Type"].substr(_headers["Content-Type"].find("boundary=----WebKitFormBoundary") + 31);
 	}
 	if (_headers.find(HOST) == _headers.end()) {
-//		std::cout << "6" << std::endl; // testing
 		_ret = 400;
 	}
 	else {
@@ -230,22 +225,14 @@ void Request::printRequestDebug(const std::string &color) {
 
 // overload function for testing
 std::ostream	&operator<<(std::ostream &os, const Request &request) {
-//	os << BLUE << "--------- Request Object Info ----------" << std::endl;
 	std::cout << BLUE << "[INFO] General " << std::endl;
 	os << "Request Method: " << request.getMethod() << std::endl;
  	os << "Path: " << request.getPath() << std::endl;
-//	os << "HTTP Version: " << request.getVersion() << std::endl;
-
 //	os << "HEADERS:" << std::endl;
 //	std::map<std::string, std::string>	headers = request.getHeaders();
 //	for(std::map<std::string, std::string>::const_iterator it = headers.begin(); it != headers.end(); ++it) {
 //		os << it->first << ": " << it->second << std::endl;
 //	}
-
 	os << "Host: " << request.getHost();
-//	os << "Body: " << std::endl << request.getBody() << std::endl;
-//	os << "Body size: " << request.getBody().size() << std::endl;
-//	os << "Ret:  " << request.getRet() << std::endl;
-//	os <<  "------- Request Object Info Done --------" << RESET << std::endl;
 	return os;
 }

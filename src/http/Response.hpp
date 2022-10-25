@@ -74,6 +74,3 @@ public:
     std::string getResponse(Request &request);
 	std::string printResponseDebug(int code, const std::string &color);
 };
-
-// for testing delete later
-std::ostream	&operator<<(std::ostream &os, const Response &response);

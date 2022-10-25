@@ -133,13 +133,11 @@ int Response::findRequestLocation() {
 
 int Response::responseValidation(Request &request) {
 	int locationIndex = findRequestLocation();
-	//std::cout << "location index: " << locationIndex << std::endl; //testing
 	if (locationIndex == -1) {
 		return 404;
 	} else {
 		_serverLocation = _httpData.getLocations()[locationIndex];
 		_autoindex = _serverLocation.isAutoindex();
-		//std::cout << "autoindex: " << _autoindex << " serverlocation: " << _serverLocation.getIndex() << std::endl; // testing
 		if (_serverLocation.getAcceptedMethods().find(_method) == _serverLocation.getAcceptedMethods().end()) {
 			return 405;
 		}
@@ -149,7 +147,7 @@ int Response::responseValidation(Request &request) {
 		if (_method == "POST") { //have to have content type and content length
 			std::map <std::string, std::string> headers = request.getHeaders();
 			if (headers.find("Content-Type") == headers.end()) {
-				return 400; //to be confirmed
+				return 400;
 			} else {
 				_type = headers["Content-Type"];
 			}
@@ -236,7 +234,6 @@ void    Response::setErrorBody() {
 		std::ofstream       file;
 		std::stringstream   buffer;
 		std::string         errorPagePath = "www" + errorPage[_statusCode];
-//		std::cout << BLUE << errorPagePath << RESET << std::endl; //testing
 		file.open(errorPagePath.c_str(), std::ifstream::in);
 		if (file.is_open() == false) {
 			_body = "<!DOCTYPE html>\n<html><title>404</title><body>There was an error finding your error page</body></html>\n";
@@ -259,7 +256,6 @@ void Response::processRedirection(Request &request) {
 		redirectionLocation.erase(pos, 4);
 		redirectionLocation.append(request.getPath());
 	}
-//	std::cout << "Redirection Location: " << redirectionLocation << std::endl; //testing
 	_path = redirectionLocation;
 	_statusCode = _serverLocation.getRedirection().first;
 	_body = "";
@@ -275,10 +271,8 @@ void Response::processGetMethod() {
 	std::size_t pos = contentPath.find('?');
 	if (pos != std::string::npos) {
 		queryString = contentPath.substr(pos+1);
-//		std::cout << "QueryString: " << queryString << std::endl; //testing
 		contentPath = contentPath.substr(0, contentPath.find("?"));
 	}
-//	std::cout << GREEN << "ContentPath: " << contentPath << "| Auto-index: " << _autoindex << "| _serverLocation.getIndex(): " << _serverLocation.getIndex() << RESET << std::endl; //testing
 	int i = isFile(contentPath);
 	if (i == 2) { //it is a directory
 		// https://serverfault.com/questions/940276/force-nginx-to-always-autoindex-and-ignore-index-html-files
@@ -312,7 +306,6 @@ void Response::processGetMethod() {
 			_body = _body.substr(_body.find_first_of("<"));
 			return;
 		}
-		// How do we handle other extensions like .php and .bla which cannot be executed?
 		file.open(contentPath.c_str(), std::ifstream::in);
 		if (file.is_open() == false) {
 			_statusCode = 403;
@@ -323,14 +316,12 @@ void Response::processGetMethod() {
 		}
 	}
 	else {
-//		std::cout << "cannot find file" << std::endl; //testing
 		_statusCode = 404;
 	}
 }
 
 void    Response::processPostMethod(Request &request) {
 	std::string filePath = _serverLocation.getRoot() + _path.substr(_serverLocation.getPathLocation().size() - 1);;
-//	std::cout << RED << "File Path: " << filePath << RESET << std::endl; //testing
 	if (filePath.find(".") != std::string::npos) {
 		std::string fileExtension = filePath.substr(filePath.find_last_of("."));
 		if (fileExtension == _serverLocation.getCgi().first) { // cgi if extension is .py
@@ -361,24 +352,19 @@ void    Response::processPostMethod(Request &request) {
 		}
 	}
 	if (isFile(uploadFilePath) == 1) { //file already exists
-//		std::cout << RED << "file exist" << std::endl; //testing
 		_statusCode = 403; // to be confirmed
 		setErrorBody();
 	} else {
 		std::string dirPath = uploadFilePath.substr(0, uploadFilePath.find_last_of('/'));
-//		std::cout << RED << "File Dir: " << dirPath << std::endl; //testing
 		if (isFile(dirPath) != 2) { //could not find the directory to create this file
-//			std::cout << RED << "cannot find dir" << std::endl; //testing
-			_statusCode = 403; // to be confirmed
+			_statusCode = 403;
 			return;
 		}
 
 		std::ofstream file;
-		//file.open(uploadFilePath.c_str(), std::ifstream::out);
 		file.open(uploadFilePath.c_str(), std::ios::out | std::ios::binary);
 		if (file.is_open() == false) {
-//			std::cout << RED << "cannot write to file" << std::endl; //testing
-			_statusCode = 403; // to be confirmed
+			_statusCode = 403;
 			return;
 		} else {
 			file << request.getBody();
@@ -387,14 +373,12 @@ void    Response::processPostMethod(Request &request) {
 			_path = filePath;
 			_body = "<html><body><h1>File created at URL: " + uploadFilePath + "</h1></body></head></html>";
 			_type = "text/html";
-			// ADD CHECK IF SIZE OF SEND FILE == CREATED FILE
 		}
 	}
 }
 
 void     Response::processDeleteMethod() {
 	std::string filePath = _serverLocation.getRoot() + _path.substr(_serverLocation.getPathLocation().size() - 1);
-//	std::cout << RED << "File Path: " << filePath << std::endl; //testing
 	if (isFile(filePath) ==  1) {
 		if (std::remove(filePath.c_str()) == 0) {
 			_statusCode = 200;
@@ -426,7 +410,7 @@ std::string Response::getResponseStr(int code) {
 		res = headers.generateHeader(code, _body.size(), _type, contentPath, _path);
 	}
 	if (DEBUG){
-		std::cout << YELLOW << "[INFO] Response Headers: \n" << res  << std::endl; //testing
+		std::cout << YELLOW << "[INFO] Response Headers: \n" << res  << std::endl;
 		std::cout <<  "------- End of Response info --------\n" << RESET << std::endl;
 	} else {
 		std::cout << BLUE "Response Status Code: " << code << " " << headers.getStatusMsg(code) << std::endl << std::endl;
@@ -447,7 +431,6 @@ std::string Response::getResponse(Request &request) {
 	}
 	else {
 		if (_serverLocation.getRedirection().first != -1) {
-//			std::cout << "Redirecting......" << std::endl; //testing
 			processRedirection(request);
 		} else if (_method == "GET") {
 			processGetMethod();
@@ -461,22 +444,4 @@ std::string Response::getResponse(Request &request) {
 		}
 		return getResponseStr(_statusCode);
 	}
-}
-
-// overload function for testing
-std::ostream	&operator<<(std::ostream &os, const Response &response) {
-	os << BLUE << "--------- Response Object Info ----------" << std::endl;
-	os << "Path: " << response.getPath() << std::endl;
-	os << "Method: " << response.getMethod() << std::endl;
-//	if (response.ifCloseConnection() == true) {
-//		os << "Close Connection: yes" << std::endl;
-//	} else {
-//		os << "Close Connection: no" << std::endl;
-//	}
-	os << "StatusCode: " << response.getStatusCode() << std::endl;
-	if (response.getType() == "text/html") {
-		os << "Body: \n" << response.getBody() << std::endl;
-	}
-	os <<  "------- Response Object Info Done --------" << RESET << std::endl;
-	return os;
 }
