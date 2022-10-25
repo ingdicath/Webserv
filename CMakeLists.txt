@@ -6,10 +6,26 @@ set(CMAKE_CXX_STANDARD 11)
 include_directories(includes)
 
 add_executable(Webserv src/main.cpp
-        src/utils.cpp src/Server.cpp
-        src/Configurator.cpp src/Location.cpp src/Webserver.cpp includes/Webserver.hpp)
-
-# for testing
-
-enable_testing()
-add_subdirectory(tests)
+        src/configs/Parser.cpp
+        src/configs/FileUtils.cpp
+        src/configs/Parser.hpp
+        src/configs/FileUtils.hpp
+        src/http/Request.cpp
+        src/http/Request.hpp
+        src/http/Response.cpp
+        src/http/Response.hpp
+        src/http/HttpData.cpp
+        src/http/HttpData.hpp
+        src/http/ResponseHeaders.cpp
+        src/http/ResponseHeaders.hpp
+        src/http/CGI.cpp
+        src/http/CGI.hpp
+        src/utils/settings.hpp
+        src/utils/utils.hpp
+        src/utils/utils.cpp
+        src/webserver/Client.cpp src/webserver/Client.hpp
+        src/webserver/Location.cpp src/webserver/Location.hpp
+        src/webserver/Server.cpp src/webserver/Server.hpp
+        src/webserver/Webserver.cpp src/webserver/Webserver.cpp
+        http_tester/RequestTester.cpp
+        http_tester/RequestTester.hpp)

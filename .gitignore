@@ -30,9 +30,14 @@
 *.exe
 *.out
 *.app
+http_tester/test
+cgi_tester
 
 #idea
 .idea
 cmake-build-debug
 #CMakeLists.txt
 .DS_Store
+webserv
+client
+CMakeLists.txt
