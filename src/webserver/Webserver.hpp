@@ -1,6 +1,14 @@
-//
-// Created by Diani on 20/06/2022.
-//
+/* ************************************************************************** */
+/*                                                                            */
+/*                                                        ::::::::            */
+/*   Webserver.hpp                                      :+:    :+:            */
+/*                                                     +:+                    */
+/*   By: annaheister <annaheister@student.codam.nl>   +#+                     */
+/*                                                   +#+                      */
+/*   Created: 2022/10/25 08:34:22 by annaheister   #+#    #+#                 */
+/*   Updated: 2022/10/25 08:34:22 by annaheister   ########   odam.nl         */
+/*                                                                            */
+/* ************************************************************************** */
 
 #pragma once
 
@@ -29,8 +37,6 @@ public:
 	void	runWebserver(void);
 	int		findReadySockets(struct timeval timeout);
 	void	updateSockets(int socket, int type, int subtype);
-	int	 	takeRequest(std::vector<Client>::iterator itClient, std::vector<Server>::iterator itServer);
-	void	writeResponse(int clientFD);
 	void	checkTimeout(void);
 	void	clear(void);
 

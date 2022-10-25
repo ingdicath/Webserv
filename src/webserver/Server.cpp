@@ -28,14 +28,6 @@ Server::Server(void) :
 	_flagHost = false;
 }
 
-// REMOVE THIS ONE LATER: ONLY FOR TESTING PURPOSES
-Server::Server(int port) :
-		_port(port),
-		_host(DEFAULT_HOST),
-		_timeOut(DEFAULT_TIMEOUT),
-		_serverSocket(-1) {
-}
-
 Server::Server(const Server &src) : _port(), _clientMaxBodySize(),
 									_flagPort(), _flagHost(), _timeOut(),
 									_serverSocket(), _serverAddr() {
@@ -58,7 +50,7 @@ Server &Server::operator=(const Server &rhs) {
 	return *this;
 }
 
-Server::~Server() {
+Server::~Server(void) {
 }
 
 const char *Server::setupException::what() const throw() {
@@ -120,7 +112,7 @@ int Server::setupServer(void) {
 int Server::acceptConnection(void) {
 
 	int newSocket;
-	struct sockaddr_in clientAddr;
+	struct sockaddr_in clientAddr = {};
 	int clientAddrlen = sizeof(clientAddr);
 
 	if ((newSocket = accept(this->_serverSocket, (struct sockaddr *) &clientAddr, (socklen_t *) &clientAddrlen)) ==
@@ -310,12 +302,12 @@ int Server::recvRequest(int socket) {
 //	std::cout << std::string(buffer) << std::endl;
 	_requests[socket] += std::string(buffer);
 	size_t endOfHeader = _requests[socket].find("\r\n\r\n") + 4; // find the end of the headers
-	if (endOfHeader != std::string::npos && _requestsHeader[socket] == "") {
+	if (endOfHeader != std::string::npos && _requestsHeader[socket].empty()) {
 		_requestsHeader[socket] = _requests[socket].substr(0, endOfHeader);
 	}
-	if (_requestsHeader[socket] != "") {
+	if (!_requestsHeader[socket].empty()) {
 		if (_requestsHeader[socket].find("Content-Type: multipart/form-data") != std::string::npos) { // processing multipart/formdata
-			int pos = _requestsHeader[socket].find("boundary=----WebKitFormBoundary") + 31;
+			unsigned long pos = _requestsHeader[socket].find("boundary=----WebKitFormBoundary") + 31;
 			std::string boundaryID = _requests[socket].substr(pos , 16);
 			std::string boundaryStart = "------WebKitFormBoundary" + boundaryID;
 			std::string boundaryEnd = "------WebKitFormBoundary" + boundaryID + "--";
@@ -331,7 +323,6 @@ int Server::recvRequest(int socket) {
 			if (_requests[socket].find(boundaryEnd) != std::string::npos) {
 				return EXIT_SUCCESS;
 			} else {
-//				std::cout << "not finished" << std::endl; //testing
 				return -1; // multipart/formdata not finished
 			}
 		}
@@ -390,7 +381,7 @@ void Server::processRequest(int socket) {
 //        std::cout << "\n_request:\n" << _requests[socket].substr(0, 1000) << std::endl;
 //    }
 
-    if (_requests[socket] != "") {
+    if (!_requests[socket].empty()) {
         Request request(_requests[socket]);
 		if (_ret[socket] != 200) {
 			request.setRet(_ret[socket]);
@@ -434,7 +425,7 @@ int Server::sendResponse(int socket) {
 
 HttpData Server::setHttpData(Request &request) {
 	HttpData httpData;
-    std::string hostName = request.getHost().substr(0, request.getHost().find_last_of(":"));
+    std::string hostName = request.getHost().substr(0, request.getHost().find_last_of(':'));
     std::vector<std::string>::iterator it = std::find(_serverName.begin(), _serverName.end(), hostName);
 
 	// allow localhost and localhost ip (127.0.0.1) when is present in the url as well, e.g. localhost:8085
@@ -448,8 +439,8 @@ HttpData Server::setHttpData(Request &request) {
     } else {
         for (size_t i = 0; i < _relatedServers.size(); i++) {
             std::vector<std::string>    serverNames = _relatedServers[i].getServerName();
-            std::vector<std::string>::iterator it = std::find(serverNames.begin(), serverNames.end(), hostName);
-            if (it != serverNames.end() || hostName == "localhost" || hostName == "127.0.0.1" ) {
+            std::vector<std::string>::iterator itName = std::find(serverNames.begin(), serverNames.end(), hostName);
+            if (itName != serverNames.end() || hostName == "localhost" || hostName == "127.0.0.1" ) {
                 httpData.setServerName(hostName);
                 httpData.setPort(_relatedServers[i].getPort());
                 httpData.setHost(_relatedServers[i].getHost());
@@ -481,9 +472,9 @@ void Server::addRelatedServers(Server server) {
 
 void Server::checkDuplicateLocationPath(const std::string& path) {
 	std::vector<Location> *locations = getLocations();
-	std::vector<Location>::iterator it = locations->begin();
-	for(; it != locations->end(); it++){
-		if (it->getPathLocation() == path){
+	std::vector<Location>::iterator itLoc = locations->begin();
+	for(; itLoc != locations->end(); itLoc++){
+		if (itLoc->getPathLocation() == path){
 			throw std::logic_error(ERROR " Duplicate location '" + path + "'.");
 		}
 	}

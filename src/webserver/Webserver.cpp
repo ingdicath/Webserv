@@ -1,26 +1,33 @@
-//
-// Created by Diani on 20/06/2022
-//
+/* ************************************************************************** */
+/*                                                                            */
+/*                                                        ::::::::            */
+/*   Webserver.cpp                                      :+:    :+:            */
+/*                                                     +:+                    */
+/*   By: annaheister <annaheister@student.codam.nl>   +#+                     */
+/*                                                   +#+                      */
+/*   Created: 2022/10/25 08:34:12 by annaheister   #+#    #+#                 */
+/*   Updated: 2022/10/25 08:34:12 by annaheister   ########   odam.nl         */
+/*                                                                            */
+/* ************************************************************************** */
 
-#include <cstring>
+#include <cstring>	// for Linux
+#include <cstdio>	// for Linux
 #include <cstdlib>
-#include <cstdio>
 #include "../utils/settings.hpp"
 #include "Webserver.hpp"
-#include "../http/Request.hpp"
 #include "../configs/Parser.hpp"
 
 Webserver::Webserver(void)
 	: 	_maxSocket(0),
 		_activeClients(0),
-		_activeServers(0) {
+		_activeServers(0), _writeSet(), _readSet(), _readyRead(), _readyWrite() {
 	FD_ZERO(&_readSet);
 	FD_ZERO(&_writeSet);
 	FD_ZERO(&_readyRead);
 	FD_ZERO(&_readyWrite);
 }
 
-Webserver::Webserver(const Webserver & src) {
+Webserver::Webserver(const Webserver &src) {
 	if (this != &src) {
 		*this = src;
 	}
@@ -95,7 +102,7 @@ void    Webserver::createConnection(void) {
 void    Webserver::runWebserver(void) {
 	int 			running = 1;
 	int				ready = 0;
-	struct timeval	timeout;
+	struct timeval	timeout = {};
 
 	timeout.tv_sec  = 1;
 	timeout.tv_usec = 0;
@@ -244,7 +251,7 @@ void Webserver::clear(void) {
 ** 4. If not it removes the client (and close the socket)
 */
 void Webserver::checkTimeout(void) {
-	struct		timeval tv;
+	struct		timeval tv = {};
 	uint32_t	seconds;
 	int			clientSocket;
 

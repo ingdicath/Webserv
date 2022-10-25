@@ -66,7 +66,7 @@ void Location::setUpload(const std::string &upload) {
 }
 
 void Location::setIndex(const std::string &index) {
-	if (_autoindex == true)
+	if (_autoindex)
 		_index = "";
 	else
 		_index = index;

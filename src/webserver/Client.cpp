@@ -11,7 +11,6 @@
 /* ************************************************************************** */
 
 #include "Client.hpp"
-#include <iostream>
 
 Client::Client(void) {
 	return;
@@ -40,11 +39,7 @@ Client::~Client(void) {
 int	Client::getClientSocket(void) const {
 	return _clientSocket;
 }
-struct sockaddr_in  Client::getClientAddress(void) const {
-	return _clientAddr;
-}
 
-//long long Client::getClientTimeStamp(void) const {
 uint32_t Client::getClientTimeStamp(void) const {
 	return _clientTimeStamp;
 }
