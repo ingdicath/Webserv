@@ -1,6 +1,14 @@
-//
-// Created by Diana catherine Salamanca leguizamon on 5/31/22.
-//
+/* ************************************************************************** */
+/*                                                                            */
+/*                                                        ::::::::            */
+/*   Location.cpp                                       :+:    :+:            */
+/*                                                     +:+                    */
+/*   By: dsalaman <dsalaman@student.codam.nl>         +#+                     */
+/*                                                   +#+                      */
+/*   Created: 2022/10/25 11:43:05 by dsalaman      #+#    #+#                 */
+/*   Updated: 2022/10/25 11:43:05 by dsalaman      ########   odam.nl         */
+/*                                                                            */
+/* ************************************************************************** */
 
 #include <csignal> //for getcwd Linux
 #include <unistd.h>
