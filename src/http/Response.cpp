@@ -51,6 +51,40 @@ Response &Response::operator=(const Response &obj) {
 	return *this;
 }
 
+int Response::isFile(const std::string &path) { //return 1 if is file, return 2 if is directory
+    struct stat s;
+    if (stat(path.c_str(), &s) == 0 ) {
+        if (s.st_mode & S_IFREG) {
+            return 1;
+        }
+        else if (s.st_mode & S_IFDIR) {
+            return 2;
+        }
+        else {
+            return 0;
+        }
+    }
+    else {
+        return 0;
+    }
+}
+
+//find if the path does not end with a / is a directory or not
+//if it is, return ture for rediection in the future
+bool    Response::isRedirection(const std::string &path) {
+    bool needRedirect = false;
+    char cwd[MAXLINE];
+    char *res = getcwd(cwd, sizeof(cwd));
+    std::string absolutePath = res;
+    absolutePath = absolutePath.append(DEFAULT_ROOT);
+    absolutePath = absolutePath.append(path);
+    std::cout << "APath: " << absolutePath << std::endl; //testing
+    if (isFile(absolutePath) == 2) {
+        needRedirect = true;
+    }
+    return needRedirect;
+}
+
 std::vector<std::string>    Response::setPathVector(std::string pathStr) {
 	size_t i = 0;
 	size_t slashPos;
@@ -74,21 +108,6 @@ std::vector<std::string>    Response::setPathVector(std::string pathStr) {
 }
 
 int Response::findRequestLocation() {
-    //if the _path (at this moment we get it from the request) end without a '/'
-    //find the absolute path of it, so we can check if it is a directory
-    //if it is a directory, add a '/' to the _path, so the program will handle it correctly
-    if (_path[_path.length() - 1] != '/') {
-        char cwd[MAXLINE];
-        char *res = getcwd(cwd, sizeof(cwd));
-        std::string absolutePath = res;
-        absolutePath = absolutePath.append(DEFAULT_ROOT);
-        absolutePath = absolutePath.append(_path);
-        std::cout << "APath: " << absolutePath << std::endl;
-        if (isFile(absolutePath) == 2) {
-            _path += "/";
-        }
-    }
-
 	std::vector<Location>    locationVector = _httpData.getLocations();
 	std::vector<std::string>    requestPath = setPathVector(_path);
 	size_t lenRequestPath = requestPath.size();
@@ -124,7 +143,20 @@ int Response::findRequestLocation() {
 }
 
 int Response::responseValidation(Request &request) {
-	int locationIndex = findRequestLocation();
+    //if the _path (at this moment we get it from the request) end without a '/'
+    //find the absolute path of it, then check if it is a directory
+    bool needRedirect = false;
+    if (_path[_path.length() - 1] != '/') {
+        needRedirect = isRedirection(_path);
+    }
+    // method1: add a '/' to the _path, so the program will handle it correctly
+    // the url on browser will not change
+    // check method2:redirection on line 193
+//    if (needRedirect) {
+//        _path += "/";
+//    }
+
+    int locationIndex = findRequestLocation();
 	if (locationIndex == -1) {
 		return 404;
 	} else {
@@ -158,26 +190,14 @@ int Response::responseValidation(Request &request) {
 				_length = strtol(tmp.c_str(), NULL, 10);
 			}
 		}
+        // method2: use redirction, e.g, /localhost"8085/images will be redirect to http://localhost:8085/images/
+        if (needRedirect && _serverLocation.getRedirection().first == -1) {
+            std::string redirectionUrl = "http://" + request.getHost() + _path + "/";
+            std::cout << "Redirection: " << redirectionUrl << std::endl;
+            _serverLocation.setRedirection(std::make_pair(301, redirectionUrl));
+        }
 	}
 	return 200;
-}
-
-int Response::isFile(const std::string &path) { //return 1 if is file, return 2 if is directory
-	struct stat s;
-	if (stat(path.c_str(), &s) == 0 ) {
-		if (s.st_mode & S_IFREG) {
-			return 1;
-		}
-		else if (s.st_mode & S_IFDIR) {
-			return 2;
-		}
-		else {
-			return 0;
-		}
-	}
-	else {
-		return 0;
-	}
 }
 
 std::string Response::autoIndexGenerator(std::string path, std::string directory) {

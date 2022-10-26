@@ -41,11 +41,13 @@ private:
 
     Response();
 
+    int isFile(const std::string &path);
+    bool    isRedirection(const std::string &path);
+
     std::vector<std::string> setPathVector(std::string pathStr);
     int findRequestLocation();
     int responseValidation(Request &request);
 
-    int isFile(const std::string &path);
     std::string autoIndexGenerator(std::string path, std::string dir);
     void    setErrorBody();
 
