@@ -150,6 +150,7 @@ void Server::removeClient(int thisSocket) {
 			close(it->getClientSocket());
 			_clients.erase(it);
 			_requests.erase(thisSocket);
+			_responses.erase(thisSocket); // testing stuff
 		}
 	}
 }
@@ -399,7 +400,7 @@ int Server::sendResponse(int socket) {
     }
     else {
         if (static_cast<unsigned long>(ret) >= _responses[socket].size()) {
-            _responses.erase(socket);
+//            _responses.erase(socket);  //clean is done in Remove Client, testing
             return 0;
         }
         else {
