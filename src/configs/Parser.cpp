@@ -182,6 +182,7 @@ void Parser::_storeLocationDirective(const Parser::Directive &directive, Locatio
 			break;
 		case CGI:
 			location->setCGI(_checkCGI(directive._value));
+//			location->setCGIMap(_checkCGI(directive._value)); //new, testing
 			break;
 		case UPLOAD:
 			location->setUpload(_checkUpload(directive._value));
