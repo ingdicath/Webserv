@@ -113,7 +113,6 @@ private:
 
 	std::map<int, std::string>  _requests;
 	std::map<int, std::string>  _requestsHeader;
-    std::map<int, std::string>  _requestsBody;
 	std::map<int, int>  		_ret;
 	std::map<int, std::string>  _responses;
 };

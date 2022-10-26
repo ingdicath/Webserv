@@ -68,6 +68,15 @@ void Location::setCGI(const std::pair<std::string, std::string> &cgi) {
 	_cgi = cgi;
 }
 
+void Location::setCGIMap(const std::pair<std::string, std::string> &CGI) { //new, testing
+	std::map<std::string, std::string>::iterator it = _cgiMap.find(CGI.first);
+	if (it != _cgiMap.end()) {
+		_cgiMap.at(it->first) = CGI.second;
+	} else {
+		_cgiMap.insert(CGI);
+	}
+}
+
 void Location::setUpload(const std::string &upload) {
 	_upload = upload;
 }
@@ -125,6 +134,11 @@ const std::set<std::string> &Location::getAcceptedMethods() const {
 const std::pair<std::string, std::string> &Location::getCgi() const {
 	return _cgi;
 }
+
+const std::map<std::string, std::string> &Location::getCgiMap() const { //new, testing
+	return _cgiMap;
+}
+
 const std::pair<int, std::string> Location::getRedirection() const {
 	return _redirection;
 }
