@@ -3,10 +3,10 @@
 /*                                                        ::::::::            */
 /*   Webserver.cpp                                      :+:    :+:            */
 /*                                                     +:+                    */
-/*   By: annaheister <annaheister@student.codam.nl>   +#+                     */
+/*   By: annaheister <annaheister@student.codam.      +#+                     */
 /*                                                   +#+                      */
 /*   Created: 2022/10/25 08:34:12 by annaheister   #+#    #+#                 */
-/*   Updated: 2022/10/25 08:34:12 by annaheister   ########   odam.nl         */
+/*   Updated: 2022/10/26 14:55:41 by aheister      ########   odam.nl         */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -71,18 +71,66 @@ void	Webserver::loadConfiguration(const std::string& configFile) {
 ** 3. Updates the _max_socket fd
 */
 void    Webserver::createConnection(void) {
-	for (std::vector<Server>::iterator it = _servers.begin(); it < _servers.end(); it++) {
-		if (it->setupServer() == EXIT_FAILURE) {
-			_servers.erase(it--);
+	for (it_servers server = _servers.begin(); server < _servers.end(); server++) {
+		if (server->setupServer() == EXIT_FAILURE) {
+			_servers.erase(server--);
 		}
 		else {
-			updateSockets(it->getServerSocket(), ADD, 0);
+			updateSockets(server->getServerSocket(), ADD, 0);
 			_activeServers++;
 		}
 	}
 
 	if (_activeServers < 1)
 		throw (std::logic_error("There are no active servers"));
+}
+
+/*
+** DESCRIPTION
+** Function that handles 'ready to read' sockets. If the ready socket is the servers, it's a new connection
+** otherwise it's an existing connection. The function receives and processes the request and updates the sockets.
+*/
+int	Webserver::handleReadSocket(it_servers server, int i, int ready) {
+	if (i == server->getServerSocket()) {			// new connection
+		int newSocket = server->acceptConnection();
+		updateSockets(newSocket, ADD, READ);
+		ready--;
+	} else { 										// existing connection
+		std::vector<Client> serverClients = server->getClients();
+		for (it_clients client = serverClients.begin(); client < serverClients.end(); client++) {
+			if (i == client->getClientSocket()) {
+				int recvIndication = server->recvRequest(i);
+				if (recvIndication == EXIT_SUCCESS) {
+					server->processRequest(i);
+					client->setClientTimeStamp();
+					updateSockets(i, ADD, WRITE);
+				}
+				else if (recvIndication == EXIT_FAILURE) {
+					server->removeClient(i);
+					updateSockets(i, REMOVE, READ);
+				}
+				ready--;
+			}
+		}
+	}
+	return ready;
+}
+
+/*
+** DESCRIPTION
+** Function that handles 'ready to write' sockets, sends the response and updates the sockets
+*/
+int	Webserver::handleWriteSocket(it_servers server, int i, int ready) {
+	std::vector<Client> serverClients = server->getClients();
+	for (it_clients client = serverClients.begin(); client < serverClients.end(); client++) {
+		if (i == client->getClientSocket()) {
+			server->sendResponse(i);
+			server->removeClient(i);
+			updateSockets(i, REMOVE, WRITE);
+			ready--;
+		}
+	}
+	return ready;
 }
 
 /*
@@ -115,51 +163,19 @@ void    Webserver::runWebserver(void) {
 			}
 		}
 		else {
-			for (std::vector<Server>::iterator itServer = _servers.begin(); itServer < _servers.end(); itServer++) {
+			for (it_servers server = _servers.begin(); server < _servers.end(); server++) {
 				for (int i = 0; i <= _maxSocket; i++) {
-					if (FD_ISSET(i, &_readyRead) && ready > 0) {
-						// when the server socket is put in the 'ready' set there is a new connection
-						if (i == itServer->getServerSocket()) {
-							int newSocket = itServer->acceptConnection();
-							updateSockets(newSocket, ADD, READ);
-							ready--;
-						// else it is an existing connection
-						} else {
-							std::vector<Client> clients = itServer->getClients();
-							for (std::vector<Client>::iterator itClient = clients.begin(); itClient < clients.end(); itClient++) {
-								if (i == itClient->getClientSocket()) {
-                                    int recvIndication = itServer->recvRequest(i);
-                                    if (recvIndication == EXIT_SUCCESS) {
-                                        itServer->processRequest(i);
-										itClient->setClientTimeStamp();
-                                        updateSockets(i, ADD, WRITE);
-                                    }
-									else if (recvIndication == EXIT_FAILURE) {
-										itServer->removeClient(i);
-										updateSockets(i, REMOVE, READ);
-									}
-									ready--;
-								}
-							}
-						}
+					if (FD_ISSET(i, &_readyRead) && ready > 0) {	// handle 'ready to read' sockets
+						ready = handleReadSocket(server, i, ready);
 					}
-					// handling the 'ready to write' sockets
-					if (FD_ISSET(i, &_readyWrite) && ready > 0) {
-						std::vector<Client> clients = itServer->getClients();
-						for (std::vector<Client>::iterator itClient = clients.begin(); itClient < clients.end(); itClient++) {
-							if (i == itClient->getClientSocket()) {
-                                itServer->sendResponse(i);
-								itServer->removeClient(i);
-								updateSockets(i, REMOVE, WRITE);
-								ready--;
-							}
-						}
+					if (FD_ISSET(i, &_readyWrite) && ready > 0) { 	// handle 'ready to write' sockets
+						ready = handleWriteSocket(server, i, ready);
 					}
-				} // loop through all sockets
+				}
 				if (ready == 0) {
 					break;
 				}
-			} // loop through all servers
+			}
 		}
 	}
 }
@@ -229,9 +245,9 @@ void Webserver::updateSockets(int socket, int type, int subtype) {
 ** Function that in a loop closes each server socket and removes the server. Function in called when a blocking error occurs
 */
 void Webserver::clear(void) {
-	for (std::vector<Server>::iterator itServer = _servers.begin(); itServer < _servers.end(); itServer++) {
-		close(itServer->getServerSocket());
-		_servers.erase(itServer);
+	for (it_servers server = _servers.begin(); server < _servers.end(); server++) {
+		close(server->getServerSocket());
+		_servers.erase(server);
 	}
 }
 
@@ -251,16 +267,16 @@ void Webserver::checkTimeout(void) {
 	uint32_t	seconds;
 	int			clientSocket;
 
-	for (std::vector<Server>::iterator itServer = _servers.begin(); itServer < _servers.end(); itServer++) {
-		std::vector<Client> clients = itServer->getClients();
-		for (std::vector<Client>::iterator itClient = clients.begin(); itClient < clients.end(); itClient++) {
+	for (it_servers server = _servers.begin(); server < _servers.end(); server++) {
+		std::vector<Client> serverClients = server->getClients();
+		for (it_clients client = serverClients.begin(); client < serverClients.end(); client++) {
 			gettimeofday(&tv, NULL);
-			seconds = tv.tv_sec - itClient->getClientTimeStamp();
-			if (seconds >= itServer->getTimeout()) {
-				clientSocket = itClient->getClientSocket();
+			seconds = tv.tv_sec - client->getClientTimeStamp();
+			if (seconds >= server->getTimeout()) {
+				clientSocket = client->getClientSocket();
 				std::cout << RED "Client " << clientSocket << " timed out: " << seconds << " seconds" RESET << std::endl;
 				updateSockets(clientSocket, REMOVE, 0);
-				itServer->removeClient(clientSocket);
+				server->removeClient(clientSocket);
 			}
 		}
 	}

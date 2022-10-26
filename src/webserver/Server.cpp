@@ -122,7 +122,6 @@ int Server::acceptConnection(void) {
 		this->addClient(newSocket, clientAddr);
 		_requests.insert(std::make_pair(newSocket, ""));
 		_requestsHeader.insert(std::make_pair(newSocket, ""));
-		_requestsBody.insert(std::make_pair(newSocket, ""));
 		_ret.insert(std::make_pair(newSocket, 200));
 	}
 	return newSocket;
@@ -312,7 +311,6 @@ int Server::recvRequest(int socket) {
 			std::string boundaryID = _requests[socket].substr(pos , 16);
 			std::string boundaryStart = "------WebKitFormBoundary" + boundaryID;
 			std::string boundaryEnd = "------WebKitFormBoundary" + boundaryID + "--";
-			_requestsBody[socket] += std::string(buffer);
 			if (_requests[socket].find(boundaryStart) != std::string::npos) {
 				if (_requests[socket].find("Content-Type: text/plain") == std::string::npos && 
 						_requests[socket].find("Content-Type: application/octet-stream") == std::string::npos) {
@@ -389,7 +387,6 @@ void Server::processRequest(int socket) {
     }
 	_ret.erase(socket);
 	_requestsHeader.erase(socket);
-	_requestsBody.erase(socket);
     _requests.erase(socket);
 }
 

@@ -3,10 +3,10 @@
 /*                                                        ::::::::            */
 /*   Webserver.hpp                                      :+:    :+:            */
 /*                                                     +:+                    */
-/*   By: annaheister <annaheister@student.codam.nl>   +#+                     */
+/*   By: annaheister <annaheister@student.codam.      +#+                     */
 /*                                                   +#+                      */
 /*   Created: 2022/10/25 08:34:22 by annaheister   #+#    #+#                 */
-/*   Updated: 2022/10/25 08:34:22 by annaheister   ########   odam.nl         */
+/*   Updated: 2022/10/26 14:46:30 by aheister      ########   odam.nl         */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -32,13 +32,20 @@ public:
 	Webserver& operator=(Webserver const & rhs);
 	virtual ~Webserver(void);
 
+
+	typedef std::vector<Server>::iterator it_servers;
+	typedef std::vector<Client>::iterator it_clients;
+
 	void	loadConfiguration(const std::string& configFile);
 	void	createConnection(void);
 	void	runWebserver(void);
+	int		handleReadSocket(it_servers server, int i, int ready);
+	int		handleWriteSocket(it_servers server, int i, int ready);
 	int		findReadySockets(struct timeval timeout);
 	void	updateSockets(int socket, int type, int subtype);
 	void	checkTimeout(void);
 	void	clear(void);
+
 
 private:
 	int						_maxSocket;
