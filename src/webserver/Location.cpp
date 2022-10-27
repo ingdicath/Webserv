@@ -6,7 +6,7 @@
 /*   By: dsalaman <dsalaman@student.codam.nl>         +#+                     */
 /*                                                   +#+                      */
 /*   Created: 2022/10/25 11:43:05 by dsalaman      #+#    #+#                 */
-/*   Updated: 2022/10/25 11:43:05 by dsalaman      ########   odam.nl         */
+/*   Updated: 2022/10/27 11:29:24 by aheister      ########   odam.nl         */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -42,7 +42,7 @@ Location &Location::operator=(const Location &obj) {
 		_root = obj._root;
 		_index = obj._index;
 		_autoindex = obj._autoindex;
-		_cgi = obj._cgi;
+		_cgiMap = obj._cgiMap;
 		_upload = obj._upload;
 	}
 	return *this;
@@ -64,9 +64,9 @@ void Location::setRoot(const std::string &root) {
 	_root = root;
 }
 
-void Location::setCGI(const std::pair<std::string, std::string> &cgi) {
-	_cgi = cgi;
-}
+// void Location::setCGI(const std::pair<std::string, std::string> &cgi) {
+// 	_cgi = cgi;
+// }
 
 void Location::setCGIMap(const std::pair<std::string, std::string> &CGI) { //new, testing
 	std::map<std::string, std::string>::iterator it = _cgiMap.find(CGI.first);
@@ -131,9 +131,9 @@ const std::set<std::string> &Location::getAcceptedMethods() const {
 	return _acceptedMethods;
 }
 
-const std::pair<std::string, std::string> &Location::getCgi() const {
-	return _cgi;
-}
+// const std::pair<std::string, std::string> &Location::getCgi() const {
+// 	return _cgi;
+// }
 
 const std::map<std::string, std::string> &Location::getCgiMap() const { //new, testing
 	return _cgiMap;

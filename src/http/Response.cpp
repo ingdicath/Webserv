@@ -6,7 +6,7 @@
 /*   By: hlin <hlin@student.codam.nl>                 +#+                     */
 /*                                                   +#+                      */
 /*   Created: 2022/10/25 10:38:10 by hlin          #+#    #+#                 */
-/*   Updated: 2022/10/25 10:38:10 by hlin          ########   odam.nl         */
+/*   Updated: 2022/10/27 11:50:09 by aheister      ########   odam.nl         */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -294,7 +294,6 @@ void Response::processGetMethod() {
 			_path = contentPath + "autoindex";
 			return;
 		} else {
-			std::cout << "get Index" << std::endl;
 			contentPath = contentPath + _serverLocation.getIndex();
 			i = isFile(contentPath);
 		}
@@ -306,22 +305,27 @@ void Response::processGetMethod() {
 		if (dot != std::string::npos) {
 			fileExtension = contentPath.substr(contentPath.find_last_of("."));
 		}
-		if (!fileExtension.empty() && fileExtension == _serverLocation.getCgi().first) { // cgi if extension is .py
-			CGI cgi(GET, _httpData, contentPath);
-			if (cgi.execute_GET(queryString) != 200) {
-				_statusCode = cgi.getErrorCode();
-				return;
+		std::map<std::string, std::string> _cgiMethods = _serverLocation.getCgiMap();
+		if (!fileExtension.empty() && !_cgiMethods.empty()) {
+			for (std::map<std::string, std::string>::iterator it_cgi = _cgiMethods.begin(); it_cgi != _cgiMethods.end(); it_cgi++) {
+				if (fileExtension == it_cgi->first) {
+					CGI cgi(GET, _httpData, contentPath);
+					if (cgi.execute_GET(queryString) != 200) {
+						_statusCode = cgi.getErrorCode();
+						return;
+					}
+					std::istringstream input;
+					_body = cgi.getBody();
+					input.str(cgi.getBody());
+					std::string line;
+					std::getline(input, line, '\n');
+					std::string toErase = "Content-type: ";
+					line.erase(0, toErase.length());
+					_type = line;
+					_body = _body.substr(_body.find_first_of("<"));
+					return;
+				}
 			}
-			std::istringstream input;
-			_body = cgi.getBody();
-			input.str(cgi.getBody());
-			std::string line;
-			std::getline(input, line, '\n');
-			std::string toErase = "Content-type: ";
-			line.erase(0, toErase.length());
-			_type = line;
-			_body = _body.substr(_body.find_first_of("<"));
-			return;
 		}
 		file.open(contentPath.c_str(), std::ifstream::in);
 		if (file.is_open() == false) {
@@ -338,26 +342,33 @@ void Response::processGetMethod() {
 }
 
 void    Response::processPostMethod(Request &request) {
-	std::string filePath = _serverLocation.getRoot() + _path.substr(_serverLocation.getPathLocation().size() - 1);;
-	if (filePath.find(".") != std::string::npos) {
-		std::string fileExtension = filePath.substr(filePath.find_last_of("."));
-		if (fileExtension == _serverLocation.getCgi().first) { // cgi if extension is .py
-			CGI cgi(POST, _httpData, filePath);
-			if (cgi.execute_POST(_type, request.getBody()) != 200) {
-				_statusCode = cgi.getErrorCode();
+	std::string filePath = _serverLocation.getRoot() + _path.substr(_serverLocation.getPathLocation().size() - 1);
+	std::string fileExtension;
+	size_t	dot = filePath.find_last_of(".");
+	if (dot != std::string::npos) {
+		fileExtension = filePath.substr(filePath.find_last_of("."));
+	}
+	std::map<std::string, std::string> _cgiMethods = _serverLocation.getCgiMap();
+	if (!fileExtension.empty() && !_cgiMethods.empty()) {
+		for (std::map<std::string, std::string>::iterator it_cgi = _cgiMethods.begin(); it_cgi != _cgiMethods.end(); it_cgi++) {
+			if (fileExtension == it_cgi->first) {
+				CGI cgi(POST, _httpData, filePath);
+				if (cgi.execute_POST(_type, request.getBody()) != 200) {
+					_statusCode = cgi.getErrorCode();
+					return;
+				}
+				_body = cgi.getBody();
+				std::istringstream input;
+				input.str(cgi.getBody());
+				std::string line;
+				std::getline(input, line, '\n');
+				std::string toErase = "Content-type: ";
+				line.erase(0, toErase.length());
+				_type = line;
+				_body = _body.substr(_body.find_first_of("<"));
+				_path = filePath;
 				return;
 			}
-			_body = cgi.getBody();
-			std::istringstream input;
-			input.str(cgi.getBody());
-			std::string line;
-			std::getline(input, line, '\n');
-			std::string toErase = "Content-type: ";
-			line.erase(0, toErase.length());
-			_type = line;
-			_body = _body.substr(_body.find_first_of("<"));
-			_path = filePath;
-			return;
 		}
 	}
 	std::string uploadFilePath = "";

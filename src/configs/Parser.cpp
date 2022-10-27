@@ -6,7 +6,7 @@
 /*   By: diana <diana@student.codam.nl>               +#+                     */
 /*                                                   +#+                      */
 /*   Created: 2022/10/25 08:36:01 by diana         #+#    #+#                 */
-/*   Updated: 2022/10/25 08:36:01 by diana         ########   odam.nl         */
+/*   Updated: 2022/10/27 11:19:32 by aheister      ########   odam.nl         */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -181,8 +181,8 @@ void Parser::_storeLocationDirective(const Parser::Directive &directive, Locatio
 			location->setAutoindex(_checkAutoindex(directive._value)); //retrieves the last location
 			break;
 		case CGI:
-			location->setCGI(_checkCGI(directive._value));
-//			location->setCGIMap(_checkCGI(directive._value)); //new, testing
+//			location->setCGI(_checkCGI(directive._value));
+			location->setCGIMap(_checkCGI(directive._value)); //new, testing
 			break;
 		case UPLOAD:
 			location->setUpload(_checkUpload(directive._value));
