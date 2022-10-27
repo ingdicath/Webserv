@@ -385,17 +385,17 @@ bool Parser::_isValidIndex(const std::string &index) {
 
 bool Parser::_isValidBodySize(std::string bodySize) {
 	size_t lastPos = bodySize.size() - 1;
-	if (bodySize.find_first_of("Mm") != lastPos) {
-		std::cerr << RED ERROR " Only megabytes (M or m) measure is allowed "
+	if (bodySize.find_first_of("Bb") != lastPos) {
+		std::cerr << RED ERROR " Only bytes (B or b) measure is allowed "
 					 "for 'body_size' directive: '" + bodySize + "'" RESET << std::endl;
 		return false;
 	}
-	std::string bodyNumber = bodySize.substr(bodySize.find_first_of("Mm") + 1);
+	std::string bodyNumber = bodySize.substr(bodySize.find_first_of("Bb") + 1);
 	bodySize.at(lastPos) =
 			char(std::toupper(static_cast<unsigned char>(bodySize.at(lastPos))));
-	bodyNumber = utils::deleteLastOf('M', bodySize);
+	bodyNumber = utils::deleteLastOf('B', bodySize);
 	if (!utils::isPositiveNumber(bodyNumber)) {
-		std::cerr << RED ERROR " Size must be a positive number followed by 'M' (e.g 100M): '"
+		std::cerr << RED ERROR " Size must be a positive number followed by 'B' (e.g 100B): '"
 					 + bodySize + "'" RESET << std::endl;
 		return false;
 	}
@@ -537,10 +537,9 @@ long Parser::_checkBodySize(std::vector<std::string> bodySize) {
 		throw ConfigFileException("Invalid argument for 'client_max_body_size'.");
 	}
 	size_t lastPos = bodySize.size() - 1;
-	bodySize[0].at(lastPos) =
-			char(std::toupper(static_cast<unsigned char>(bodySize[0].at(lastPos))));
-	bodySize[0] = utils::deleteLastOf('M', bodySize[0]);
-	long res = utils::stringToLong(bodySize[0]) * 1000000;
+	bodySize[0].at(lastPos) = char(std::toupper(static_cast<unsigned char>(bodySize[0].at(lastPos))));
+	bodySize[0] = utils::deleteLastOf('B', bodySize[0]);
+	long res = utils::stringToLong(bodySize[0]);
 	return res;
 }
 
