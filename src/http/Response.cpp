@@ -78,7 +78,6 @@ bool    Response::isRedirection(const std::string &path) {
     std::string absolutePath = res;
     absolutePath = absolutePath.append(DEFAULT_ROOT);
     absolutePath = absolutePath.append(path);
-//    std::cout << "APath: " << absolutePath << std::endl; //testing
     if (isFile(absolutePath) == 2) {
         needRedirect = true;
     }
@@ -149,12 +148,6 @@ int Response::responseValidation(Request &request) {
     if (_path[_path.length() - 1] != '/') {
         needRedirect = isRedirection(_path);
     }
-    // method1: add a '/' to the _path, so the program will handle it correctly
-    // the url on browser will not change
-    // check method2:redirection on line 193
-//    if (needRedirect) {
-//        _path += "/";
-//    }
 
     int locationIndex = findRequestLocation();
 	if (locationIndex == -1) {
@@ -190,7 +183,7 @@ int Response::responseValidation(Request &request) {
 				_length = strtol(tmp.c_str(), NULL, 10);
 			}
 		}
-        // method2: use redirction, e.g, /localhost"8085/images will be redirect to http://localhost:8085/images/
+        //e.g, /localhost"8085/images will be redirect to http://localhost:8085/images/
         if (needRedirect && _serverLocation.getRedirection().first == -1) {
             std::string redirectionUrl = "http://" + request.getHost() + _path + "/";
             std::cout << "Redirection: " << redirectionUrl << std::endl;
