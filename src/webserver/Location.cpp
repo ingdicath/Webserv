@@ -97,8 +97,6 @@ void Location::_setDefaultRedirectionPages() {
 
 void Location::_setDefaultAllowedMethods() {
 	_acceptedMethods.insert("GET");
-	_acceptedMethods.insert("POST");
-	_acceptedMethods.insert("DELETE");
 }
 
 void Location::_setDefaultRoot() {
