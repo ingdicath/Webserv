@@ -6,7 +6,7 @@
 /*   By: hlin <hlin@student.codam.nl>                 +#+                     */
 /*                                                   +#+                      */
 /*   Created: 2022/10/25 10:38:39 by hlin          #+#    #+#                 */
-/*   Updated: 2022/10/25 10:38:39 by hlin          ########   odam.nl         */
+/*   Updated: 2022/10/27 12:47:58 by aheister      ########   odam.nl         */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -54,6 +54,8 @@ private:
     void    processRedirection(Request &request);
     void    processGetMethod();
     void    processPostMethod(Request &request);
+    int     processCgiPost(Request &request, std::string fileExtension, std::string filePath);
+    int     processCgiGet(std::string fileExtension, std::string contentPath, std::string queryString);
     void    processDeleteMethod();
 
     std::string getResponseStr(int code);

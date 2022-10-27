@@ -6,7 +6,7 @@
 /*   By: hlin <hlin@student.codam.nl>                 +#+                     */
 /*                                                   +#+                      */
 /*   Created: 2022/10/25 10:38:10 by hlin          #+#    #+#                 */
-/*   Updated: 2022/10/27 11:50:09 by aheister      ########   odam.nl         */
+/*   Updated: 2022/10/27 12:48:54 by aheister      ########   odam.nl         */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -273,6 +273,30 @@ void Response::processRedirection(Request &request) {
 	_body = "";
 }
 
+int Response::processCgiGet(std::string fileExtension, std::string contentPath, std::string queryString) {
+	std::map<std::string, std::string> _cgiMethods = _serverLocation.getCgiMap();
+	for (std::map<std::string, std::string>::iterator it_cgi = _cgiMethods.begin(); it_cgi != _cgiMethods.end(); it_cgi++) {
+		if (fileExtension == it_cgi->first) {
+			CGI cgi(GET, _httpData, contentPath);
+			if (cgi.execute_GET(queryString) != 200) {
+				_statusCode = cgi.getErrorCode();
+				return 0;
+			}
+			std::istringstream input;
+			_body = cgi.getBody();
+			input.str(cgi.getBody());
+			std::string line;
+			std::getline(input, line, '\n');
+			std::string toErase = "Content-type: ";
+			line.erase(0, toErase.length());
+			_type = line;
+			_body = _body.substr(_body.find_first_of("<"));
+			return 0;
+		}
+	}
+	return 1;
+}
+
 void Response::processGetMethod() {
 	std::ofstream       file;
 	std::stringstream   buffer;
@@ -307,24 +331,8 @@ void Response::processGetMethod() {
 		}
 		std::map<std::string, std::string> _cgiMethods = _serverLocation.getCgiMap();
 		if (!fileExtension.empty() && !_cgiMethods.empty()) {
-			for (std::map<std::string, std::string>::iterator it_cgi = _cgiMethods.begin(); it_cgi != _cgiMethods.end(); it_cgi++) {
-				if (fileExtension == it_cgi->first) {
-					CGI cgi(GET, _httpData, contentPath);
-					if (cgi.execute_GET(queryString) != 200) {
-						_statusCode = cgi.getErrorCode();
-						return;
-					}
-					std::istringstream input;
-					_body = cgi.getBody();
-					input.str(cgi.getBody());
-					std::string line;
-					std::getline(input, line, '\n');
-					std::string toErase = "Content-type: ";
-					line.erase(0, toErase.length());
-					_type = line;
-					_body = _body.substr(_body.find_first_of("<"));
-					return;
-				}
+			if (processCgiGet(fileExtension, contentPath, queryString) == 0) {
+				return;
 			}
 		}
 		file.open(contentPath.c_str(), std::ifstream::in);
@@ -341,6 +349,31 @@ void Response::processGetMethod() {
 	}
 }
 
+int    Response::processCgiPost(Request &request, std::string fileExtension, std::string filePath) {
+	std::map<std::string, std::string> _cgiMethods = _serverLocation.getCgiMap();
+	for (std::map<std::string, std::string>::iterator it_cgi = _cgiMethods.begin(); it_cgi != _cgiMethods.end(); it_cgi++) {
+		if (fileExtension == it_cgi->first) {
+			CGI cgi(POST, _httpData, filePath);
+			if (cgi.execute_POST(_type, request.getBody()) != 200) {
+				_statusCode = cgi.getErrorCode();
+				return 0;
+			}
+			_body = cgi.getBody();
+			std::istringstream input;
+			input.str(cgi.getBody());
+			std::string line;
+			std::getline(input, line, '\n');
+			std::string toErase = "Content-type: ";
+			line.erase(0, toErase.length());
+			_type = line;
+			_body = _body.substr(_body.find_first_of("<"));
+			_path = filePath;
+			return 0;
+		}
+	}
+	return 1;
+}
+
 void    Response::processPostMethod(Request &request) {
 	std::string filePath = _serverLocation.getRoot() + _path.substr(_serverLocation.getPathLocation().size() - 1);
 	std::string fileExtension;
@@ -350,25 +383,8 @@ void    Response::processPostMethod(Request &request) {
 	}
 	std::map<std::string, std::string> _cgiMethods = _serverLocation.getCgiMap();
 	if (!fileExtension.empty() && !_cgiMethods.empty()) {
-		for (std::map<std::string, std::string>::iterator it_cgi = _cgiMethods.begin(); it_cgi != _cgiMethods.end(); it_cgi++) {
-			if (fileExtension == it_cgi->first) {
-				CGI cgi(POST, _httpData, filePath);
-				if (cgi.execute_POST(_type, request.getBody()) != 200) {
-					_statusCode = cgi.getErrorCode();
-					return;
-				}
-				_body = cgi.getBody();
-				std::istringstream input;
-				input.str(cgi.getBody());
-				std::string line;
-				std::getline(input, line, '\n');
-				std::string toErase = "Content-type: ";
-				line.erase(0, toErase.length());
-				_type = line;
-				_body = _body.substr(_body.find_first_of("<"));
-				_path = filePath;
-				return;
-			}
+		if (processCgiPost(request, fileExtension, filePath) == 0) {
+			return;
 		}
 	}
 	std::string uploadFilePath = "";
