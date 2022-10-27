@@ -1,0 +1,44 @@
+<!DOCTYPE html>
+<head>
+    <meta charset="utf-8"/>
+    <title>PHP POST TEST</title>
+</head>
+
+<body>
+<h1>PHP POST TEST</h1>
+
+<h2>submit</h2>
+<form method="post" action="cgi-bin/php/submission.php">
+
+    <label for="name">Your name</label>
+    <div>
+        <input type="text" id="name" name="name" required>
+    </div>
+
+    <label for="colour">Your favourite colour</label>
+    <div>
+        <input type="text" id="colour" name="colour" required>
+    </div>
+
+    <label></label>
+    <div>
+        <button type="submit">Submit</button>
+    </div>
+
+</form>
+
+<h2>Upload</h2>
+<form enctype="multipart/form-data" method="post" action="cgi-bin/php/upload.php">
+
+    <label for="imageupload">Upload an image</label>
+    <div>
+        <input type="file" id="imageupload" name="imageupload" />
+    </div>
+    <div>
+        <input type="submit" name="submit" value="Upload image" />
+    </div>
+
+</form>
+
+</body>
+</html>
