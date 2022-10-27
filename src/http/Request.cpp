@@ -212,10 +212,11 @@ void Request::printRequestDebug(const std::string &color) {
 }
 
 // overload function
-std::ostream	&operator<<(std::ostream &os, const Request &request) {
-	std::cout << BLUE << "[INFO] General " << std::endl;
-	os << "Request Method: " << request.getMethod() << std::endl;
- 	os << "Path: " << request.getPath() << std::endl;
-	os << "Host: " << request.getHost();
+std::ostream &operator<<(std::ostream &os, const Request &request) {
+	std::cout << YELLOW << "[INFO] Port: "
+			  << request.getHost().substr(request.getHost().find_last_of(':') + 1,
+										  request.getHost().size()) << " | "
+			  << "Request Method: " << request.getMethod() << std::endl;
+	os << "Path: " << request.getPath();
 	return os;
 }

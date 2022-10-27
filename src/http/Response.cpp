@@ -78,7 +78,7 @@ bool    Response::isRedirection(const std::string &path) {
     std::string absolutePath = res;
     absolutePath = absolutePath.append(DEFAULT_ROOT);
     absolutePath = absolutePath.append(path);
-    std::cout << "APath: " << absolutePath << std::endl; //testing
+//    std::cout << "APath: " << absolutePath << std::endl; //testing
     if (isFile(absolutePath) == 2) {
         needRedirect = true;
     }
@@ -294,14 +294,19 @@ void Response::processGetMethod() {
 			_path = contentPath + "autoindex";
 			return;
 		} else {
+			std::cout << "get Index" << std::endl;
 			contentPath = contentPath + _serverLocation.getIndex();
 			i = isFile(contentPath);
 		}
 	}
 	if (i > 0) {
 		_path = contentPath;
-		std::string fileExtension = contentPath.substr(contentPath.find_last_of("."));
-		if (fileExtension == _serverLocation.getCgi().first) { // cgi if extension is .py
+		std::string fileExtension;
+		size_t	dot = contentPath.find_last_of(".");
+		if (dot != std::string::npos) {
+			fileExtension = contentPath.substr(contentPath.find_last_of("."));
+		}
+		if (!fileExtension.empty() && fileExtension == _serverLocation.getCgi().first) { // cgi if extension is .py
 			CGI cgi(GET, _httpData, contentPath);
 			if (cgi.execute_GET(queryString) != 200) {
 				_statusCode = cgi.getErrorCode();
