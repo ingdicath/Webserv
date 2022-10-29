@@ -6,7 +6,7 @@
 /*   By: hlin <hlin@student.codam.nl>                 +#+                     */
 /*                                                   +#+                      */
 /*   Created: 2022/10/25 10:38:10 by hlin          #+#    #+#                 */
-/*   Updated: 2022/10/27 12:48:54 by aheister      ########   odam.nl         */
+/*   Updated: 2022/10/29 15:27:04 by aheister      ########   odam.nl         */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -380,26 +380,29 @@ void    Response::processPostMethod(Request &request) {
 			return;
 		}
 	}
-	std::string uploadFilePath = "";
 	std::map <std::string, std::string> requestHeaders = request.getHeaders();
 	std::vector<Location> locations = _httpData.getLocations();
-	for (std::vector<Location>::iterator itLocation = locations.begin(); itLocation < locations.end(); itLocation++) {
-		if (itLocation->getUpload() != "") {
-			uploadFilePath = _serverLocation.getRoot() + itLocation->getUpload() + "/" + request.getFileName();
+	if (!request.getFileName().empty()) {
+		for (std::vector<Location>::iterator itLocation = locations.begin();
+			 itLocation < locations.end(); itLocation++) {
+			if (itLocation->getUpload() != "") {
+				filePath = _serverLocation.getRoot() + itLocation->getUpload() + "/" + request.getFileName();
+			}
 		}
 	}
-	if (isFile(uploadFilePath) == 1) { //file already exists
+	if (isFile(filePath) == 1) { //file already exists
 		_statusCode = 403;
 		setErrorBody();
 	} else {
-		std::string dirPath = uploadFilePath.substr(0, uploadFilePath.find_last_of('/'));
+		std::string dirPath = filePath.substr(0, filePath.find_last_of('/'));
 		if (isFile(dirPath) != 2) { //could not find the directory to create this file
+			std::cout << RED << dirPath << RESET << std::endl; // testing
 			_statusCode = 403;
 			return;
 		}
 
 		std::ofstream file;
-		file.open(uploadFilePath.c_str(), std::ios::out | std::ios::binary);
+		file.open(filePath.c_str(), std::ios::out | std::ios::binary);
 		if (file.is_open() == false) {
 			_statusCode = 403;
 			return;
@@ -408,7 +411,7 @@ void    Response::processPostMethod(Request &request) {
 			file.close();
 			_statusCode = 201;
 			_path = filePath;
-			_body = "<html><body><h1>File created at URL: " + uploadFilePath + "</h1></body></head></html>";
+			_body = "<html><body><h1>File created at URL: " + filePath + "</h1></body></head></html>";
 			_type = "text/html";
 		}
 	}
