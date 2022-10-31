@@ -6,7 +6,7 @@
 /*   By: aheister <aheister@student.codam.nl>         +#+                     */
 /*                                                   +#+                      */
 /*   Created: 2022/09/19 12:28:01 by aheister      #+#    #+#                 */
-/*   Updated: 2022/10/20 11:45:17 by aheister      ########   odam.nl         */
+/*   Updated: 2022/10/31 16:40:00 by aheister      ########   odam.nl         */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -168,11 +168,11 @@ int CGI::execute_cgi(int fdIn, int fdOut)
 	char	**args;
 
 	if (dup2(fdIn, STDIN_FILENO) < 0 || dup2(fdOut, STDOUT_FILENO) < 0)
-		exit(1);
+		exit(3);
 	env = create_envp();
 	args = create_args();
 	if (!args || !env)
-		exit(1);
+		exit(3);
 	execve(args[0], args, env);
 	exit(2);
 }
@@ -229,7 +229,7 @@ void CGI::prepare_execution(void) {
 		while (waitpid(-1, &status, WUNTRACED) != -1)
 			;
 		int code = WEXITSTATUS(status);
-		if (code == 1)
+		if (code == 3)
 			_errorCode = 500;
 		else if (code == 2)
 			_errorCode = 502;
