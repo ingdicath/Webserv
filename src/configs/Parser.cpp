@@ -181,8 +181,7 @@ void Parser::_storeLocationDirective(const Parser::Directive &directive, Locatio
 			location->setAutoindex(_checkAutoindex(directive._value)); //retrieves the last location
 			break;
 		case CGI:
-//			location->setCGI(_checkCGI(directive._value));
-			location->setCGIMap(_checkCGI(directive._value)); //new, testing
+			location->setCGIMap(_checkCGI(directive._value));
 			break;
 		case UPLOAD:
 			location->setUpload(_checkUpload(directive._value));
