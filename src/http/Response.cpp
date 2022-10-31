@@ -452,8 +452,6 @@ std::string Response::getResponseStr(int code) {
 	if (DEBUG){
 		std::cout << YELLOW << "[INFO] Response Headers: \n" << res  << std::endl;
 		std::cout <<  "------- End of Response info --------\n" << RESET << std::endl;
-	} else {
-		std::cout << BLUE "Response Status Code: " << code << " " << headers.getStatusMsg(code) << std::endl << std::endl;
 	}
 	if (_body != "") {
 		res += _body;

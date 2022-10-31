@@ -379,8 +379,6 @@ void Server::processRequest(int socket) {
 		}
 		if (DEBUG == 1) {
 			request.printRequestDebug(CYAN); // print DEBUG info
-		} else {
-			std::cout << request << std::endl;
 		}
         HttpData    httpData = setHttpData(request);
         Response    response(httpData, request);
