@@ -29,8 +29,7 @@ public:
 	void setAutoindex(bool autoindex);
 	void setMethods(const std::set<std::string> &acceptedMethods);
 	void setRoot(const std::string &root);
-	// void setCGI(const std::pair<std::string, std::string> &cgi);
-	void setCGIMap(const std::pair<std::string, std::string> &CGI); //new, testing
+	void setCGIMap(const std::pair<std::string, std::string> &CGI);
 	void setRedirection(const std::pair<int, std::string> &redirection);
 	void setUpload(const std::string &upload);
 	void setIndex(const std::string &index);
@@ -43,8 +42,7 @@ public:
 	const std::string &getIndex() const;
 	const std::set<std::string> &getAcceptedMethods() const;
 	const std::pair<int, std::string> getRedirection() const;
-	const std::map<std::string, std::string> &getCgiMap() const; //new, testing
-	// const std::pair<std::string, std::string> &getCgi() const;
+	const std::map<std::string, std::string> &getCgiMap() const;
 
 private:
 	std::string _pathLocation;
@@ -54,8 +52,7 @@ private:
 	bool _autoindex;
 	std::set<std::string> _acceptedMethods;
 	std::pair<int, std::string> _redirection;
-	// std::pair<std::string, std::string> _cgi;
-	std::map<std::string, std::string> _cgiMap; //new, testing
+	std::map<std::string, std::string> _cgiMap;
 
 	void	_setDefaultRedirectionPages();
 	void	_setDefaultAllowedMethods();

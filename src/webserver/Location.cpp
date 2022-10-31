@@ -64,11 +64,7 @@ void Location::setRoot(const std::string &root) {
 	_root = root;
 }
 
-// void Location::setCGI(const std::pair<std::string, std::string> &cgi) {
-// 	_cgi = cgi;
-// }
-
-void Location::setCGIMap(const std::pair<std::string, std::string> &CGI) { //new, testing
+void Location::setCGIMap(const std::pair<std::string, std::string> &CGI) {
 	std::map<std::string, std::string>::iterator it = _cgiMap.find(CGI.first);
 	if (it != _cgiMap.end()) {
 		_cgiMap.at(it->first) = CGI.second;
@@ -129,11 +125,7 @@ const std::set<std::string> &Location::getAcceptedMethods() const {
 	return _acceptedMethods;
 }
 
-// const std::pair<std::string, std::string> &Location::getCgi() const {
-// 	return _cgi;
-// }
-
-const std::map<std::string, std::string> &Location::getCgiMap() const { //new, testing
+const std::map<std::string, std::string> &Location::getCgiMap() const {
 	return _cgiMap;
 }
 
